@@ -162,6 +162,7 @@ class FilterSettings:
     motion: MotionFilterSettings = MotionFilterSettings()
     animal: AnimalFilterSettings = AnimalFilterSettings()
     motion_queue: MotionQueueSettings = MotionQueueSettings()
+    periodic_motion_filter_bypass: bool = False
 
 
 @dataclass

@@ -45,6 +45,15 @@ class Filter:
         """
         self.framerate = read_from.framerate
 
+        if settings.periodic_motion_filter_bypass:
+            self._periodic_bypass = True
+            self._count_since_last_bypass = 0
+            self._bypass_period = int(
+                settings.motion_queue.smoothing_factor * self.framerate
+            )
+        else:
+            self._periodic_bypass = False
+
         self._input_queue = read_from
         self._output_queue: QueueType[Frame] = Queue()
 
@@ -76,6 +85,14 @@ class Filter:
         self._usher.terminate()
         self._usher.join()
 
+    def _motion_filter_bypass(self):
+        if self._periodic_bypass:
+            if self._count_since_last_bypass >= self._bypass_period:
+                self._count_since_last_bypass = 0
+            self._count_since_last_bypass += 1
+            return True
+        return False
+
     def _handle_input(self):
         while True:
 
@@ -87,11 +104,10 @@ class Filter:
                 self._motion_filter.reset()
                 continue
 
-
             motion_score = self._motion_filter.run_raw(frame.motion)
             motion_detected = motion_score >= self._motion_threshold
 
-            if motion_detected:
+            if motion_detected or self._motion_filter_bypass():
                 self._motion_queue.put(frame, motion_score)
 
             else:

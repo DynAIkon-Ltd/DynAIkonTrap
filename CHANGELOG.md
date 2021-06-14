@@ -1,6 +1,8 @@
 # Change Log
 
 ## [Unreleased]
+### Added
+- Optional function to periodically bypass the motion filter
 
 ---
 
