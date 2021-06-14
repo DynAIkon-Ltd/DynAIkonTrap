@@ -93,6 +93,7 @@ class MotionFilterSettings:
     iir_cutoff_hz: float = 2.0
     iir_order: int = 3
     iir_attenuation: int = 35
+    enabled: bool = True
 
 
 @dataclass
@@ -100,6 +101,7 @@ class AnimalFilterSettings:
     """Settings for a `DynAIkonTrap.filtering.animal.AnimalFilter`"""
 
     threshold: float = 0.2
+    enabled: bool = True
 
 
 @dataclass
@@ -108,6 +110,7 @@ class MotionQueueSettings:
 
     smoothing_factor: float = 0.5
     max_sequence_period_s: float = 10.0
+    enabled: bool = True
 
 
 @dataclass

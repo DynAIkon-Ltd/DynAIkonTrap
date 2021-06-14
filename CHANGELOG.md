@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Added
 - Optional function to periodically bypass the motion filter
+- Option to disable filter stages via settings
 
 ---
 

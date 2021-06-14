@@ -108,11 +108,21 @@ settings.filter.motion.iir_attenuation = setter(
     'SoTV smoothing IIR stop-band attenuation (ADVANCED)',
     settings.filter.motion.iir_attenuation,
 )
+disable = input('Disable motion filter (ADVANCED) (y/n) [n]> ')
+if disable == 'y':
+    settings.filter.motion.enabled = False
+else:
+    settings.filter.motion.enabled = True
 
 print('----Animal filtering')
 settings.filter.animal.threshold = setter(
     'Animal confidence threshold (ADVANCED)', settings.filter.animal.threshold
 )
+disable = input('Disable animal filter (ADVANCED) (y/n) [n]> ')
+if disable == 'y':
+    settings.filter.animal.enabled = False
+else:
+    settings.filter.animal.enabled = True
 
 print('----Motion queue')
 settings.filter.motion_queue.smoothing_factor = forced_setter(
@@ -124,6 +134,12 @@ settings.filter.motion_queue.max_sequence_period_s = setter(
     'Max. motion sequence period/s (ADVANCED)',
     settings.filter.motion_queue.max_sequence_period_s,
 )
+disable = input('Disable motion queue (ADVANCED) (y/n) [n]> ')
+if disable == 'y':
+    settings.filter.motion_queue.enabled = False
+else:
+    settings.filter.motion_queue.enabled = True
+
 
 print('\nSensor settings')
 print('---------------')

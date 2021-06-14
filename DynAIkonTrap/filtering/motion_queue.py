@@ -194,6 +194,10 @@ class MotionQueue:
             output_callback (Callable[[List[Frame]], Any]): Function to call with filtered frames
             framerate (int): Framerate at which the frames were recorded
         """
+        if not settings.enabled:
+            self._put = self.put
+            self.put = self._mq_disabled_put
+
         self._smoothing_len = int((settings.smoothing_factor * framerate) / 2)
         self._sequence_len = framerate * settings.max_sequence_period_s
         self._current_sequence = MotionSequence(self._smoothing_len)
@@ -226,6 +230,10 @@ class MotionQueue:
         self._current_sequence.put(frame, motion_score)
         if len(self._current_sequence) >= self._sequence_len:
             self.end_motion_sequence()
+
+    def _mq_disabled_put(self, frame: Frame, motion_score: float):
+        self._put(frame, motion_score)
+        self.end_motion_sequence()
 
     def end_motion_sequence(self):
         """End the current motion sequence and prepare the next one. To be called when there is a gap in motion. It is safe to call this repeatedly for consecutive empty frames. Calling this releases the motion sequence to be processed by the animal filter."""

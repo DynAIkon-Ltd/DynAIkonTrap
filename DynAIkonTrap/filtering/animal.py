@@ -32,8 +32,12 @@ class AnimalFilter:
         Args:
             settings (AnimalFilterSettings): Settings for the filter
         """
-        self.threshold = settings.threshold
+        if not settings.enabled:
+            self.run_raw = lambda _: 1.0
+            self.run = lambda _: True
+            return
 
+        self.threshold = settings.threshold
         self.model = cv2.dnn.readNet(
             'DynAIkonTrap/filtering/yolo_animal_detector.weights',
             'DynAIkonTrap/filtering/yolo_animal_detector.cfg',

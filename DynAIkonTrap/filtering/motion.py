@@ -46,6 +46,12 @@ class MotionFilter:
             settings (MotionFilterSettings): Settings for the motion filter
             framerate (int): Framerate at which the frames were recorded
         """
+
+        if not settings.enabled:
+            self.run_raw = lambda _: 0
+            self.run = lambda _: True
+            return
+
         self.threshold_small: int = settings.small_threshold
         self.threshold_sotv: int = settings.sotv_threshold
 
@@ -121,7 +127,6 @@ class MotionFilter:
         return self.run_raw(motion_frame) >= self.threshold_sotv
 
     def reset(self):
-        """Reset the internal IIR filter's memory to zero
-        """
+        """Reset the internal IIR filter's memory to zero"""
         self.x_iir_filter.reset()
         self.y_iir_filter.reset()

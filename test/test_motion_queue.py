@@ -265,7 +265,7 @@ class CloseGapsLeadingEmptyMotionSequenceTestCase(TestCase):
 
 
 class KeepPuttingMotionQueueTestCase(TestCase):
-    """`end_motion_sequence()` is never explicitely called"""
+    """`end_motion_sequence()` is never explicitly called"""
 
     def setUp(self):
         class AnimalFilterMock:
@@ -300,7 +300,8 @@ class KeepPuttingMotionQueueTestCase(TestCase):
     def test_frames_are_run_and_output(self):
         t_start = time()
         while True:
-            if self._mq._output_queue.qsize() == 10:
+            # 12 = (5 + 1) * 2 as each sequence is None terminated
+            if self._mq._output_queue.qsize() == 12:
                 self.assertTrue(True)
                 break
 
@@ -310,9 +311,66 @@ class KeepPuttingMotionQueueTestCase(TestCase):
     def test_animal_filter_called_for_only_some_frames(self):
         t_start = time()
         while True:
-            if self._mq._output_queue.qsize() == 10:
+            if self._mq._output_queue.qsize() == 12:
                 break
             if time() - t_start > 10:
                 self.fail('Timed out')
 
         self.assertEqual(self._animal_filter.num_calls.value, 4)
+
+
+class DisabledMotionQueueTestCase(TestCase):
+    """`end_motion_sequence()` is never explicitly called"""
+
+    def setUp(self):
+        class AnimalFilterMock:
+            def __init__(self):
+                self.num_calls = Value('i', 0)
+
+            def run(self, *args, **kwargs):
+                with self.num_calls.get_lock():
+                    self.num_calls.value += 1
+                return 0.5
+
+        self._animal_filter = AnimalFilterMock()
+        self._output = Queue()
+
+        self._mq = MotionQueue(
+            settings=MotionQueueSettings(
+                max_sequence_period_s=5, smoothing_factor=5, enabled=False
+            ),
+            animal_detector=self._animal_filter,
+            framerate=1,
+        )
+
+        self._mq.put(Frame(None, None, None), 2)
+        self._mq.put(Frame(None, None, None), 4)
+        self._mq.put(Frame(None, None, None), 6)
+        self._mq.put(Frame(None, None, None), 8)
+        self._mq.put(Frame(None, None, None), 10)
+        self._mq.put(Frame(None, None, None), 9)
+        self._mq.put(Frame(None, None, None), 7)
+        self._mq.put(Frame(None, None, None), 5)
+        self._mq.put(Frame(None, None, None), 3)
+        self._mq.put(Frame(None, None, None), 1)
+
+    def test_frames_are_run_and_output(self):
+        t_start = time()
+        while True:
+            # (10 * 2) as sequence is None terminated
+            if self._mq._output_queue.qsize() == 20:
+                self.assertTrue(True)
+                break
+
+            if time() - t_start > 10:
+                self.fail('Timed out')
+
+    def test_animal_filter_called_for_all_frames(self):
+        t_start = time()
+        while True:
+            if self._mq._output_queue.qsize() == 20:
+                break
+            if time() - t_start > 10:
+                self.fail('Timed out')
+
+        self.assertEqual(self._animal_filter.num_calls.value, 10)
