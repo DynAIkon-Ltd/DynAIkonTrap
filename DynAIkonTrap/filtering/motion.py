@@ -50,6 +50,7 @@ class MotionFilter:
         if not settings.enabled:
             self.run_raw = lambda _: float('inf')
             self.run = lambda _: True
+            self.reset = lambda: None
             return
 
         self.threshold_small: int = settings.small_threshold
