@@ -48,7 +48,7 @@ class MotionFilter:
         """
 
         if not settings.enabled:
-            self.run_raw = lambda _: 0
+            self.run_raw = lambda _: float('inf')
             self.run = lambda _: True
             return
 
