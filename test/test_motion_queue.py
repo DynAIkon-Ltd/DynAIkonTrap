@@ -356,20 +356,19 @@ class DisabledMotionQueueTestCase(TestCase):
 
     def test_frames_are_run_and_output(self):
         t_start = time()
-        while True:
-            # (10 * 2) as sequence is None terminated
-            if self._mq._output_queue.qsize() == 20:
-                self.assertTrue(True)
-                break
-
+        count = 0
+        while count < 10:
+            self._mq.get()
+            count += 1
             if time() - t_start > 10:
                 self.fail('Timed out')
 
     def test_animal_filter_called_for_all_frames(self):
         t_start = time()
-        while True:
-            if self._mq._output_queue.qsize() == 20:
-                break
+        count = 0
+        while count < 10:
+            self._mq.get()
+            count += 1
             if time() - t_start > 10:
                 self.fail('Timed out')
 

@@ -48,8 +48,10 @@ while True:
 The modularity here means Different implementations for animal filtering and motion filtering stages can be used.
 """
 
+from abc import ABC, abstractclassmethod
 from dataclasses import dataclass
-from typing import List
+from queue import Empty
+from typing import List, Union
 from enum import Enum
 from multiprocessing import Event, Process, Queue, Value
 from multiprocessing.queues import Queue as QueueType
@@ -178,9 +180,8 @@ class MotionSequence:
         return len(self._frames)
 
 
-class MotionQueue:
-    """A queue for sequences of motion to be analysed by the animal filter"""
-
+class AbstractMotionQueue(ABC):
+    @abstractclassmethod
     def __init__(
         self,
         settings: MotionQueueSettings,
@@ -194,9 +195,66 @@ class MotionQueue:
             output_callback (Callable[[List[Frame]], Any]): Function to call with filtered frames
             framerate (int): Framerate at which the frames were recorded
         """
-        if not settings.enabled:
-            self._put = self.put
-            self.put = self._mq_disabled_put
+        pass
+
+    @abstractclassmethod
+    def put(self, frame: Frame, motion_score: float):
+        """Append the given frame to the current motion sequence. If the sequence exceeds the length limit, a new one is automatically started. This prevents excessively long motion sequences.
+
+        Args:
+            frame (Frame): A frame of motion and image data to be analysed
+            motion_score (float): Output value for this frame from the motion filtering stage
+        """
+        pass
+
+    @abstractclassmethod
+    def end_motion_sequence(self):
+        """End the current motion sequence and prepare the next one. To be called when there is a gap in motion. It is safe to call this repeatedly for consecutive empty frames. Calling this releases the motion sequence to be processed by the animal filter."""
+        current_len = len(self._current_sequence)
+        if current_len > 0:
+            self._queue.put(self._current_sequence)
+            self._current_sequence = MotionSequence(self._smoothing_len)
+
+            with self._remaining_frames.get_lock():
+                self._remaining_frames.value += current_len
+
+            logger.info(
+                'End of motion ({} frames will take <=~{:.0f}s; {:.0f}s cumulative)'.format(
+                    current_len,
+                    current_len * self._mean_time.value,
+                    self._remaining_frames.value * self._mean_time.value,
+                )
+            )
+        pass
+
+    @abstractclassmethod
+    def is_idle(self) -> bool:
+        """Allows checking if the motion queue is currently waiting for new frames to arrive. May be removed in future."""
+        pass
+
+    @abstractclassmethod
+    def get(self) -> Frame:
+        """Retrieve the next animal `Frame` from the motion queue's output
+
+        Returns:
+            Frame: An animal frame
+        """
+        pass
+
+    @abstractclassmethod
+    def close(self):
+        pass
+
+
+class MotionQueueEnabled(AbstractMotionQueue):
+    """A queue for sequences of motion to be analysed by the animal filter"""
+
+    def __init__(
+        self,
+        settings: MotionQueueSettings,
+        animal_detector: AnimalFilter,
+        framerate: int,
+    ):
 
         self._smoothing_len = int((settings.smoothing_factor * framerate) / 2)
         self._sequence_len = framerate * settings.max_sequence_period_s
@@ -230,10 +288,6 @@ class MotionQueue:
         self._current_sequence.put(frame, motion_score)
         if len(self._current_sequence) >= self._sequence_len:
             self.end_motion_sequence()
-
-    def _mq_disabled_put(self, frame: Frame, motion_score: float):
-        self._put(frame, motion_score)
-        self.end_motion_sequence()
 
     def end_motion_sequence(self):
         """End the current motion sequence and prepare the next one. To be called when there is a gap in motion. It is safe to call this repeatedly for consecutive empty frames. Calling this releases the motion sequence to be processed by the animal filter."""
@@ -309,17 +363,52 @@ class MotionQueue:
                 self._remaining_frames.value -= len(sequence)
 
     def is_idle(self) -> bool:
-        """Allows checking if the motion queue is currently waiting for new frames to arrive. May be removed in future."""
         return (self._queue.qsize() == 0) and self._idle.is_set()
 
     def get(self) -> Frame:
-        """Retrieve the next animal `Frame` from the motion queue's output
-
-        Returns:
-            Frame: An animal frame
-        """
         return self._output_queue.get()
 
     def close(self):
         self._process.terminate()
         self._process.join()
+
+
+class MotionQueueDisabled(AbstractMotionQueue):
+    def __init__(
+        self,
+        settings: MotionQueueSettings,
+        animal_detector: AnimalFilter,
+        framerate: int,
+    ):
+        self._animal_detector = animal_detector
+        self._output_queue: QueueType[Frame] = Queue()
+        self._idle = Event()
+        self._idle.set()
+
+    def put(self, frame: Frame, motion_score: float):
+        self._idle.clear()
+        if self._animal_detector.run(frame.image):
+            self._output_queue.put_nowait(frame)
+        self._idle.set()
+
+    def end_motion_sequence(self):
+        pass
+
+    def is_idle(self) -> bool:
+        return self._idle.is_set()
+
+    def get(self) -> Frame:
+        return self._output_queue.get()
+
+    def close(self):
+        pass
+
+
+def MotionQueue(
+    settings: MotionQueueSettings, animal_detector: AnimalFilter, framerate: int
+) -> Union[MotionQueueEnabled, MotionQueueDisabled]:
+    """Factory function to provide `MotionQueueEnabled` or `MotionQueueDisabled depending on the status of `MotionQueueSettings.enabled`"""
+    if settings.enabled:
+        return MotionQueueEnabled(settings, animal_detector, framerate)
+    else:
+        return MotionQueueDisabled(settings, animal_detector, framerate)

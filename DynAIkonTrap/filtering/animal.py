@@ -25,8 +25,8 @@ from DynAIkonTrap.settings import AnimalFilterSettings
 
 
 class AnimalFilter:
-    """Animal filter stage to indicate if a frame contains an animal
-    """
+    """Animal filter stage to indicate if a frame contains an animal"""
+
     def __init__(self, settings: AnimalFilterSettings):
         """
         Args:
