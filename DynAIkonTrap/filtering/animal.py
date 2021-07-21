@@ -20,6 +20,7 @@ A WCS-trained Tiny YOLOv4 model is used in this implementation, but any other ar
 """
 import cv2
 import numpy as np
+import tflite_runtime.interpreter as tflite  
 
 from DynAIkonTrap.settings import AnimalFilterSettings
 
@@ -34,14 +35,12 @@ class AnimalFilter:
         """
         self.threshold = settings.threshold
 
-        self.model = cv2.dnn.readNet(
-            'DynAIkonTrap/filtering/yolo_animal_detector.weights',
-            'DynAIkonTrap/filtering/yolo_animal_detector.cfg',
-        )
-        layer_names = self.model.getLayerNames()
-        self.output_layers = [
-            layer_names[i[0] - 1] for i in self.model.getUnconnectedOutLayers()
-        ]
+        self.tfl_runner = tflite.Interpreter(
+                model_path="DynAIkonTrap/filtering/model.tflite"
+                )
+        self.tfl_runner.allocate_tensors()
+        self.input_details = self.tfl_runner.get_input_details()
+        self.output_details = self.tfl_runner.get_output_details()
 
     def run_raw(self, image: bytes) -> float:
         """Run the animal filter on the image to give a confidence that the image frame contains an animal
@@ -53,17 +52,24 @@ class AnimalFilter:
             float: Confidence in the output containing an animal as a decimal fraction
         """
         decoded_image = cv2.resize(
-            cv2.imdecode(np.asarray(image), cv2.IMREAD_COLOR), (416, 416)
+            cv2.imdecode(np.asarray(image), cv2.IMREAD_COLOR), (300, 300)
         )
-
-        blob = cv2.dnn.blobFromImage(decoded_image, 1, (416, 416), (0, 0, 0))
-        blob = blob / 255  # Scale to be a float
-        self.model.setInput(blob)
-        output = self.model.forward(self.output_layers)
-
-        _, _, _, _, _, confidence0 = output[0].max(axis=0)
-        _, _, _, _, _, confidence1 = output[1].max(axis=0)
-        return max(confidence0, confidence1)
+        resized_image = decoded_image / 255.
+        resized_image = resized_image.astype(np.float32)
+        tfl_img = np.array([resized_image])
+        self.tfl_runner.set_tensor(self.input_details[0]["index"], tfl_img)
+        self.tfl_runner.invoke()
+        tfl_out_classes = self.tfl_runner.get_tensor(self.output_details[1]["index"])[0].tolist()
+        #obtain indexes of animal only classes (ie in range 15-24)
+        indexes = [idx for idx, detection in enumerate(tfl_out_classes) if 14 < detection < 25]  
+        tfl_out_scores = self.tfl_runner.get_tensor(self.output_details[2]["index"])[0].tolist()
+        #get detection with highest confidence - this is a hack, not required for a network trained on animals only
+        max_confidence = 0.0
+        for idx in indexes:
+            if tfl_out_scores[idx] > max_confidence:
+                max_confidence = tfl_out_scores[idx]
+    
+        return max_confidence
 
     def run(self, image: bytes) -> bool:
         """The same as `run_raw()`, but with a threshold applied. This function outputs a boolean to indicate if the confidence is at least as large as the threshold
