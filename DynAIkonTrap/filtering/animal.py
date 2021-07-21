@@ -61,7 +61,7 @@ class AnimalFilter:
         self.tfl_runner.invoke()
         tfl_out_classes = self.tfl_runner.get_tensor(self.output_details[1]["index"])[0].tolist()
         #obtain indexes of animal only classes (ie in range 15-24)
-        indexes = [idx for idx, detection in enumerate(tfl_out_classes) if (14.0 < detection < 25.0 | detection == 1.0)]  
+        indexes = [idx for idx, detection in enumerate(tfl_out_classes) if (14.0 < detection < 25.0 or detection == 1.0)]  
         tfl_out_scores = self.tfl_runner.get_tensor(self.output_details[2]["index"])[0].tolist()
         #get detection with highest confidence - this is a hack, not required for a network trained on animals only
         max_confidence = 0.0
