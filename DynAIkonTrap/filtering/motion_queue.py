@@ -195,7 +195,7 @@ class Sequence:
             LabelledFrame: Frame to be analysed by the animal filtering stage
         """
         
-        middle_frame = self._frames[len(self._frames//2)] 
+        middle_frame = self._frames[len(self._frames)//2] 
         if middle_frame.motion_status is MotionStatus.STILL:
             return None
         return middle_frame
