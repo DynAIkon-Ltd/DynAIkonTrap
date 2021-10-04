@@ -187,6 +187,18 @@ class Sequence:
         if highest_priority_frame.motion_status is MotionStatus.STILL:
             return None
         return highest_priority_frame
+    
+    def get_middle_frame(self) -> LabelledFrame:
+        """Finds the frame with the middle index in the sequence.
+
+        Returns:
+            LabelledFrame: Frame to be analysed by the animal filtering stage
+        """
+        
+        middle_frame = self._frames[len(self._frames//2)] 
+        if middle_frame.motion_status is MotionStatus.STILL:
+            return None
+        return middle_frame
 
     def get_first_animal_index(self) -> int:
         """Finds and returns first index in the frame queue labelled as an animal
