@@ -341,7 +341,7 @@ class MotionLabelledQueue:
             inference_count = 0
             t_temp = time()
 
-            frame = sequence.get_highest_priority()
+            frame = sequence.get_middle_frame()
             while frame:
                 is_animal = self._animal_detector.run(frame.frame.image)
 
@@ -351,10 +351,17 @@ class MotionLabelledQueue:
                 inference_count += 1
 
                 if is_animal:
-                    sequence.label_as_animal(frame)
+                    #sequence.label_as_animal(frame)
+                    #if animal detected in the middle frame, label the whole sequence containing animal
+                    for frame in sequence._frames:
+                        sequence.label_as_animal(frame)
                 else:
-                    sequence.label_as_empty(frame)
-                frame = sequence.get_highest_priority()
+                    #sequence.label_as_empty(frame)
+                    #if no animal detected in the middle frame, label the whole sequence as empty
+                    for frame in sequence._frames:
+                        sequence.label_as_empty(frame)
+                #frame = sequence.get_middle_frame()
+                break
 
             sequence.close_gaps()
             sequence.add_context()
