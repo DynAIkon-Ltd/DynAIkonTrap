@@ -43,7 +43,8 @@ The JSON file should be structured as follows (of course the values can be chang
             "iir_attenuation": 20
         },
         "animal": {
-            "threshold": 0.1
+            "threshold": 0.1,
+            "filter_frac": 1.0
         },
         "motion_queue": {
             "smoothing_factor": 1,
@@ -111,6 +112,8 @@ class MotionQueueSettings:
     smoothing_factor: float = 0.5
     max_sequence_period_s: float = 10.0
     context_length_s : float = 3.0
+    detector_frac: float = 1.0
+
 
 
 @dataclass
