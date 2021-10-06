@@ -199,6 +199,18 @@ class Sequence:
         if middle_frame.motion_status is MotionStatus.STILL:
             return None
         return middle_frame
+    
+    def get_every_nth_frame(self, n) -> LabelledFrame:
+        """Finds every nth frame in the current sequence.
+
+        Returns:
+            List[LabelledFrame]: List of frames to be analysed by the animal filtering stage
+        """
+        retlst = []
+        for i, frame in enumerate(self._frames):
+            if i % n == 0:
+                retlst.append(frame)
+        return retlst
 
     def get_first_animal_index(self) -> int:
         """Finds and returns first index in the frame queue labelled as an animal
@@ -225,6 +237,7 @@ class Sequence:
                 indx = i
                 break
         return indx
+
 
     def get_animal_frames(self) -> List[LabelledFrame]:
         """Retrieve only the animal frames from the sequence
@@ -275,6 +288,7 @@ class MotionLabelledQueue:
         self._smoothing_len = int((settings.smoothing_factor * framerate) / 2)
         self._context_len = int((settings.context_length_s * framerate))
         self._sequence_len = framerate * settings.max_sequence_period_s
+        self._detector_frac = settings.detector_frac
         self._current_sequence = Sequence(self._smoothing_len, self._context_len)
         self._queue: QueueType[Sequence] = Queue()
         self._animal_detector = animal_detector
@@ -331,6 +345,8 @@ class MotionLabelledQueue:
     def _process_queue(self):
         while True:
             sequence = self._queue.get()
+            nr_inferences =  int(len(sequence) * self._detector_frac)
+            inference_spacing = len(sequence) // nr_inferences
             self._idle.clear()
 
             # Timing full sequence
@@ -341,29 +357,45 @@ class MotionLabelledQueue:
             inference_count = 0
             t_temp = time()
 
-            frame = sequence.get_middle_frame()
+            frames = sequence.get_every_nth_frame(inference_spacing)
+            
+            middle_frame_idx = len(sequence) // 2
+            frames.sort(key=lambda x: abs(middle_frame_idx - x.index))
             #frame = sequence.get_highest_priority()
             #for frame in sequence._frames:
-            while frame:
+            for frame in frames:
                 is_animal = self._animal_detector.run(frame.frame.image)
-
                 _t = time()
                 t_actual_framerate += _t - t_temp
                 t_temp = _t
                 inference_count += 1
-
                 if is_animal:
                     #sequence.label_as_animal(frame)
                     #if animal detected in the middle frame, label the whole sequence containing animal
                     for frame in sequence._frames:
                         sequence.label_as_animal(frame)
-                else:
-                    #sequence.label_as_empty(frame)
-                    #if no animal detected in the middle frame, label the whole sequence as empty
-                    for frame in sequence._frames:
-                        sequence.label_as_empty(frame)
-                #frame = sequence.get_highest_priority()
-                break
+                    break
+                
+            # while frame:
+            #     is_animal = self._animal_detector.run(frame.frame.image)
+
+            #     _t = time()
+            #     t_actual_framerate += _t - t_temp
+            #     t_temp = _t
+            #     inference_count += 1
+
+            #     if is_animal:
+            #         #sequence.label_as_animal(frame)
+            #         #if animal detected in the middle frame, label the whole sequence containing animal
+            #         for frame in sequence._frames:
+            #             sequence.label_as_animal(frame)
+            #     else:
+            #         #sequence.label_as_empty(frame)
+            #         #if no animal detected in the middle frame, label the whole sequence as empty
+            #         for frame in sequence._frames:
+            #             sequence.label_as_empty(frame)
+            #     #frame = sequence.get_highest_priority()
+            #     break
 
             sequence.close_gaps()
             sequence.add_context()
