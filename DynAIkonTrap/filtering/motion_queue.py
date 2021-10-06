@@ -345,7 +345,7 @@ class MotionLabelledQueue:
     def _process_queue(self):
         while True:
             sequence = self._queue.get()
-            nr_inferences =  int(len(sequence) * self._detector_frac)
+            nr_inferences =  int(max(len(sequence) * self._detector_frac, 1))
             inference_spacing = len(sequence) // nr_inferences
             self._idle.clear()
 
