@@ -363,6 +363,8 @@ class MotionLabelledQueue:
             frames.sort(key=lambda x: abs(middle_frame_idx - x.index))
             #frame = sequence.get_highest_priority()
             #for frame in sequence._frames:
+            for frame in sequence._frames:
+                sequence.label_as_empty(frame)
             for frame in frames:
                 is_animal = self._animal_detector.run(frame.frame.image)
                 _t = time()
