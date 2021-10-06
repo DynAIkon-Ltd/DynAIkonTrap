@@ -134,6 +134,10 @@ settings.filter.motion_queue.context_length_s = setter(
     'Motion context buffer length/s',
     settings.filter.motion_queue.context_length_s,
 )
+settings.filter.motion_queue.detector_frac = setter(
+    'Fraction of motion event to process with NN (ADVANCED)',
+    settings.filter.motion_queue.detector_frac,
+)
 
 print('\nSensor settings')
 print('---------------')
