@@ -346,6 +346,8 @@ class MotionLabelledQueue:
         while True:
             sequence = self._queue.get()
             nr_inferences =  int(max(len(sequence) * self._detector_frac, 1))
+            if self._detector_frac <= 0.0: 
+                nr_inferences = 1 
             inference_spacing = len(sequence) // nr_inferences
             self._idle.clear()
 
@@ -356,11 +358,13 @@ class MotionLabelledQueue:
             t_actual_framerate = 0
             inference_count = 0
             t_temp = time()
-
-            frames = sequence.get_every_nth_frame(inference_spacing)
+            if nr_inferences > 1:
+                frames = sequence.get_every_nth_frame(inference_spacing)
+                middle_frame_idx = len(sequence) // 2
+                frames.sort(key=lambda x: abs(middle_frame_idx - x.index))
+            else:
+                frames = [sequence.get_middle_frame()]
             
-            middle_frame_idx = len(sequence) // 2
-            frames.sort(key=lambda x: abs(middle_frame_idx - x.index))
             #frame = sequence.get_highest_priority()
             #for frame in sequence._frames:
             for frame in sequence._frames:
