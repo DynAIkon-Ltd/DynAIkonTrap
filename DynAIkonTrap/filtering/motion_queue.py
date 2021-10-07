@@ -399,7 +399,7 @@ class MotionLabelledQueue:
             #     #frame = sequence.get_highest_priority()
             #     break
 
-            sequence.close_gaps()
+            #sequence.close_gaps()
             sequence.add_context()
             t_stop = time()
             t = t_stop - t_start

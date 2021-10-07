@@ -93,7 +93,7 @@ class Filter:
             motion_score = self._motion_filter.run_raw(frame.motion)
             motion_detected = motion_score >= self._motion_threshold
 
-            if motion_detected:
+            if motion_detected or True:
                 self._motion_labelled_queue.put(frame, motion_score, MotionStatus.MOTION)
 
             else:
