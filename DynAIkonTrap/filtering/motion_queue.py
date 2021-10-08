@@ -52,6 +52,7 @@ from enum import Enum
 from multiprocessing import Event, Process, Queue, Value
 from multiprocessing.queues import Queue as QueueType
 from time import time
+from numpy import linspace
 
 from DynAIkonTrap.camera import Frame
 from DynAIkonTrap.logging import get_logger
@@ -200,7 +201,7 @@ class Sequence:
             return None
         return middle_frame
     
-    def get_every_nth_frame(self, n) -> LabelledFrame:
+    def get_every_nth_frame(self, n) -> List[LabelledFrame]:
         """Finds every nth frame in the current sequence.
 
         Returns:
@@ -344,32 +345,36 @@ class MotionLabelledQueue:
 
     def _process_queue(self):
         while True:
+
             sequence = self._queue.get()
-            nr_inferences =  int(max(len(sequence) * self._detector_frac, 1))
-            if self._detector_frac <= 0.0: 
-                nr_inferences = 1 
-            inference_spacing = round(len(sequence) / nr_inferences)
+            
             self._idle.clear()
 
             # Timing full sequence
             t_start = time()
 
+
             # Timing animal detector inference
             t_actual_framerate = 0
             inference_count = 0
             t_temp = time()
-            if nr_inferences > 1:
-                frames = sequence.get_every_nth_frame(inference_spacing)
-                middle_frame_idx = len(sequence) // 2
-                frames.sort(key=lambda x: abs(middle_frame_idx - x.index))
-            else:
-                frames = [sequence.get_middle_frame()]
+
+            frames = sequence.get_every_nth_frame(1)
+
+            #sort by distance to middle
+            middle_frame_idx = len(sequence) // 2
+            frames.sort(key=lambda x: abs(middle_frame_idx - x.index))
+            nr_inferences =  int(max(len(sequence) * self._detector_frac, 1))
+            
+            indexes = linspace(0, len(frames)-1, nr_inferences)
+            
             
             #frame = sequence.get_highest_priority()
             #for frame in sequence._frames:
             for frame in sequence._frames:
                 sequence.label_as_empty(frame)
-            for frame in frames:
+            for index in indexes:
+                frame = frames[int(round(index))]
                 is_animal = self._animal_detector.run(frame.frame.image)
                 _t = time()
                 t_actual_framerate += _t - t_temp
