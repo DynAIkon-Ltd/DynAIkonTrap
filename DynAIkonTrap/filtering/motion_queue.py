@@ -348,7 +348,7 @@ class MotionLabelledQueue:
             nr_inferences =  int(max(len(sequence) * self._detector_frac, 1))
             if self._detector_frac <= 0.0: 
                 nr_inferences = 1 
-            inference_spacing = len(sequence) / nr_inferences
+            inference_spacing = round(len(sequence) / nr_inferences)
             self._idle.clear()
 
             # Timing full sequence
