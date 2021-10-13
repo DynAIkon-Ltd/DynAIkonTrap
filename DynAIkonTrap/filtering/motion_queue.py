@@ -208,10 +208,32 @@ class Sequence:
             List[LabelledFrame]: List of frames to be analysed by the animal filtering stage
         """
         retlst = []
+        count = 0
+        while count < len(self._frames):
+            idx = int(round(n * count))
         for i, frame in enumerate(self._frames):
             if i % n == 0:
                 retlst.append(frame)
         return retlst
+    
+    def get_frames_spiral_out(self, step_size=1.0) -> List[LabelledFrame]:
+        """Finds every frame in spiral order from the middle out. Frames may be skipped according to the step_size.
+
+        Args:
+            step_size (float): spiral index step size 
+
+        Returns:
+            List[LabelledFrame]: List of frames to be analysed by the animal filtering stage
+        """
+        frames = self._frames
+        middle_index = len(self._frames) // 2
+        frames.sort(key=lambda x: abs(middle_index - x.index))
+        retlst = []
+        for i in range(len(frames)//step_size):
+            retlst.append(frames[i * step_size])
+        return retlst
+
+
 
     def get_first_animal_index(self) -> int:
         """Finds and returns first index in the frame queue labelled as an animal
