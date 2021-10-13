@@ -229,8 +229,8 @@ class Sequence:
         middle_index = len(self._frames) // 2
         frames.sort(key=lambda x: abs(middle_index - x.index))
         retlst = []
-        for i in range(len(frames)//step_size):
-            retlst.append(frames[i * step_size])
+        for i in range(int(round(len(frames)/step_size))):
+            retlst.append(frames[int(round(i * step_size))])
         return retlst
 
 
@@ -371,7 +371,6 @@ class MotionLabelledQueue:
             sequence = self._queue.get()
             
             self._idle.clear()
-
             # Timing full sequence
             t_start = time()
 
@@ -380,23 +379,18 @@ class MotionLabelledQueue:
             t_actual_framerate = 0
             inference_count = 0
             t_temp = time()
-
-            frames = sequence.get_every_nth_frame(1)
+            for frame in sequence._frames:
+                sequence.label_as_empty(frame)
 
             #sort by distance to middle
-            middle_frame_idx = len(sequence) // 2
-            frames.sort(key=lambda x: abs(middle_frame_idx - x.index))
             nr_inferences =  int(max(len(sequence) * self._detector_frac, 1))
-            
-            indexes = linspace(0, len(frames)-1, nr_inferences)
+            frames = sequence.get_frames_spiral_out(step_size=len(sequence)/nr_inferences)
             
             
             #frame = sequence.get_highest_priority()
             #for frame in sequence._frames:
-            for frame in sequence._frames:
-                sequence.label_as_empty(frame)
-            for index in indexes:
-                frame = frames[int(round(index))]
+            
+            for frame in frames:
                 is_animal = self._animal_detector.run(frame.frame.image)
                 _t = time()
                 t_actual_framerate += _t - t_temp
