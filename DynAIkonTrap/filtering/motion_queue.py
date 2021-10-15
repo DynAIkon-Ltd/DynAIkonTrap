@@ -340,7 +340,9 @@ class MotionLabelledQueue:
             status (MotionStatus): status of motion detected in this frame
 
         """
-        self._idle.clear()
+        #self._idle.clear()
+        if motion_status is MotionStatus.MOTION:
+            self._idle.clear()
         self._current_sequence.put(frame, motion_score, motion_status)
         if len(self._current_sequence) >= self._sequence_len:
             self.end_motion_sequence()
