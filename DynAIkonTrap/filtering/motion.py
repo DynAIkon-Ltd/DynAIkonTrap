@@ -23,6 +23,8 @@ This implementation makes use of the Sum of Thresholded Vectors (SoTV) approach.
 import numpy as np
 import math
 from scipy import signal
+from collections import deque
+from time import time
 
 from DynAIkonTrap.filtering.iir import IIRFilter
 from DynAIkonTrap.settings import MotionFilterSettings
@@ -48,6 +50,11 @@ class MotionFilter:
         """
         self.threshold_small: int = settings.small_threshold
         self.threshold_sotv: int = settings.sotv_threshold
+        self.t1s = deque([], maxlen=100)
+        self.t2s = deque([], maxlen=100)
+        self.t3s = deque([], maxlen=100)
+        self.t4s = deque([], maxlen=100)
+        self.t5s = deque([], maxlen=100)
 
         def wn(fc):
             fnq = framerate / 2
@@ -84,10 +91,13 @@ class MotionFilter:
         Returns:
             float: SoTV for the given frame
         """
+        t = time()
         magnitudes = np.sqrt(
             np.square(motion_frame["x"].astype(np.float))
             + np.square(motion_frame["y"].astype(np.float))
         )
+        t1s.append(time() - t)
+        t = time()
         filtered = np.where(
             magnitudes > self.threshold_small,
             motion_frame,
@@ -100,14 +110,130 @@ class MotionFilter:
                 ],
             ),
         )
-
+        t2s.append(time() - t)
+        t = time()
         x_sum = sum(sum(filtered["x"].astype(int)))
         y_sum = sum(sum(filtered["y"].astype(int)))
+        t3s.append(time() - t)
 
+        t = time()
         x_sum = self.x_iir_filter.filter(x_sum)
         y_sum = self.y_iir_filter.filter(y_sum)
+        t4s.append(time() - t)
 
-        return math.sqrt(x_sum ** 2 + y_sum ** 2)
+        t = time() 
+        ret = math.sqrt(x_sum ** 2 + y_sum ** 2)
+        t5s.append(time() - t)
+        return ret
+
+    def run(self, motion_frame: np.ndarray) -> bool:
+        """Apply a threshold to the output of :func:`run_raw()`
+
+        Args:
+            motion_frame (np.ndarray): Motion vectors for a frame
+
+        Returns:
+            bool: ``True`` if the SoTV is at least the threshold, otherwise ``False``
+        """
+        return self.run_raw(motion_frame) >= self.threshold_sotv
+
+    def reset(self):
+        """Reset the internal IIR filter's memory to zero"""
+        self.x_iir_filter.reset()
+        self.y_iir_filter.reset()
+
+class FasterMotionFilter:
+    """Motion filtering stage employing the Sum of Thresholded Vectors (SoTV) approach. The output of this stage is filtered in time using an IIR filter, to provide a smoothed result."""
+
+    def __init__(
+        self,
+        settings: MotionFilterSettings,
+        framerate: int,
+    ):
+        """
+        This implementation of the motion-based filter makes use of a Chebyshev type-2 filter to smooth the output.
+
+        Args:
+            settings (MotionFilterSettings): Settings for the motion filter
+            framerate (int): Framerate at which the frames were recorded
+        """
+        self.threshold_small: int = settings.small_threshold
+        self.threshold_sotv_squared: int = settings.sotv_threshold_squared
+
+        self.t1s = deque([], maxlen=100)
+        self.t2s = deque([], maxlen=100)
+        self.t3s = deque([], maxlen=100)
+        self.t4s = deque([], maxlen=100)
+        self.t5s = deque([], maxlen=100)
+
+        def wn(fc):
+            fnq = framerate / 2
+            return fc / fnq
+
+        wn = wn(settings.iir_cutoff_hz)
+        # Ensure wn is capped to the necessary bounds
+        if wn <= 0:
+            logger.error("IIR cutoff frequency too low (wn = {:.2f})".format(wn))
+            wn = 1e-10
+        elif wn >= 1:
+            logger.error("IIR cutoff frequency too high (wn = {:.2f})".format(wn))
+            wn = 1 - 1e-10
+
+        sos = signal.cheby2(
+            settings.iir_order,
+            settings.iir_attenuation,
+            wn,
+            output="sos",
+            btype="lowpass",
+        )
+        self.x_iir_filter = IIRFilter(sos)
+        self.y_iir_filter = IIRFilter(sos)
+
+    def run_raw(self, motion_frame: np.ndarray) -> float:
+        """Run the motion filter using SoTV:
+            1. Apply a small threshold to the motion vectors
+            2. For those that exceed this, sum the vectors
+            3. Apply time filtering to smooth this output
+
+        Args:
+            motion_frame (np.ndarray): Motion vectors for a frame
+
+        Returns:
+            float: SoTV for the given frame
+        """
+        t = time()
+        magnitudes_squared = 
+            np.square(motion_frame["x"].astype(float))
+            + np.square(motion_frame["y"].astype(np.float))
+        t1s.append(time() - t)
+        t = time()
+        filtered = np.where(
+            magnitudes_squared > self.threshold_small_squared,
+            motion_frame,
+            np.array(
+                (0, 0, 0),
+                dtype=[
+                    ("x", "i1"),
+                    ("y", "i1"),
+                    ("sad", "u2"),
+                ],
+            ),
+        )
+        t2s.append(time() - t)
+        t = time()
+        x_sum = sum(sum(filtered["x"].astype(int)))
+        y_sum = sum(sum(filtered["y"].astype(int)))
+        t3s.append(time() - t)
+
+        t = time()
+        x_sum = self.x_iir_filter.filter(x_sum)
+        y_sum = self.y_iir_filter.filter(y_sum)
+        t4s.append(time() - t)
+
+        t = time() 
+        ret = math.sqrt(x_sum ** 2 + y_sum ** 2)
+        t5s.append(time() - t)
+        return ret
 
     def run(self, motion_frame: np.ndarray) -> bool:
         """Apply a threshold to the output of :func:`run_raw()`
