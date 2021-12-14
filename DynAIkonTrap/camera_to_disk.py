@@ -49,7 +49,7 @@ except (OSError, ModuleNotFoundError):
 
 from DynAIkonTrap.custom_picamera import DynCamera
 from DynAIkonTrap.filtering.animal import NetworkInputSizes
-from DynAIkonTrap.filtering.motion import MotionFilter
+from DynAIkonTrap.filtering.motion import MotionFilter, FasterMotionFilter
 from DynAIkonTrap.settings import (
     CameraSettings,
     FilterSettings,
@@ -176,8 +176,10 @@ class MotionRAMBuffer(PiMotionAnalysis):
             current_pos = self._inactive_stream.tell()
             context_pos = max(
                 0,
-                int(current_pos
-                    - (self._element_size * self._context_len_s * self._framerate)),
+                int(
+                    current_pos
+                    - (self._element_size * self._context_len_s * self._framerate)
+                ),
             )
             try:
                 self._inactive_stream.seek(context_pos)
@@ -337,10 +339,13 @@ class H264RAMBuffer(VideoRAMBuffer):
                     )
                 )
                 if len(sps_frames) > 0:
-                    def get_closest_frame(frame_idx, sps_frames): return min(
-                        sps_frames, key=lambda element: abs(
-                            element[0] - context_index)
-                    )[1]
+
+                    def get_closest_frame(frame_idx, sps_frames):
+                        return min(
+                            sps_frames,
+                            key=lambda element: abs(element[0] - context_index),
+                        )[1]
+
                     # scroll to start frame, sps frame closest to context index
                     start_frame = get_closest_frame(context_index, sps_frames)
                     self._inactive_stream.seek(start_frame.position)
@@ -350,8 +355,7 @@ class H264RAMBuffer(VideoRAMBuffer):
                     self.clear_inactive_stream()
             except (IndexError, ValueError) as e:
                 print(e)
-                logger.error(
-                    "Problem writing the first H264 frame, buffer abandoned")
+                logger.error("Problem writing the first H264 frame, buffer abandoned")
                 self.clear_inactive_stream()
         else:
             self._inactive_stream.seek(0)
@@ -452,22 +456,24 @@ class CameraToDisk:
         self.bitrate = camera_settings.bitrate_bps
         self._raw_stream_image_format = camera_settings.raw_stream_image_format
         self.bits_per_pixel_raw = 0
-        self.raw_image_format = RawImageFormat(
-            camera_settings.raw_stream_image_format)
+        self.raw_image_format = RawImageFormat(camera_settings.raw_stream_image_format)
         if self.raw_image_format is RawImageFormat.RGBA:
-            self._raw_format = 'rgba'
+            self._raw_format = "rgba"
             self.bits_per_pixel_raw = 4
         elif self.raw_image_format is RawImageFormat.RGB:
-            self._raw_format = 'rgb'
+            self._raw_format = "rgb"
             self.bits_per_pixel_raw = 3
-        if filter_settings.animal.detect_humans or filter_settings.animal.fast_animal_detect:
+        if (
+            filter_settings.animal.detect_humans
+            or filter_settings.animal.fast_animal_detect
+        ):
             self.raw_frame_dims = NetworkInputSizes.SSDLITE_MOBILENET_V2
         else:
             self.raw_frame_dims = NetworkInputSizes.YOLOv4_TINY
-        #picamera requires resize dims to be a multiple of 32, for now, we have to resize to this. 
-        #in the future, re-train a network with appropriate input dims, to-do
+        # picamera requires resize dims to be a multiple of 32, for now, we have to resize to this.
+        # in the future, re-train a network with appropriate input dims, to-do
         factor_32 = tuple(map(lambda x: ceil(x / 32.0), self.raw_frame_dims))
-        self.raw_frame_dims = tuple(map(lambda x: int( x * 32), factor_32))
+        self.raw_frame_dims = tuple(map(lambda x: int(x * 32), factor_32))
         self.framerate = camera_settings.framerate
         self._camera = DynCamera(
             raw_divisor=camera_settings.raw_framerate_divisor,
@@ -487,8 +493,7 @@ class CameraToDisk:
             filter_settings.processing.context_length_s,
             self._camera,
             splitter_port=1,
-            size=(camera_settings.bitrate_bps *
-                  camera_settings.io_buffer_size_s) // 8,
+            size=(camera_settings.bitrate_bps * camera_settings.io_buffer_size_s) // 8,
         )
         self._raw_buffer: RawRAMBuffer = RawRAMBuffer(
             filter_settings.processing.context_length_s,
@@ -573,8 +578,41 @@ class CameraToDisk:
                             time() - motion_start_time
                         )
                     )
+                    t1s = self._motion_buffer._motion_filter.t1s
+                    avg_t1s = sum(t1s) / len(t1s)
+                    max_t1s = max(t1s)
+                    t2s = self._motion_buffer._motion_filter.t2s
+                    avg_t2s = sum(t2s) / len(t2s)
+                    max_t2s = max(t2s)
+                    t3s = self._motion_buffer._motion_filter.t3s
+                    avg_t3s = sum(t3s) / len(t3s)
+                    max_t3s = max(t3s)
+                    t4s = self._motion_buffer._motion_filter.t4s
+                    avg_t4s = sum(t4s) / len(t4s)
+                    max_t4s = max(t4s)
+                    t5s = self._motion_buffer._motion_filter.t5s
+                    avg_t5s = sum(t5s) / len(t5s)
+                    max_t5s = max(t5s)
+
                     logger.info(
-                        "Motion timings: \n t1s;  avg:{} max:{} \n t2s; avg:{} max{} \n t3s; avg:{} max{} \n t4s; avg:{} max{} \n t5s; avg:{} max{}".format(sum(self._motion_buffer._motion_filter.t1s)/len(self._motion_buffer._motion_filter.t1s), max(self._motion_buffer._motion_filter.t2s), sum(self._motion_buffer._motion_filter.t2s)/len(self._motion_buffer._motion_filter.t2s), max(self._motion_buffer._motion_filter.t2s),sum(self._motion_buffer._motion_filter.t3s)/len(self._motion_buffer._motion_filter.t3s), max(self._motion_buffer._motion_filter.t3s),sum(self._motion_buffer._motion_filter.t4s)/len(self._motion_buffer._motion_filter.t4s), max(self._motion_buffer._motion_filter.t4s),sum(self._motion_buffer._motion_filter.t5s)/len(self._motion_buffer._motion_filter.t5s), max(self._motion_buffer._motion_filter.t5s))
+                        "Motion timings: \n t1s;  avg:{} max:{} \n t2s; avg:{} max{} \n t3s; avg:{} max{} \n t4s; avg:{} max{} \n t5s; avg:{} max{}".format(
+                            avg_t1s,
+                            max_t1s,
+                            avg_t2s,
+                            max_t2s,
+                            avg_t3s,
+                            max_t3s,
+                            avg_t4s,
+                            max_t4s,
+                            avg_t5s,
+                            max_t5s,
+                        )
+                    )
+                    logger.info(
+                        "Avg time to compute motion: {}s \n worst case to compute motion: {}s".format(
+                            sum([avg_t1s, avg_t2s, avg_t3s, avg_t4s, avg_t5s]),
+                            sum([max_t1s, max_t2s, max_t3s, max_t4s, max_t5s]),
+                        )
                     )
 
                     current_path = self._directory_maker.get_event()[0]

@@ -157,8 +157,9 @@ class FasterMotionFilter:
             settings (MotionFilterSettings): Settings for the motion filter
             framerate (int): Framerate at which the frames were recorded
         """
-        self.threshold_small: int = settings.small_threshold
-        self.threshold_sotv_squared: int = settings.sotv_threshold_squared
+        print('faster filter activated')
+        self.threshold_small_squared: int = settings.small_threshold ** 2
+        self.threshold_sotv: int = settings.sotv_threshold 
 
         self.t1s = deque([], maxlen=100)
         self.t2s = deque([], maxlen=100)
@@ -203,7 +204,7 @@ class FasterMotionFilter:
         """
         t = time()
         magnitudes_squared = (
-            np.square(motion_frame["x"].astype(float))
+            np.square(motion_frame["x"].astype(np.float))
             + np.square(motion_frame["y"].astype(np.float))
         )
         self.t1s.append(time() - t)
