@@ -574,7 +574,7 @@ class CameraToDisk:
                         )
                     )
                     logger.info(
-                        "Motion timings: \n t1s;  avg:{} max:{} \n t2s; avg:{} max{} \n t3s; avg:{} max{} \n t4s; avg:{} max{} \n t5s; avg:{} max{}".format(sum(self._motion_buffer.t1s)/len(self._motion_buffer.t1s), max(self._motion_buffer.ts), sum(self._motion_buffer.t2s)/len(self._motion_buffer.t2s), max(self._motion_buffer.t2s),sum(self._motion_buffer.t3s)/len(self._motion_buffer.t3s), max(self._motion_buffer.t3s),sum(self._motion_buffer.t4s)/len(self._motion_buffer.t4s), max(self._motion_buffer.t4s),sum(self._motion_buffer.t5s)/len(self._motion_buffer.t5s), max(self._motion_buffer.t5s))
+                        "Motion timings: \n t1s;  avg:{} max:{} \n t2s; avg:{} max{} \n t3s; avg:{} max{} \n t4s; avg:{} max{} \n t5s; avg:{} max{}".format(sum(self._motion_buffer._motion_filter.t1s)/len(self._motion_buffer._motion_filter.t1s), max(self._motion_buffer._motion_filter.t2s), sum(self._motion_buffer._motion_filter.t2s)/len(self._motion_buffer._motion_filter.t2s), max(self._motion_buffer._motion_filter.t2s),sum(self._motion_buffer._motion_filter.t3s)/len(self._motion_buffer._motion_filter.t3s), max(self._motion_buffer._motion_filter.t3s),sum(self._motion_buffer._motion_filter.t4s)/len(self._motion_buffer._motion_filter.t4s), max(self._motion_buffer._motion_filter.t4s),sum(self._motion_buffer._motion_filter.t5s)/len(self._motion_buffer._motion_filter.t5s), max(self._motion_buffer._motion_filter.t5s))
                     )
 
                     current_path = self._directory_maker.get_event()[0]
