@@ -202,9 +202,10 @@ class FasterMotionFilter:
             float: SoTV for the given frame
         """
         t = time()
-        magnitudes_squared = 
+        magnitudes_squared = (
             np.square(motion_frame["x"].astype(float))
             + np.square(motion_frame["y"].astype(np.float))
+        )
         t1s.append(time() - t)
         t = time()
         filtered = np.where(
