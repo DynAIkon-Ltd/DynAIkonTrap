@@ -96,7 +96,7 @@ class MotionFilter:
             np.square(motion_frame["x"].astype(np.float))
             + np.square(motion_frame["y"].astype(np.float))
         )
-        t1s.append(time() - t)
+        self.t1s.append(time() - t)
         t = time()
         filtered = np.where(
             magnitudes > self.threshold_small,
@@ -110,20 +110,20 @@ class MotionFilter:
                 ],
             ),
         )
-        t2s.append(time() - t)
+        self.t2s.append(time() - t)
         t = time()
         x_sum = sum(sum(filtered["x"].astype(int)))
         y_sum = sum(sum(filtered["y"].astype(int)))
-        t3s.append(time() - t)
+        self.t3s.append(time() - t)
 
         t = time()
         x_sum = self.x_iir_filter.filter(x_sum)
         y_sum = self.y_iir_filter.filter(y_sum)
-        t4s.append(time() - t)
+        self.t4s.append(time() - t)
 
         t = time() 
         ret = math.sqrt(x_sum ** 2 + y_sum ** 2)
-        t5s.append(time() - t)
+        self.t5s.append(time() - t)
         return ret
 
     def run(self, motion_frame: np.ndarray) -> bool:
@@ -206,7 +206,7 @@ class FasterMotionFilter:
             np.square(motion_frame["x"].astype(float))
             + np.square(motion_frame["y"].astype(np.float))
         )
-        t1s.append(time() - t)
+        self.t1s.append(time() - t)
         t = time()
         filtered = np.where(
             magnitudes_squared > self.threshold_small_squared,
@@ -220,20 +220,20 @@ class FasterMotionFilter:
                 ],
             ),
         )
-        t2s.append(time() - t)
+        self.t2s.append(time() - t)
         t = time()
         x_sum = sum(sum(filtered["x"].astype(int)))
         y_sum = sum(sum(filtered["y"].astype(int)))
-        t3s.append(time() - t)
+        self.t3s.append(time() - t)
 
         t = time()
         x_sum = self.x_iir_filter.filter(x_sum)
         y_sum = self.y_iir_filter.filter(y_sum)
-        t4s.append(time() - t)
+        self.t4s.append(time() - t)
 
         t = time() 
         ret = math.sqrt(x_sum ** 2 + y_sum ** 2)
-        t5s.append(time() - t)
+        self.t5s.append(time() - t)
         return ret
 
     def run(self, motion_frame: np.ndarray) -> bool:
