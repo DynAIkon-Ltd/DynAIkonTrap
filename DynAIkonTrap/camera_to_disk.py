@@ -348,9 +348,10 @@ class H264RAMBuffer(VideoRAMBuffer):
                     # if no sps frames, discard the stream
                     self.clear_inactive_stream()
             except (IndexError, ValueError) as e:
-                print(e)
                 logger.error(
-                    "Problem writing the first H264 frame, buffer abandoned")
+                    "Problem writing the first H264 frame, buffer abandoned. (IndexError, ValueError `{}`)".format(
+                        e
+                    ))
                 self.clear_inactive_stream()
         else:
             self._inactive_stream.seek(0)
