@@ -27,6 +27,7 @@ from math import sqrt
 import cv2
 import numpy as np
 from PIL import Image
+import time
 
 from DynAIkonTrap.settings import AnimalFilterSettings, RawImageFormat
 from DynAIkonTrap.logging import get_logger
@@ -197,5 +198,11 @@ class AnimalFilter:
         Returns:
             Tuple(bool, bool): Each element is `True` if the confidence is at least the threshold, otherwise `False`. Elements represent detections for animal and human class.
         """
+        start_time = time.time()
         animal_confidence, human_confidence = self.run_raw(image, img_format)
+        logger.debug(
+                        "Deep network inference run. Propagation latency: {:.2f}secs. Animal Confidence :{:.2f}%. Human Confidence :{:.2f}%.".format(
+                            time.time() - start_time, animal_confidence, human_confidence
+                        )
+                    )
         return animal_confidence >= self.animal_threshold, human_confidence >= self.human_threshold
