@@ -207,7 +207,7 @@ class SenderSettings(OutputSettings):
 class WriterSettings(OutputSettings):
     """Settings for a :class:`~DynAIkonTrap.comms.Writer`"""
 
-    path: str = ""
+    path: str = "output"
 
 
 @dataclass
