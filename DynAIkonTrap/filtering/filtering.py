@@ -52,7 +52,6 @@ logger = get_logger(__name__)
 
 class FilterMode(Enum):
     """A class to configure the mode the filter operates in"""
-
     BY_FRAME = 0
     BY_EVENT = 1
 

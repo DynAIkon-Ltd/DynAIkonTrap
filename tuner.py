@@ -231,10 +231,13 @@ else:
 
 settings.output.device_id = setter("Device ID", settings.output.device_id)
 
-print("\nLogging level")
+print("\nLogging settings")
 print("---------------")
 settings.logging.level = setter(
     "Level from `DEBUG`, `INFO`, `WARNING`, `ERROR`", settings.logging.level
+)
+settings.logging.path = setter(
+    "Logger output file, defaults to stdout", settings.logging.path
 )
 
 

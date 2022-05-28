@@ -13,7 +13,9 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from logging import getLogger
+from distutils.log import Log
+from logging import getLogger, basicConfig
+import logging
 from signal import signal, SIGINT
 from argparse import ArgumentParser
 from time import sleep
@@ -41,6 +43,7 @@ from DynAIkonTrap.filtering.remember_from_disk import EventRememberer
 from DynAIkonTrap.comms import Output
 from DynAIkonTrap.sensor import SensorLogs
 from DynAIkonTrap.settings import PipelineVariant, load_settings
+from DynAIkonTrap.logging import set_config
 
 # Make Ctrl-C quit gracefully
 def handler(signal_num, stack_frame):
@@ -63,6 +66,7 @@ print("You can halt execution with <Ctrl>+C anytime\n")
 
 
 settings = load_settings()
+set_config(settings.logging.path)
 getLogger().setLevel(settings.logging.level)
 if settings.pipeline.pipeline_variant == PipelineVariant.LEGACY.value:
     # Legacy pipeline mode

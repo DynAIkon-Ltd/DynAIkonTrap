@@ -84,7 +84,7 @@ from dataclasses import dataclass
 from typing import Tuple, Any, Union
 from enum import Enum
 
-from DynAIkonTrap.logging import get_logger
+from DynAIkonTrap.logging import get_logger 
 
 logger = get_logger(__name__)
 
@@ -222,9 +222,9 @@ class FilterSettings:
 @dataclass
 class LoggerSettings:
     """Settings for logging"""
-
     level: str = "INFO"  # Literal['DEBUG', 'INFO', 'WARNING', 'ERROR']
     # `Literal` is not supported in Python from RPi packages, hence no proper type hint
+    path: str = "/dev/stdout" # Default log path is stdout
 
 
 @dataclass

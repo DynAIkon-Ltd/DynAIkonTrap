@@ -26,6 +26,17 @@ Example usage:
 """
 from logging import Logger, basicConfig, getLogger
 from os import getenv
+from stat import filemode
+
+
+def set_config(output_file='/dev/stdout'):
+    logging_level = getenv("logging", "DEBUG")
+    mode = 'w' if output_file == '/dev/stdout' else 'a'
+    basicConfig(filename=output_file,
+                filemode=mode,
+                level=logging_level,
+                format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"           
+    )
 
 
 def get_logger(name: str) -> Logger:
@@ -37,9 +48,11 @@ def get_logger(name: str) -> Logger:
     Returns:
         Logger: A :class:`Logger` instance. Call the standard info, warning, error, etc. functions to generate
     """
-    logging_level = getenv("logging", "DEBUG")
-    basicConfig(
-        level=logging_level,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
+    # logging_level = getenv("logging", "DEBUG")
+    # basicConfig(
+    #     filename=self.log_file, 
+    #     filemode=mode,
+    #     level=logging_level,
+    #     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    # )
     return getLogger(name)
