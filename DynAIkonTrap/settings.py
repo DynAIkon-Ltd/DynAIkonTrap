@@ -91,7 +91,7 @@ from dataclasses import dataclass
 from typing import Tuple, Any, Union
 from enum import Enum
 
-from DynAIkonTrap.logging import get_logger 
+from DynAIkonTrap.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -229,9 +229,10 @@ class FilterSettings:
 @dataclass
 class LoggerSettings:
     """Settings for logging"""
+
     level: str = "INFO"  # Literal['DEBUG', 'INFO', 'WARNING', 'ERROR']
     # `Literal` is not supported in Python from RPi packages, hence no proper type hint
-    path: str = "/dev/stdout" # Default log path is stdout
+    path: str = "/dev/stdout"  # Default log path is stdout
 
 
 @dataclass
@@ -282,8 +283,7 @@ def load_settings() -> Settings:
                     )
                     return Settings()
 
-                output_mode = OutputMode(
-                    settings_json["output"]["output_mode"])
+                output_mode = OutputMode(settings_json["output"]["output_mode"])
                 if output_mode == OutputMode.SEND:
                     output = SenderSettings(
                         server=settings_json["output"]["server"],
@@ -314,12 +314,9 @@ def load_settings() -> Settings:
                     PipelineSettings(**settings_json["pipeline"]),
                     CameraSettings(**settings_json["camera"]),
                     FilterSettings(
-                        MotionFilterSettings(
-                            **settings_json["filter"]["motion"]),
-                        AnimalFilterSettings(
-                            **settings_json["filter"]["animal"]),
-                        ProcessingSettings(
-                            **settings_json["filter"]["processing"]),
+                        MotionFilterSettings(**settings_json["filter"]["motion"]),
+                        AnimalFilterSettings(**settings_json["filter"]["animal"]),
+                        ProcessingSettings(**settings_json["filter"]["processing"]),
                     ),
                     SensorSettings(**settings_json["sensor"]),
                     output,

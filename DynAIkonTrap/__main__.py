@@ -67,12 +67,16 @@ print("You can halt execution with <Ctrl>+C anytime\n")
 
 settings = load_settings()
 
-#set the logger output file
+# set the logger output file
 set_logger_config(settings.logging.path)
 
-print("""
+print(
+    """
 Logging to: {}
-""".format(settings.logging.path))
+""".format(
+        settings.logging.path
+    )
+)
 
 if settings.pipeline.pipeline_variant == PipelineVariant.LEGACY.value:
     # Legacy pipeline mode

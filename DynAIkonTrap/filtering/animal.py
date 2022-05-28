@@ -84,7 +84,8 @@ class AnimalFilter:
                     model_path="DynAIkonTrap/filtering/models/ssdlite_mobilenet_v2_animal_only/model.tflite"
                 )
             self.model.resize_tensor_input(
-                0, [1, self.input_size[0], self.input_size[1], 3], strict=True)
+                0, [1, self.input_size[0], self.input_size[1], 3], strict=True
+            )
             self.model.allocate_tensors()
             self.tfl_input_details = self.model.get_input_details()
             self.tfl_output_details = self.model.get_output_details()
@@ -119,23 +120,18 @@ class AnimalFilter:
         """
         decoded_image = []
         if img_format is CompressedImageFormat.JPEG:
-            decoded_image = cv2.imdecode(np.asarray(
-                    image), cv2.IMREAD_COLOR)
+            decoded_image = cv2.imdecode(np.asarray(image), cv2.IMREAD_COLOR)
         elif img_format is RawImageFormat.RGBA:
             sz = int(sqrt(len(image) / 4))
             decoded_image = np.asarray(
-                Image.frombytes(
-                    "RGBA", (sz,sz), image, "raw", "RGBA"
-                )
+                Image.frombytes("RGBA", (sz, sz), image, "raw", "RGBA")
             )
             decoded_image = cv2.cvtColor(decoded_image, cv2.COLOR_RGBA2BGR)
         elif img_format is RawImageFormat.RGB:
             sz = int(sqrt(len(image) / 3))
-            
+
             decoded_image = np.asarray(
-                Image.frombytes(
-                    "RGB", (sz,sz), image, "raw", "RGB"
-                )
+                Image.frombytes("RGB", (sz, sz), image, "raw", "RGB")
             )
             decoded_image = cv2.cvtColor(decoded_image, cv2.COLOR_RGB2BGR)
         decoded_image = cv2.resize(decoded_image, (self.input_size))
@@ -145,27 +141,32 @@ class AnimalFilter:
 
             # convert to floating point input
             # in future, tflite conversion process should be modified to accept int input, it's not clear how that's done yet
-            decoded_image = decoded_image.astype('float32')
+            decoded_image = decoded_image.astype("float32")
             decoded_image = decoded_image / decoded_image.max()
             model_input = [decoded_image]
-            self.model.set_tensor(
-                self.tfl_input_details[0]['index'], model_input)
+            self.model.set_tensor(self.tfl_input_details[0]["index"], model_input)
             self.model.invoke()
             output_confidences = self.model.get_tensor(
-                self.tfl_output_details[0]['index'])[0]
+                self.tfl_output_details[0]["index"]
+            )[0]
             if self.detect_humans:
                 output_classes = self.model.get_tensor(
-                    self.tfl_output_details[3]['index'])[0].astype(int)
-                human_indexes = [i for (i, label) in enumerate(
-                    output_classes) if label == 0]
-                animal_indexes = [i for (i, label) in enumerate(
-                    output_classes) if label == 1]
+                    self.tfl_output_details[3]["index"]
+                )[0].astype(int)
+                human_indexes = [
+                    i for (i, label) in enumerate(output_classes) if label == 0
+                ]
+                animal_indexes = [
+                    i for (i, label) in enumerate(output_classes) if label == 1
+                ]
                 if human_indexes:
-                    human_confidence = max([output_confidences[i]
-                                           for i in human_indexes])
+                    human_confidence = max(
+                        [output_confidences[i] for i in human_indexes]
+                    )
                 if animal_indexes:
-                    animal_confidence = max([output_confidences[i]
-                                            for i in animal_indexes])
+                    animal_confidence = max(
+                        [output_confidences[i] for i in animal_indexes]
+                    )
             else:
                 animal_confidence = max(output_confidences)
 
@@ -173,7 +174,7 @@ class AnimalFilter:
             blob = cv2.dnn.blobFromImage(
                 decoded_image, 1, NetworkInputSizes.YOLOv4_TINY, (0, 0, 0)
             )
-            
+
             blob = blob / 255.0  # Scale to be a float
             self.model.setInput(blob)
             output = self.model.forward(self.output_layers)
@@ -201,8 +202,11 @@ class AnimalFilter:
         start_time = time.time()
         animal_confidence, human_confidence = self.run_raw(image, img_format)
         logger.debug(
-                        "Deep network inference run. Propagation latency: {:.2f}secs. Animal Confidence :{:.2f}%. Human Confidence :{:.2f}%.".format(
-                            time.time() - start_time, animal_confidence, human_confidence
-                        )
-                    )
-        return animal_confidence >= self.animal_threshold, human_confidence >= self.human_threshold
+            "Deep network inference run. Propagation latency: {:.2f}secs. Animal Confidence :{:.2f}%. Human Confidence :{:.2f}%.".format(
+                time.time() - start_time, animal_confidence, human_confidence
+            )
+        )
+        return (
+            animal_confidence >= self.animal_threshold,
+            human_confidence >= self.human_threshold,
+        )
