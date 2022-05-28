@@ -16,15 +16,15 @@
     "filter": {
         "motion": {
             "small_threshold": 10,
-            "sotv_threshold": 17276.751970629524,
-            "iir_cutoff_hz": 0.9920634920634922,
-            "iir_order": 3,
-            "iir_attenuation": 35
+            "sotv_threshold": 300,
+            "iir_cutoff_hz": 1,
+            "iir_order": 8,
+            "iir_attenuation": 20
         },
         "animal": {
-            "animal_threshold": 0.8,
+            "animal_threshold": 0.75,
             "detect_humans": true,
-            "human_threshold": 0.2,
+            "human_threshold": 0.8,
             "fast_animal_detect": true
         },
         "processing": {

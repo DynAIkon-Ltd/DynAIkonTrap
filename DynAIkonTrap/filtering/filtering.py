@@ -33,7 +33,7 @@ from subprocess import CalledProcessError, call, check_call
 from time import sleep
 from time import time
 from enum import Enum
-from typing import Union
+from typing import Union, Tuple
 from numpy import round, linspace
 
 from DynAIkonTrap.camera import Frame, Camera
@@ -51,7 +51,6 @@ logger = get_logger(__name__)
 
 class FilterMode(Enum):
     """A class to configure the mode the filter operates in"""
-
     BY_FRAME = 0
     BY_EVENT = 1
 
@@ -143,7 +142,14 @@ class Filter:
         while True:
             try:
                 event = self._input_queue.get()
-                result = self._process_event(event)
+                start_s = time()
+                result, nr_inf = self._process_event(event)
+                end_s = time() - start_s
+                logger.debug("Event processed in {:.2f}secs, running {} inference(s). Avg execution time per inference: {:.2f}secs".format(
+                    end_s,
+                    nr_inf,
+                    (end_s/nr_inf)
+                ))
                 if not result:
                     logger.info("No Animal detected, deleting event from disk...")
                     self._delete_event(event)
@@ -155,7 +161,7 @@ class Filter:
                 logger.error("Input events queue empty")
                 continue
 
-    def _process_event(self, event: EventData) -> bool:
+    def _process_event(self, event: EventData) -> Tuple[bool, int]:
         """Processes a given :class:`~DynAIkonTrap.filtering.remember_from_disk.EventData` to determine if it contains an animal. This is achieved by running the saved raw image stream through the animal detector. Detection is performed in a spiral-out pattern, starting at the image in the middle of the event and moving out towards the edges while an animal has not been detected. When an animal detection occurs, this function returns True, this function returns False when the spiral is completed and no animals have been detected.
 
         Additionally, if the human detection is enabled, this function will also search for a human in the event. This works exactly the same as the animal detection with the exception of detected human presence causing this function to return False.
@@ -166,20 +172,23 @@ class Filter:
 
         Returns:
             bool: True if event contains an animal, False otherwise.
+            int: number of inferences run on this event to reach conclusion.
         """
         frames = list(event.raw_raster_frames)
+        logger.debug("Processing event with {} raw image frames.".format(len(frames)))
         middle_idx = len(frames) // 2
         inference_data = []
         human = False
         animal = False
+        inf_count = 0
         if self._event_fraction <= 0:
             # run detector on middle frame only
             frame = frames[middle_idx]
-            t_start = time()
             is_animal, is_human = self._animal_filter.run(
                 frame, img_format=self._raw_image_format
             )
-            return is_animal and not is_human
+            inf_count += 1
+            return (is_animal and not is_human, inf_count)
         else:
             # get evenly spaced frames throughout the event
             nr_elements = int(round(len(frames) * self._event_fraction))
@@ -190,16 +199,16 @@ class Filter:
             # sort in ordering from middle frame
             lst_indx_frames_from_centre.sort(key=lambda x: abs(middle_idx - x[0]))
             # process frames from middle, spiral out
-            for (_, frame) in lst_indx_frames_from_centre:
-                t_start = time()
+            for (index, frame) in lst_indx_frames_from_centre:
                 is_animal, is_human = self._animal_filter.run(
                     frame, img_format=self._raw_image_format
                 )
+                inf_count += 1
                 if is_human:
-                    return False
+                    return False, inf_count
                 if is_animal:
-                    return True
-        return False
+                    return True, inf_count
+        return False, inf_count
 
     def _delete_event(self, event: EventData):
         """Deletes an event on disk.
@@ -218,7 +227,7 @@ class Filter:
                 )
         except CalledProcessError as e:
             logger.error(
-                "Problem deleting event with directory: {}. Code: {}".format(
+                "Problem deleting event with directory: {}. (CalledProcessError) Code: {}".format(
                     event.dir, e.returncode
                 )
             )
