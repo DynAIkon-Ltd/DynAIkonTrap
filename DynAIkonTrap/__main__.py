@@ -30,7 +30,6 @@ def main():
             version = f.readline().strip()
         return version
 
-
     def mp4_file_type(path):
         if not path.endswith(".mp4"):
             raise ArgumentTypeError("Only `.mp4` files allowed")
