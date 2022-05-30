@@ -8,7 +8,7 @@
             1920,
             1080
         ],
-        "bitrate_bps": 10000000,
+        "bitrate_bps": 17000000,
         "raw_framerate_divisor": 5,
         "io_buffer_size_s": 20,
         "raw_stream_image_format": 0
@@ -16,13 +16,13 @@
     "filter": {
         "motion": {
             "small_threshold": 10,
-            "sotv_threshold": 300,
-            "iir_cutoff_hz": 1,
-            "iir_order": 8,
-            "iir_attenuation": 20
+            "sotv_threshold": 5398.984990821726,
+            "iir_cutoff_hz": 1.2400793650793651,
+            "iir_order": 3,
+            "iir_attenuation": 35
         },
         "animal": {
-            "animal_threshold": 0.75,
+            "animal_threshold": 0.8,
             "detect_humans": true,
             "human_threshold": 0.8,
             "fast_animal_detect": true
@@ -48,7 +48,7 @@
         "device_id": 0
     },
     "logging": {
-        "level": "DEBUG",
+        "level": "INFO",
         "path": "/dev/stdout"
     },
     "version": "1.2.2"
