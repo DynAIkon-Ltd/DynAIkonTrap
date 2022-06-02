@@ -8,7 +8,7 @@
             1920,
             1080
         ],
-        "bitrate_bps": 10000000,
+        "bitrate_bps": 17000000,
         "raw_framerate_divisor": 5,
         "io_buffer_size_s": 20,
         "raw_stream_image_format": 0
@@ -16,28 +16,29 @@
     "filter": {
         "motion": {
             "small_threshold": 10,
-            "sotv_threshold": 300,
-            "iir_cutoff_hz": 1,
-            "iir_order": 8,
-            "iir_attenuation": 20
+            "sotv_threshold": 5398.984990821726,
+            "iir_cutoff_hz": 1.2400793650793651,
+            "iir_order": 3,
+            "iir_attenuation": 35
         },
         "animal": {
-            "animal_threshold": 0.50,
-            "detect_humans": false,
-            "human_threshold": 0.50,
+            "animal_threshold": 0.8,
+            "detect_humans": true,
+            "human_threshold": 0.8,
             "fast_animal_detect": true
         },
         "processing": {
-            "smoothing_factor": 1,
+            "smoothing_factor": 0.5,
             "max_sequence_period_s": 10.0,
             "context_length_s": 3.0,
-            "detector_fraction": 0.25
+            "detector_fraction": 1.0
         }
     },
     "sensor": {
         "port": "/dev/ttyUSB0",
         "baud": 57600,
-        "interval_s": 30.0
+        "interval_s": 30.0,
+        "obfuscation_distance_km": 2
     },
     "output": {
         "path": "output",
@@ -47,7 +48,8 @@
         "device_id": 0
     },
     "logging": {
-        "level": "INFO"
+        "level": "INFO",
+        "path": "/dev/stdout"
     },
-    "version": "1.2.1"
+    "version": "1.2.2"
 }

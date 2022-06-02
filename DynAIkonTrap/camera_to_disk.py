@@ -62,7 +62,6 @@ from DynAIkonTrap.logging import get_logger
 logger = get_logger(__name__)
 
 
-
 @dataclass
 class MotionData:
     """Class for holding a motion vector data type"""
@@ -113,7 +112,9 @@ class MotionRAMBuffer(PiMotionAnalysis):
         self._bytes_written: int = 0
         self._framerate = camera.framerate
         self._motion_divisor = 1
-        self._motion_filter = MotionFilter(settings, camera.framerate/self._motion_divisor)
+        self._motion_filter = MotionFilter(
+            settings, camera.framerate / self._motion_divisor
+        )
         self._context_len_s: float = context_len_s
         self._proc_queue = deque([], maxlen=100)
         self._target_time: float = 1.0 / camera.framerate
@@ -175,8 +176,10 @@ class MotionRAMBuffer(PiMotionAnalysis):
             current_pos = self._inactive_stream.tell()
             context_pos = max(
                 0,
-                int(current_pos
-                    - (self._element_size * self._context_len_s * self._framerate)),
+                int(
+                    current_pos
+                    - (self._element_size * self._context_len_s * self._framerate)
+                ),
             )
             try:
                 self._inactive_stream.seek(context_pos)
@@ -336,10 +339,13 @@ class H264RAMBuffer(VideoRAMBuffer):
                     )
                 )
                 if len(sps_frames) > 0:
-                    def get_closest_frame(frame_idx, sps_frames): return min(
-                        sps_frames, key=lambda element: abs(
-                            element[0] - context_index)
-                    )[1]
+
+                    def get_closest_frame(frame_idx, sps_frames):
+                        return min(
+                            sps_frames,
+                            key=lambda element: abs(element[0] - context_index),
+                        )[1]
+
                     # scroll to start frame, sps frame closest to context index
                     start_frame = get_closest_frame(context_index, sps_frames)
                     self._inactive_stream.seek(start_frame.position)
@@ -348,9 +354,11 @@ class H264RAMBuffer(VideoRAMBuffer):
                     # if no sps frames, discard the stream
                     self.clear_inactive_stream()
             except (IndexError, ValueError) as e:
-                print(e)
                 logger.error(
-                    "Problem writing the first H264 frame, buffer abandoned")
+                    "Problem writing the first H264 frame, buffer abandoned. (IndexError, ValueError `{}`)".format(
+                        e
+                    )
+                )
                 self.clear_inactive_stream()
         else:
             self._inactive_stream.seek(0)
@@ -451,22 +459,24 @@ class CameraToDisk:
         self.bitrate = camera_settings.bitrate_bps
         self._raw_stream_image_format = camera_settings.raw_stream_image_format
         self.bits_per_pixel_raw = 0
-        self.raw_image_format = RawImageFormat(
-            camera_settings.raw_stream_image_format)
+        self.raw_image_format = RawImageFormat(camera_settings.raw_stream_image_format)
         if self.raw_image_format is RawImageFormat.RGBA:
-            self._raw_format = 'rgba'
+            self._raw_format = "rgba"
             self.bits_per_pixel_raw = 4
         elif self.raw_image_format is RawImageFormat.RGB:
-            self._raw_format = 'rgb'
+            self._raw_format = "rgb"
             self.bits_per_pixel_raw = 3
-        if filter_settings.animal.detect_humans or filter_settings.animal.fast_animal_detect:
+        if (
+            filter_settings.animal.detect_humans
+            or filter_settings.animal.fast_animal_detect
+        ):
             self.raw_frame_dims = NetworkInputSizes.SSDLITE_MOBILENET_V2
         else:
             self.raw_frame_dims = NetworkInputSizes.YOLOv4_TINY
-        #picamera requires resize dims to be a multiple of 32, for now, we have to resize to this. 
-        #in the future, re-train a network with appropriate input dims, to-do
+        # picamera requires resize dims to be a multiple of 32, for now, we have to resize to this.
+        # in the future, re-train a network with appropriate input dims, to-do
         factor_32 = tuple(map(lambda x: ceil(x / 32.0), self.raw_frame_dims))
-        self.raw_frame_dims = tuple(map(lambda x: int( x * 32), factor_32))
+        self.raw_frame_dims = tuple(map(lambda x: int(x * 32), factor_32))
         self.framerate = camera_settings.framerate
         self._camera = DynCamera(
             raw_divisor=camera_settings.raw_framerate_divisor,
@@ -486,8 +496,7 @@ class CameraToDisk:
             filter_settings.processing.context_length_s,
             self._camera,
             splitter_port=1,
-            size=(camera_settings.bitrate_bps *
-                  camera_settings.io_buffer_size_s) // 8,
+            size=(camera_settings.bitrate_bps * camera_settings.io_buffer_size_s) // 8,
         )
         self._raw_buffer: RawRAMBuffer = RawRAMBuffer(
             filter_settings.processing.context_length_s,
@@ -571,7 +580,7 @@ class CameraToDisk:
                             time() - motion_start_time
                         )
                     )
-                    
+
                     current_path = self._directory_maker.get_event()[0]
 
         finally:

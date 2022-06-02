@@ -107,7 +107,7 @@ class MotionFilter:
         x_sum = self.x_iir_filter.filter(x_sum)
         y_sum = self.y_iir_filter.filter(y_sum)
 
-        return math.sqrt(x_sum ** 2 + y_sum ** 2)
+        return math.sqrt(x_sum**2 + y_sum**2)
 
     def run(self, motion_frame: np.ndarray) -> bool:
         """Apply a threshold to the output of :func:`run_raw()`
