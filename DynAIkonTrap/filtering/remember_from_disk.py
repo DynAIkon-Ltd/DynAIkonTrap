@@ -43,6 +43,7 @@ class EventData:
 
     #motion_vector_frames: List[bytes]
     #raw_raster_frames: List[bytes]
+    raw_raster_file_indices : List[int]
     raw_raster_path : str
     dir: str
     start_timestamp: float
@@ -59,9 +60,9 @@ class EventRememberer:
         """
         self._output_queue: QueueType[EventData] = Queue(maxsize=1)
         self._input_queue = read_from
-        self._raw_dims = read_from.raw_frame_dims
+        self.raw_dims = read_from.raw_frame_dims
         self.raw_image_format = read_from.raw_image_format
-        self._raw_bpp = read_from.bits_per_pixel_raw
+        self.raw_bpp = read_from.bits_per_pixel_raw
         self.framerate = read_from.framerate
         width, height = read_from.resolution
 
@@ -96,17 +97,18 @@ class EventRememberer:
         raw_path = Path(dir).joinpath("clip.dat")
         vect_path = Path(dir).joinpath("clip_vect.dat")
         raw_raster_frames = []
-        raw_raster_path = ""
+        raw_raster_file_indices = []
         try:
             with open(raw_path, "rb") as file:
-                #while True:
-                #    buf = file.read1(
-                #        self._raw_dims[0] * self._raw_dims[1] * self._raw_bpp
-                #    )
-                #    if not buf:
-                #        break
-                #    raw_raster_frames.append(buf)
+                while True:
+                    buf = file.read1(
+                        self.raw_dims[0] * self.raw_dims[1] * self.raw_bpp
+                    )
+                    if not buf:
+                        break
+                    raw_raster_file_indices.append(file.tell())
                 raw_raster_path = raw_path
+                
             #motion_vector_frames = []
             event_time = time()  # by default event time set to now
 
@@ -128,6 +130,7 @@ class EventRememberer:
         #motion_vector_frames=motion_vector_frames,
             #raw_raster_frames=raw_raster_frames,
         return EventData(
+            raw_raster_file_indices=raw_raster_file_indices,
             raw_raster_path=raw_raster_path,
             dir=dir,
             start_timestamp=event_time,
