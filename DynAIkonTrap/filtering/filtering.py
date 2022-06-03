@@ -22,6 +22,7 @@ In the filter BY_EVENT mode, events are loaded from the instance of :class:`~Dyn
 
 In both modes, the output is accessible via a queue. BY_FRAME mode produces a queue of frames containing animals, BY_EVENT mode produces a queue of events containing animal frames. This allows the pipeline to be run in a separate process.
 """
+from asyncio.windows_events import NULL
 from multiprocessing import Process, Queue
 from multiprocessing.context import set_spawning_popen
 from multiprocessing.queues import Queue as QueueType
@@ -69,6 +70,8 @@ class Filter:
 
         self._input_queue = read_from
         self.framerate = read_from.framerate
+        self.raw_bpp = read_from.raw_bpp
+        self.raw_dims = read_from.raw_dims
 
         self._animal_filter = AnimalFilter(settings=settings.animal)
 
@@ -175,41 +178,56 @@ class Filter:
             bool: True if event contains an animal, False otherwise.
             int: number of inferences run on this event to reach conclusion.
         """
+        
+        frame_indices = list(event.raw_raster_file_indices)
         # frames = list(event.raw_raster_frames)
-        # logger.debug("Processing event with {} raw image frames.".format(len(frames)))
-        # middle_idx = len(frames) // 2
-        # inference_data = []
-        # human = False
-        # animal = False
-        # inf_count = 0
-        # if self._event_fraction <= 0:
-        #     # run detector on middle frame only
-        #     frame = frames[middle_idx]
-        #     is_animal, is_human = self._animal_filter.run(
-        #         frame, img_format=self._raw_image_format
-        #     )
-        #     inf_count += 1
-        #     return (is_animal and not is_human, inf_count)
-        # else:
-        #     # get evenly spaced frames throughout the event
-        #     nr_elements = int(round(len(frames) * self._event_fraction))
-        #     indices = [
-        #         int(round(index)) for index in linspace(0, len(frames) - 1, nr_elements)
-        #     ]
-        #     lst_indx_frames_from_centre = [(index, frames[index]) for index in indices]
-        #     # sort in ordering from middle frame
-        #     lst_indx_frames_from_centre.sort(key=lambda x: abs(middle_idx - x[0]))
-        #     # process frames from middle, spiral out
-        #     for (index, frame) in lst_indx_frames_from_centre:
-        #         is_animal, is_human = self._animal_filter.run(
-        #             frame, img_format=self._raw_image_format
-        #         )
-        #         inf_count += 1
-        #         if is_human:
-        #             return False, inf_count
-        #         if is_animal:
-        #             return True, inf_count
-        return True, 0 #inf_count
+        logger.debug("Processing event with {} raw image frames.".format(len(frame_indices)))
+        middle_idx = len(frame_indices) // 2
+        inference_data = []
+        human = False
+        animal = False
+        inf_count = 0
+        if self._event_fraction <= 0:
+            # run detector on middle frame only
+            frame_idx = frame_indices[middle_idx]
+            frame = self._get_frame_from_index(event.raw_raster_path, frame_idx)
+            is_animal, is_human = self._animal_filter.run(
+                frame, img_format=self._raw_image_format
+            )
+            inf_count += 1
+            return (is_animal and not is_human, inf_count)
+        else:
+            # get evenly spaced frames throughout the event
+            nr_elements = int(round(len(frame_indices) * self._event_fraction))
+            indices = [
+                int(round(index)) for index in linspace(0, len(frame_indices) - 1, nr_elements)
+            ]
+            lst_indx_frames_from_centre = [(index, frame_indices[index]) for index in indices]
+            # sort in ordering from middle frame
+            lst_indx_frames_from_centre.sort(key=lambda x: abs(middle_idx - x[0]))
+            # process frames from middle, spiral out
+            for (index, frame_index) in lst_indx_frames_from_centre:
+                frame = self._get_frame_from_index(event.raw_raster_path, frame_index)
+                is_animal, is_human = self._animal_filter.run(
+                    frame, img_format=self._raw_image_format
+                )
+                inf_count += 1
+                if is_human:
+                    return False, inf_count
+                if is_animal:
+                    return True, inf_count
+        return False, inf_count
+        
+    def _get_frame_from_index(self, raw_path : str, frame_idx : int) -> bytes:
+        buf = NULL
+        with open(raw_path, "rb") as file:
+            file.seek(frame_idx)
+            buf = file.read1(
+                        self.raw_dims[0] * self.raw_dims[1] * self.raw_bpp
+                    )
+        return buf    
+        
+   
     def _delete_event(self, event: EventData):
         """Deletes an event on disk.
 
