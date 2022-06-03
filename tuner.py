@@ -85,9 +85,6 @@ settings.camera.framerate = setter("framerate", settings.camera.framerate)
 w = setter("Resolution width (ADVANCED)", settings.camera.resolution[0])
 h = setter("Resolution height (ADVANCED)", settings.camera.resolution[1])
 settings.camera.resolution = (w, h)
-settings.camera.bitrate_bps = setter(
-    "Encoding bitrate bits/s (ADVANCED)", settings.camera.bitrate_bps
-)
 if settings.pipeline.pipeline_variant == PipelineVariant.LOW_POWER.value:
     settings.camera.raw_framerate_divisor = setter(
         "Raw framerate divisor (ADVANCED)", settings.camera.raw_framerate_divisor
@@ -96,7 +93,8 @@ if settings.pipeline.pipeline_variant == PipelineVariant.LOW_POWER.value:
         "Nr. seconds to buffer stream IO access (ADVANCED)",
         settings.camera.io_buffer_size_s,
     )
-    raw_fmt = input("Raw stream image format: RGBA, or RGB (ADVANCED) [RGBA]> ")
+    raw_fmt = input(
+        "Raw stream image format: RGBA, or RGB (ADVANCED) [RGBA]> ")
     if raw_fmt == "RGB":
         settings.camera.raw_stream_image_format = RawImageFormat.RGB.value
     else:
@@ -120,7 +118,8 @@ settings.filter.motion.small_threshold = setter(
 )
 
 # Calculate SoTV threshold
-animal_dimension = (area_reality**0.5 * focal_len) / (pixel_ratio * subject_distance)
+animal_dimension = (area_reality**0.5 * focal_len) / \
+    (pixel_ratio * subject_distance)
 animal_area_in_motion_vectors = animal_dimension**2 / 16**2
 animal_pixel_speed = (animal_speed * 1 / settings.camera.framerate * focal_len) / (
     pixel_ratio * subject_distance

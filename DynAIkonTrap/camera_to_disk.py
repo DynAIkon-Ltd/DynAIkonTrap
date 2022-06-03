@@ -343,7 +343,8 @@ class H264RAMBuffer(VideoRAMBuffer):
                     def get_closest_frame(frame_idx, sps_frames):
                         return min(
                             sps_frames,
-                            key=lambda element: abs(element[0] - context_index),
+                            key=lambda element: abs(
+                                element[0] - context_index),
                         )[1]
 
                     # scroll to start frame, sps frame closest to context index
@@ -456,10 +457,11 @@ class CameraToDisk:
         """
         self.resolution = camera_settings.resolution
         self._buffer_secs = camera_settings.io_buffer_size_s
-        self.bitrate = camera_settings.bitrate_bps
         self._raw_stream_image_format = camera_settings.raw_stream_image_format
         self.bits_per_pixel_raw = 0
-        self.raw_image_format = RawImageFormat(camera_settings.raw_stream_image_format)
+        self.bitrate = 17000000
+        self.raw_image_format = RawImageFormat(
+            camera_settings.raw_stream_image_format)
         if self.raw_image_format is RawImageFormat.RGBA:
             self._raw_format = "rgba"
             self.bits_per_pixel_raw = 4
@@ -496,7 +498,8 @@ class CameraToDisk:
             filter_settings.processing.context_length_s,
             self._camera,
             splitter_port=1,
-            size=(camera_settings.bitrate_bps * camera_settings.io_buffer_size_s) // 8,
+            size=(self.bitrate *
+                  camera_settings.io_buffer_size_s) // 8,
         )
         self._raw_buffer: RawRAMBuffer = RawRAMBuffer(
             filter_settings.processing.context_length_s,

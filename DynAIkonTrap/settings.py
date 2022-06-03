@@ -39,8 +39,7 @@ The JSON file should be structured as follows (of course the values can be chang
             1920,
             1080
         ],
-        "bitrate_bps": 10000000,
-        "raw_framerate_divisor": 5,
+        "raw_framerate_divisor": 1,
         "io_buffer_size_s": 20,
         "raw_stream_image_format": 0
     },
@@ -55,7 +54,7 @@ The JSON file should be structured as follows (of course the values can be chang
         "animal": {
             "animal_threshold": 0.8,
             "detect_humans": true,
-            "human_threshold": 0.2,
+            "human_threshold": 0.8,
             "fast_animal_detect": true
         },
         "processing": {
@@ -123,8 +122,7 @@ class CameraSettings:
 
     framerate: int = 10
     resolution: Tuple[int, int] = (1920, 1080)
-    bitrate_bps: int = 10000000
-    raw_framerate_divisor: int = 5
+    raw_framerate_divisor: int = 1
     io_buffer_size_s: int = 20
     raw_stream_image_format: RawImageFormat = RawImageFormat.RGBA
 
@@ -146,7 +144,7 @@ class AnimalFilterSettings:
 
     animal_threshold: float = 0.8
     detect_humans: bool = True
-    human_threshold: float = 0.2
+    human_threshold: float = 0.8
     fast_animal_detect: bool = True
 
 
@@ -283,7 +281,8 @@ def load_settings() -> Settings:
                     )
                     return Settings()
 
-                output_mode = OutputMode(settings_json["output"]["output_mode"])
+                output_mode = OutputMode(
+                    settings_json["output"]["output_mode"])
                 if output_mode == OutputMode.SEND:
                     output = SenderSettings(
                         server=settings_json["output"]["server"],
@@ -314,9 +313,12 @@ def load_settings() -> Settings:
                     PipelineSettings(**settings_json["pipeline"]),
                     CameraSettings(**settings_json["camera"]),
                     FilterSettings(
-                        MotionFilterSettings(**settings_json["filter"]["motion"]),
-                        AnimalFilterSettings(**settings_json["filter"]["animal"]),
-                        ProcessingSettings(**settings_json["filter"]["processing"]),
+                        MotionFilterSettings(
+                            **settings_json["filter"]["motion"]),
+                        AnimalFilterSettings(
+                            **settings_json["filter"]["animal"]),
+                        ProcessingSettings(
+                            **settings_json["filter"]["processing"]),
                     ),
                     SensorSettings(**settings_json["sensor"]),
                     output,
