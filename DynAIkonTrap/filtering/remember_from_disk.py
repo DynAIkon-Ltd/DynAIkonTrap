@@ -31,7 +31,9 @@ from time import time
 from typing import List
 from io import open
 
+from DynAIkonTrap.settings import RawImageFormat
 from DynAIkonTrap.camera_to_disk import CameraToDisk, MotionRAMBuffer
+from DynAIkonTrap.filtering.animal import AnimalFilter
 from DynAIkonTrap.logging import get_logger
 
 logger = get_logger(__name__)
@@ -40,13 +42,14 @@ logger = get_logger(__name__)
 @dataclass
 class EventData:
     """A class for storing motion event data for further processing."""
-
-    #motion_vector_frames: List[bytes]
-    #raw_raster_frames: List[bytes]
-    raw_raster_file_indices : List[int]
-    raw_raster_path : str
+    raw_raster_file_indices: List[int]
+    raw_raster_path: str
     dir: str
     start_timestamp: float
+    raw_x_dim: int
+    raw_y_dim: int
+    raw_bpp: int
+    raw_img_format: RawImageFormat
 
 
 class EventRememberer:
@@ -99,41 +102,32 @@ class EventRememberer:
         raw_raster_frames = []
         raw_raster_file_indices = []
         try:
+            # open file and check buffers exist on disk
             with open(raw_path, "rb") as file:
                 while True:
+                    file_index = file.tell()
                     buf = file.read1(
                         self.raw_dims[0] * self.raw_dims[1] * self.raw_bpp
                     )
                     if not buf:
                         break
-                    raw_raster_file_indices.append(file.tell())
+                    raw_raster_file_indices.append(file_index)
+
                 raw_raster_path = raw_path
-                
-            #motion_vector_frames = []
             event_time = time()  # by default event time set to now
 
-            #with open(vect_path, "rb") as file:
-            #    start = True
-            #    while True:
-            #        buf = file.read(self._motion_element_size)
-            #        if not buf:
-            #            break
-            #        if start:
-            #            arr_timestamp = bytearray(buf)[0:8]  # index the timestamp
-            #            event_time = unpack("<d", arr_timestamp)[0]
-            #            start = False
-            #        motion_vector_frames.append(buf)
-
         except IOError as e:
-            logger.error("Problem opening or reading file: {}".format(e.filename))
-
-        #motion_vector_frames=motion_vector_frames,
-            #raw_raster_frames=raw_raster_frames,
+            logger.error(
+                "Problem opening or reading file: {}".format(e.filename))
         return EventData(
             raw_raster_file_indices=raw_raster_file_indices,
             raw_raster_path=raw_raster_path,
             dir=dir,
             start_timestamp=event_time,
+            raw_x_dim=self.raw_dims[0],
+            raw_y_dim=self.raw_dims[1],
+            raw_bpp=self.raw_bpp,
+            raw_img_format=self.raw_image_format
         )
 
     def get(self) -> EventData:
