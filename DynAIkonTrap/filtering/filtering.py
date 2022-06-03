@@ -208,7 +208,7 @@ class Filter:
         #             return False, inf_count
         #         if is_animal:
         #             return True, inf_count
-        return False, inf_count
+        return False, 0 #inf_count
 
     def _delete_event(self, event: EventData):
         """Deletes an event on disk.
