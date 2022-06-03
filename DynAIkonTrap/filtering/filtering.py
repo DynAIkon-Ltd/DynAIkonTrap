@@ -95,7 +95,7 @@ class Filter:
             self._raw_image_format = read_from.raw_image_format
             self._event_processor = EventProcessor(
                 self._animal_filter, settings.processing.detector_fraction)
-            self._output_queue: QueueType[EventData] = Queue(maxsize=1)
+            self._output_queue: QueueType[EventData] = Queue()
             self._usher = Process(
                 target=self._handle_input_events, daemon=True)
             logger.debug("Filter started, filtering with mode: BY_EVENT")
