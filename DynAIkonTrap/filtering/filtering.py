@@ -145,10 +145,11 @@ class Filter:
                 start_s = time()
                 result, nr_inf = self._process_event(event)
                 end_s = time() - start_s
+                time_taken = (end_s/nr_inf) if nr_inf > 0 else 0
                 logger.debug("Event processed in {:.2f}secs, running {} inference(s). Avg execution time per inference: {:.2f}secs".format(
                     end_s,
                     nr_inf,
-                    (end_s/nr_inf)
+                    time_taken
                 ))
                 if not result:
                     logger.info("No Animal detected, deleting event from disk...")
@@ -208,8 +209,7 @@ class Filter:
         #             return False, inf_count
         #         if is_animal:
         #             return True, inf_count
-        return False, 0 #inf_count
-
+        return True, 0 #inf_count
     def _delete_event(self, event: EventData):
         """Deletes an event on disk.
 
