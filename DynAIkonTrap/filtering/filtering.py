@@ -93,7 +93,7 @@ class Filter:
             self.mode = FilterMode.BY_EVENT
             self._event_fraction = settings.processing.detector_fraction
             self._raw_image_format = read_from.raw_image_format
-            self._output_queue: QueueType[EventData] = Queue()
+            self._output_queue: QueueType[EventData] = Queue(maxsize=1)
             self._usher = Process(target=self._handle_input_events, daemon=True)
             logger.debug("Filter started, filtering with mode: BY_EVENT")
             self._usher.start()
