@@ -41,8 +41,9 @@ logger = get_logger(__name__)
 class EventData:
     """A class for storing motion event data for further processing."""
 
-    motion_vector_frames: List[bytes]
-    raw_raster_frames: List[bytes]
+    #motion_vector_frames: List[bytes]
+    #raw_raster_frames: List[bytes]
+    raw_raster_path : str
     dir: str
     start_timestamp: float
 
@@ -95,37 +96,39 @@ class EventRememberer:
         raw_path = Path(dir).joinpath("clip.dat")
         vect_path = Path(dir).joinpath("clip_vect.dat")
         raw_raster_frames = []
+        raw_raster_path = ""
         try:
             with open(raw_path, "rb") as file:
-                while True:
-                    buf = file.read1(
-                        self._raw_dims[0] * self._raw_dims[1] * self._raw_bpp
-                    )
-                    if not buf:
-                        break
-                    raw_raster_frames.append(buf)
-
-            motion_vector_frames = []
+                #while True:
+                #    buf = file.read1(
+                #        self._raw_dims[0] * self._raw_dims[1] * self._raw_bpp
+                #    )
+                #    if not buf:
+                #        break
+                #    raw_raster_frames.append(buf)
+                raw_raster_path = raw_path
+            #motion_vector_frames = []
             event_time = time()  # by default event time set to now
 
-            with open(vect_path, "rb") as file:
-                start = True
-                while True:
-                    buf = file.read(self._motion_element_size)
-                    if not buf:
-                        break
-                    if start:
-                        arr_timestamp = bytearray(buf)[0:8]  # index the timestamp
-                        event_time = unpack("<d", arr_timestamp)[0]
-                        start = False
-                    motion_vector_frames.append(buf)
+            #with open(vect_path, "rb") as file:
+            #    start = True
+            #    while True:
+            #        buf = file.read(self._motion_element_size)
+            #        if not buf:
+            #            break
+            #        if start:
+            #            arr_timestamp = bytearray(buf)[0:8]  # index the timestamp
+            #            event_time = unpack("<d", arr_timestamp)[0]
+            #            start = False
+            #        motion_vector_frames.append(buf)
 
         except IOError as e:
             logger.error("Problem opening or reading file: {}".format(e.filename))
 
+        #motion_vector_frames=motion_vector_frames,
+            #raw_raster_frames=raw_raster_frames,
         return EventData(
-            motion_vector_frames=motion_vector_frames,
-            raw_raster_frames=raw_raster_frames,
+            raw_raster_path=raw_raster_path,
             dir=dir,
             start_timestamp=event_time,
         )

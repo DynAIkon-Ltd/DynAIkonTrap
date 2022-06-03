@@ -174,40 +174,40 @@ class Filter:
             bool: True if event contains an animal, False otherwise.
             int: number of inferences run on this event to reach conclusion.
         """
-        frames = list(event.raw_raster_frames)
-        logger.debug("Processing event with {} raw image frames.".format(len(frames)))
-        middle_idx = len(frames) // 2
-        inference_data = []
-        human = False
-        animal = False
-        inf_count = 0
-        if self._event_fraction <= 0:
-            # run detector on middle frame only
-            frame = frames[middle_idx]
-            is_animal, is_human = self._animal_filter.run(
-                frame, img_format=self._raw_image_format
-            )
-            inf_count += 1
-            return (is_animal and not is_human, inf_count)
-        else:
-            # get evenly spaced frames throughout the event
-            nr_elements = int(round(len(frames) * self._event_fraction))
-            indices = [
-                int(round(index)) for index in linspace(0, len(frames) - 1, nr_elements)
-            ]
-            lst_indx_frames_from_centre = [(index, frames[index]) for index in indices]
-            # sort in ordering from middle frame
-            lst_indx_frames_from_centre.sort(key=lambda x: abs(middle_idx - x[0]))
-            # process frames from middle, spiral out
-            for (index, frame) in lst_indx_frames_from_centre:
-                is_animal, is_human = self._animal_filter.run(
-                    frame, img_format=self._raw_image_format
-                )
-                inf_count += 1
-                if is_human:
-                    return False, inf_count
-                if is_animal:
-                    return True, inf_count
+        # frames = list(event.raw_raster_frames)
+        # logger.debug("Processing event with {} raw image frames.".format(len(frames)))
+        # middle_idx = len(frames) // 2
+        # inference_data = []
+        # human = False
+        # animal = False
+        # inf_count = 0
+        # if self._event_fraction <= 0:
+        #     # run detector on middle frame only
+        #     frame = frames[middle_idx]
+        #     is_animal, is_human = self._animal_filter.run(
+        #         frame, img_format=self._raw_image_format
+        #     )
+        #     inf_count += 1
+        #     return (is_animal and not is_human, inf_count)
+        # else:
+        #     # get evenly spaced frames throughout the event
+        #     nr_elements = int(round(len(frames) * self._event_fraction))
+        #     indices = [
+        #         int(round(index)) for index in linspace(0, len(frames) - 1, nr_elements)
+        #     ]
+        #     lst_indx_frames_from_centre = [(index, frames[index]) for index in indices]
+        #     # sort in ordering from middle frame
+        #     lst_indx_frames_from_centre.sort(key=lambda x: abs(middle_idx - x[0]))
+        #     # process frames from middle, spiral out
+        #     for (index, frame) in lst_indx_frames_from_centre:
+        #         is_animal, is_human = self._animal_filter.run(
+        #             frame, img_format=self._raw_image_format
+        #         )
+        #         inf_count += 1
+        #         if is_human:
+        #             return False, inf_count
+        #         if is_animal:
+        #             return True, inf_count
         return False, inf_count
 
     def _delete_event(self, event: EventData):
