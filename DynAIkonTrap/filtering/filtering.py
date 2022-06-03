@@ -22,7 +22,6 @@ In the filter BY_EVENT mode, events are loaded from the instance of :class:`~Dyn
 
 In both modes, the output is accessible via a queue. BY_FRAME mode produces a queue of frames containing animals, BY_EVENT mode produces a queue of events containing animal frames. This allows the pipeline to be run in a separate process.
 """
-from asyncio.windows_events import NULL
 from multiprocessing import Process, Queue
 from multiprocessing.context import set_spawning_popen
 from multiprocessing.queues import Queue as QueueType
@@ -219,7 +218,7 @@ class Filter:
         return False, inf_count
         
     def _get_frame_from_index(self, raw_path : str, frame_idx : int) -> bytes:
-        buf = NULL
+        buf = 0
         with open(raw_path, "rb") as file:
             file.seek(frame_idx)
             buf = file.read1(
