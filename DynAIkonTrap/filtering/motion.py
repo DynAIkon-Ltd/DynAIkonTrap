@@ -109,8 +109,8 @@ class MotionFilter:
         print("where time {}".format(time() - t1))
 
         t1 = time()
-        x_sum = sum(sum(filtered["x"].astype(int)))
-        y_sum = sum(sum(filtered["y"].astype(int)))
+        x_sum = sum(sum(filtered["x"])).astype(int)
+        y_sum = sum(sum(filtered["y"])).astype(int)
         print("sum time {}".format(time() - t1))
 
         t1 = time()
