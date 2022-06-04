@@ -105,7 +105,7 @@ class PipelineVariant(Enum):
 class PipelineSettings:
     """Settings for which video processing pipeline to use"""
 
-    pipeline_variant: PipelineVariant = PipelineVariant.LOW_POWER
+    pipeline_variant: PipelineVariant = PipelineVariant.LOW_POWER.value
 
 
 @dataclass
@@ -124,7 +124,7 @@ class CameraSettings:
     resolution: Tuple[int, int] = (1920, 1080)
     raw_framerate_divisor: int = 1
     io_buffer_size_s: int = 20
-    raw_stream_image_format: RawImageFormat = RawImageFormat.RGBA
+    raw_stream_image_format: RawImageFormat = RawImageFormat.RGBA.value
 
 
 @dataclass
