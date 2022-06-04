@@ -23,6 +23,7 @@ This implementation makes use of the Sum of Thresholded Vectors (SoTV) approach.
 import numpy as np
 import math
 from scipy import signal
+from time import time
 
 from DynAIkonTrap.filtering.iir import IIRFilter
 from DynAIkonTrap.settings import MotionFilterSettings
@@ -56,10 +57,12 @@ class MotionFilter:
         wn = wn(settings.iir_cutoff_hz)
         # Ensure wn is capped to the necessary bounds
         if wn <= 0:
-            logger.error("IIR cutoff frequency too low (wn = {:.2f})".format(wn))
+            logger.error(
+                "IIR cutoff frequency too low (wn = {:.2f})".format(wn))
             wn = 1e-10
         elif wn >= 1:
-            logger.error("IIR cutoff frequency too high (wn = {:.2f})".format(wn))
+            logger.error(
+                "IIR cutoff frequency too high (wn = {:.2f})".format(wn))
             wn = 1 - 1e-10
 
         sos = signal.cheby2(
@@ -84,10 +87,13 @@ class MotionFilter:
         Returns:
             float: SoTV for the given frame
         """
+        t1 = time()
         magnitudes = np.sqrt(
             np.square(motion_frame["x"].astype(np.float))
             + np.square(motion_frame["y"].astype(np.float))
         )
+        print("mag time {}".format(time() - t1))
+        t1 = time()
         filtered = np.where(
             magnitudes > self.threshold_small,
             motion_frame,
@@ -100,14 +106,23 @@ class MotionFilter:
                 ],
             ),
         )
+        print("where time {}".format(time() - t1))
 
+        t1 = time()
         x_sum = sum(sum(filtered["x"].astype(int)))
         y_sum = sum(sum(filtered["y"].astype(int)))
+        print("sum time {}".format(time() - t1))
 
+        t1 = time()
         x_sum = self.x_iir_filter.filter(x_sum)
         y_sum = self.y_iir_filter.filter(y_sum)
+        print("iir time {}".format(time() - t1))
 
-        return math.sqrt(x_sum**2 + y_sum**2)
+        t1 = time()
+        ret = math.sqrt(x_sum**2 + y_sum**2)
+        print("final sqrt time {}".format(time() - t1))
+
+        return ret
 
     def run(self, motion_frame: np.ndarray) -> bool:
         """Apply a threshold to the output of :func:`run_raw()`
