@@ -120,6 +120,7 @@ class MotionRAMBuffer(PiMotionAnalysis):
         self._target_time: float = 1.0 / camera.framerate
         self.is_motion: bool = False
         self._threshold_sotv: float = settings.sotv_threshold
+        self._time_queue = deque([], maxlen=100)
         super().__init__(camera)
 
         self._proc_thread = Thread(
@@ -144,23 +145,34 @@ class MotionRAMBuffer(PiMotionAnalysis):
         count_frames = 0
         while True:
             try:
-                buf = self._proc_queue.popleft()
-                motion_frame = np.frombuffer(buf, MotionData.motion_dtype)
-                motion_frame = motion_frame.reshape((self.rows, self.cols))
-                motion_score: float = -1.0
-                t1 = time()
-                if (count_frames % self._motion_divisor) == 0:
-                    motion_score = self._motion_filter.run_raw(motion_frame)
-                    self.is_motion = motion_score > self._threshold_sotv
-                count_frames += 1
-                motion_bytes = (
-                    pack("d", float(time()))
-                    + pack("d", float(motion_score))
-                    + bytearray(motion_frame)
-                )
-                self._bytes_written += self._active_stream.write(motion_bytes)
+                if(len(self._proc_queue)):
+                    buf = self._proc_queue.popleft()
+                    motion_frame = np.frombuffer(buf, MotionData.motion_dtype)
+                    motion_frame = motion_frame.reshape((self.rows, self.cols))
+                    motion_score: float = -1.0
+                    if (count_frames % self._motion_divisor) == 0:
+                        t1 = time()
+                        motion_score = self._motion_filter.run_raw(
+                            motion_frame)
+                        self.is_motion = motion_score > self._threshold_sotv
+                        elapsed = time() - t1
+                        self._time_queue.append(elapsed)
+                    count_frames += 1
+                    motion_bytes = (
+                        pack("d", float(time()))
+                        + pack("d", float(motion_score))
+                        + bytearray(motion_frame)
+                    )
+                    self._bytes_written += self._active_stream.write(
+                        motion_bytes)
+                else:
+                    sleep(0.1)
 
-            except IndexError:
+            except IndexError as e:
+                logger.error(
+                    "Motion computation Index Error. (IndexError `{}`)".format(
+                        e)
+                )
                 sleep(0.1)
                 pass
 
@@ -238,6 +250,17 @@ class MotionRAMBuffer(PiMotionAnalysis):
         return (len(pack("d", float(0.0))) * 2) + (
             rows * cols * MotionData.motion_dtype.itemsize
         )
+
+    def get_avg_motion_compute_time(self) -> float:
+        """Calculates and returns the average motion computation time over the internal _time_queue. 
+
+        Returns:
+            float: The average time to compute motion for each frame, returns -1.0 if the queue is empty. 
+        """
+        if len(self._time_queue) > 0:
+            return (sum(self._time_queue) / len(self._time_queue))
+        else:
+            return -1.0
 
 
 class VideoRAMBuffer:
@@ -583,7 +606,11 @@ class CameraToDisk:
                             time() - motion_start_time
                         )
                     )
-
+                    logger.debug(
+                        "Average time for motion computation over the event: {:.6f}secs".format(
+                            self._motion_buffer.get_avg_motion_compute_time()
+                        )
+                    )
                     current_path = self._directory_maker.get_event()[0]
 
         finally:
