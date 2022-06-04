@@ -1,7 +1,24 @@
 # Change Log
-## [v1.2.2] - 2022-04-24
+## [v1.2.2] - 2022-06-04
 ### Fixed
 - Increase `Serial` timeout to read full sensor line
+- Memory overflow for reading large motion events from disk, new event processor only loads frames as and when required from IO
+
+### Added - 2022-06-04
+- ability to output log to a set file or standard out
+
+### Changed - 2022-06-04
+- removed many settings from `tuner.py` 
+    - bitrate, removed from `tuner.py` and `settings.py` now set by default at 17000000, proven to work in testing on rpi0, rpi4
+    - raw-framerate-divisor, removed from `tuner.py`, still configurable via `settings.py` now set to 1 (ie not required)
+    - raw-pixel-format, removed from `tuner.py`, still configurable via `settings.py` now set to RGBA, stops PiCamera complaining
+    - buffer size, removed from `tuner.py`, still configurable via `settings.py` now set to 20 secs, tested and works on rpi0, rpi4
+- event processing now in its own file `DynAIkonTrap/filtering/event.py`
+    - makes `filter.py` more concise
+    - not built as a pipeline element (ie no input and output queues), perhaps to-do although seems superfluous...
+- `EventData` class no longer carries frame buffers for an entire event
+    - `remember_from_disk.py` no longer reads frame buffers, instead it scans the event file, making sure buffers exist and produces file pointers for the beginnning of each buffer, these are added to `EventData`
+    - `EventData` also contains fields for frame width, height and pixel format, seems neater to pass them around as `EventData` than configure each pipeline element with those settings
 
 ## [v1.2.1] - 2021-11-24
 
