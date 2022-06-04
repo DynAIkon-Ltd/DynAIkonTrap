@@ -85,19 +85,6 @@ settings.camera.framerate = setter("framerate", settings.camera.framerate)
 w = setter("Resolution width (ADVANCED)", settings.camera.resolution[0])
 h = setter("Resolution height (ADVANCED)", settings.camera.resolution[1])
 settings.camera.resolution = (w, h)
-# if settings.pipeline.pipeline_variant == PipelineVariant.LOW_POWER.value:
-#     settings.camera.io_buffer_size_s = setter(
-#         "Nr. seconds to buffer stream IO access (ADVANCED)",
-#         settings.camera.io_buffer_size_s,
-#     )
-#     raw_fmt = input(
-#         "Raw stream image format: RGBA, or RGB (ADVANCED) [RGBA]> ")
-#     if raw_fmt == "RGB":
-#         settings.camera.raw_stream_image_format = RawImageFormat.RGB.value
-#     else:
-#         settings.camera.raw_stream_image_format = RawImageFormat.RGBA.value
-# else:
-#     settings.camera.raw_stream_image_format = RawImageFormat.RGBA.value
 # Camera settings for later
 area_reality = setter("Visible animal area to trigger/m^2", 0.0064)
 subject_distance = setter("Expected distance of animal from sensor/m", 1.0)
