@@ -5,7 +5,7 @@ from setuptools import find_packages
 def get_platform():
     try:
         with open("/sys/firmware/devicetree/base/model", "r") as f:
-            model = "".join(f.readline().strip().split()[:3])
+            model = " ".join(f.readline().strip().split()[:3])
     except Exception:
         model = ""
 
@@ -19,9 +19,27 @@ else:
 with open("DynAIkonTrap/VERSION", "r") as f:
     version = f.read()
 
+with open("README.md") as f:
+    readme = f.read()
+
 setup(
     name='DynAIkonTrap',
     version=version,
+    author="DynAikon LTD",
+    author_email="rrueger@dynaikon.com",
+    description="Dynaikon's camera trapping software",
+    long_description=readme,
+    long_description_content_type="text/markdown",
+    url = "https://gitlab.dynaikon.com/dynaikontrap/dynaikontrap",
+    project_urls={
+        "Tracker": "https://gitlab.dynaikon.com/dynaikontrap/dynaikontrap/-/issues",
+    },
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+    python_requires=">=3.7",
     packages=find_packages(where="."),
     install_requires=[
         'picamera==1.13',
