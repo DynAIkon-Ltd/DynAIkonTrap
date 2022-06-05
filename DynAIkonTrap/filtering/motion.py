@@ -20,6 +20,7 @@ The implementation can be replaced with another one easily as the interface simp
 
 This implementation makes use of the Sum of Thresholded Vectors (SoTV) approach. Under this approach initially a small threshold is applied to all motion vectors. This removes the smallest vectors that are more likely to be due to noise or unimportant movements. Secondly, the vectors are summed together giving a single average motion vector for the frame. This step implicitely checks for coherence in movement vectors, as well as the magnitude and size of the area of motion. Finally, the vector is smoothed in time using a Chebyshev type-2 filter to reduce frame-to-frame oscillations in movement and give an insight to the trend in motion. The magnitude of the single smoothed vector representing motion in the frame can then be thresholded to determine if sufficient movement is declared, or not.
 """
+from certifi import where
 import numpy as np
 import math
 from scipy import signal
@@ -92,7 +93,9 @@ class MotionFilter:
             np.square(motion_frame["x"].astype(np.float))
             + np.square(motion_frame["y"].astype(np.float))
         )
-        print("mag time {}".format(time() - t1))
+        mag_time1 = time() - t1
+        print("mag time {}".format(mag_time1))
+
         t1 = time()
         filtered = np.where(
             magnitudes > self.threshold_small,
@@ -106,12 +109,35 @@ class MotionFilter:
                 ],
             ),
         )
-        print("where time {}".format(time() - t1))
+        where_time1 = time()-t1
+        print("where time 1: {}secs".format(where_time1))
 
         t1 = time()
-        x_sum = sum(sum(filtered["x"])).astype(int)
-        y_sum = sum(sum(filtered["y"])).astype(int)
-        print("sum time {}".format(time() - t1))
+        x_sum = 0
+        y_sum = 0
+        if (len(filtered) > 0):
+            x_sum = sum(sum(filtered["x"])).astype(int)
+            y_sum = sum(sum(filtered["y"])).astype(int)
+        sum_time1 = time() - t1
+        print("sum time {}".format(sum_time1))
+
+        print("previous approach time {}secs".format(
+            where_time1 + sum_time1))
+
+        motion_frame = motion_frame.flatten()
+        magnitudes = np.sqrt(
+            np.square(motion_frame["x"].astype(np.float))
+            + np.square(motion_frame["y"].astype(np.float))
+        )
+        t1 = time()
+        x_sum = 0
+        y_sum = 0
+        for i in range(len(motion_frame)):
+            mag = magnitudes[i]
+            if mag >= self.threshold_small:
+                x_sum += motion_frame[i]["x"]
+                y_sum += motion_frame[i]["y"]
+        print("my approach time {}secs".format(time() - t1))
 
         t1 = time()
         x_sum = self.x_iir_filter.filter(x_sum)
@@ -121,6 +147,7 @@ class MotionFilter:
         t1 = time()
         ret = math.sqrt(x_sum**2 + y_sum**2)
         print("final sqrt time {}".format(time() - t1))
+        print("\n")
 
         return ret
 
