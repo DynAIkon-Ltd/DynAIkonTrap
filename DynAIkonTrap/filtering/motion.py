@@ -91,7 +91,7 @@ class MotionFilter:
         Returns:
             float: SoTV for the given frame
         """
-        xy_sums = mvector_sum.mvector_sum_reimplement1(
+        xy_sums = mvector_sum.sotv_fast(
            motion_frame, self.threshold_small)
         x_sum = 1.0 * xy_sums['x']
         y_sum = 1.0 * xy_sums['y']
