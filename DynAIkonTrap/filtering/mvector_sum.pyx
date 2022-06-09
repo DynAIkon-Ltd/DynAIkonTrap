@@ -4,17 +4,6 @@
 from sys import int_info
 import cython
 
-
-# "cimport" is used to import special compile-time information
-# about the numpy module (this is stored in a file numpy.pxd which is
-# currently part of the Cython distribution).
-
-
-# It's necessary to call "import_array" if you use any part of the
-# numpy PyArray_* API. From Cython 3, accessing attributes like
-# ".shape" on a typed Numpy array use this API. Therefore we recommend
-# always calling "import_array" whenever you "cimport numpy"
-
 cdef packed struct mvector_elem_struct:
     signed char x
     signed char y
@@ -65,7 +54,7 @@ def sotv_fast(const mvector_elem_struct_t [:,:] motion_frame, int threshold_smal
 
 
     Args:
-        constmvector_elem_struct_t (_type_): Pass a read-only memory view of the motion vector data, this can be a numpy ndarray. Array is expected to be two-dimensional with elements typed to fit :class:`~DynAIkonTrap.camera_to_disk.MotionData`
+        const mvector_elem_struct_t (_type_): Pass a read-only memory view of the motion vector data, this can be a numpy ndarray. Array is expected to be two-dimensional with elements typed to fit :class:`~DynAIkonTrap.camera_to_disk.MotionData`
         threshold_small (int): integer threshold to pass over all motion vector magnitudes
     """
     cdef int frame_size_x = motion_frame.shape[0] 
