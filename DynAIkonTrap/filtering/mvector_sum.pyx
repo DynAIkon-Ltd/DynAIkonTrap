@@ -1,12 +1,10 @@
 #!python
-#cython: language_level=3
+# cython: language_level=3
 
 from sys import int_info
 import numpy as np
 from typing import Tuple
 import cython
-
-from pyparsing import java_style_comment
 
 np.import_array()
 
