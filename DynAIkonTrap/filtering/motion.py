@@ -27,7 +27,8 @@ import numpy as np
 from certifi import where
 
 import pyximport
-pyximport.install(setup_args={'include_dirs': np.get_include()}) # this line ensures that the .pyx files are compiled to .so and may be imported. Probably best to replace with the proper way, by modifying setup.py: https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html
+pyximport.install() # this line ensures that the .pyx files are compiled to .so and may be imported. Probably best to replace with the proper way, by modifying setup.py: https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html
+
 
 from DynAIkonTrap.logging import get_logger
 from DynAIkonTrap.settings import MotionFilterSettings

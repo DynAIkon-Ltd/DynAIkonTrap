@@ -2,17 +2,13 @@
 # cython: language_level=3
 
 from sys import int_info
-import numpy as np
-from typing import Tuple
 import cython
 
-np.import_array()
 
 # "cimport" is used to import special compile-time information
 # about the numpy module (this is stored in a file numpy.pxd which is
 # currently part of the Cython distribution).
 
-cimport numpy as np
 
 # It's necessary to call "import_array" if you use any part of the
 # numpy PyArray_* API. From Cython 3, accessing attributes like
