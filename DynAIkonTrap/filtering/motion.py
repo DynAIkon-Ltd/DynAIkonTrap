@@ -29,7 +29,8 @@ import math
 import numpy as np
 from certifi import where
 import pyximport
-pyximport.install()
+pyximport.install(setup_args={'include_dirs': np.get_include()})
+
 import DynAIkonTrap.filtering.mvector_sum as mvector_sum
 
 
