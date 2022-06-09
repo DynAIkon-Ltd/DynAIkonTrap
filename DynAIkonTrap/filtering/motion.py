@@ -20,18 +20,21 @@ The implementation can be replaced with another one easily as the interface simp
 
 This implementation makes use of the Sum of Thresholded Vectors (SoTV) approach. Under this approach initially a small threshold is applied to all motion vectors. This removes the smallest vectors that are more likely to be due to noise or unimportant movements. Secondly, the vectors are summed together giving a single average motion vector for the frame. This step implicitely checks for coherence in movement vectors, as well as the magnitude and size of the area of motion. Finally, the vector is smoothed in time using a Chebyshev type-2 filter to reduce frame-to-frame oscillations in movement and give an insight to the trend in motion. The magnitude of the single smoothed vector representing motion in the frame can then be thresholded to determine if sufficient movement is declared, or not.
 """
-from DynAIkonTrap.logging import get_logger
-from DynAIkonTrap.settings import MotionFilterSettings
-from DynAIkonTrap.filtering.iir import IIRFilter
 from time import time
 from scipy import signal
 import math
 import numpy as np
 from certifi import where
-import pyximport
-pyximport.install(setup_args={'include_dirs': np.get_include()})
 
+import pyximport
+pyximport.install(setup_args={'include_dirs': np.get_include()}) # this line ensures that the .pyx files are compiled to .so and may be imported. Probably best to replace with the proper way, by modifying setup.py: https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html
+
+from DynAIkonTrap.logging import get_logger
+from DynAIkonTrap.settings import MotionFilterSettings
+from DynAIkonTrap.filtering.iir import IIRFilter
 import DynAIkonTrap.filtering.mvector_sum as mvector_sum
+
+
 
 
 logger = get_logger(__name__)
