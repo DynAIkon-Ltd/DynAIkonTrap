@@ -388,7 +388,27 @@ class H264RAMBuffer(VideoRAMBuffer):
             self._inactive_stream.seek(0)
             return super().write_inactive_stream(filename)
 
+# class MjpegRAMBuffer(VideoRAMBuffer):
+#     """This class inherits from :class:`~DynAIkonTrap.camera_to_disk.VideoRAMBuffer` to specialise for mjpeg format compressed image frames.
 
+
+#     Args:
+#         VideoRAMBuffer (_type_): _description_
+
+#     Raises:
+#         Empty: _description_
+
+#     Returns:
+#         _type_: _description_
+#     """
+#     def __init__(self, context_length_s, camera: DynCamera, *args, **kwargs) -> None:
+#         self._context_length_s = context_length_s
+#         super(MjpegRAMBuffer, self).__init__(camera, *args, **kwargs)
+        
+#     def write_inactive_stream(self, filename: Path):
+#         return super().write_inactive_stream(filename)
+
+    
 class RawRAMBuffer(VideoRAMBuffer):
     """This class inherits from :class:`~DynAIkonTrap.camera_to_disk.VideoRAMBuffer` to specialise for raw format image frames."""
 
@@ -570,7 +590,7 @@ class CameraToDisk:
         )
         self._camera.start_recording(
             self._raw_buffer,
-            format=self._raw_format,
+            format="mjpeg",
             splitter_port=2,
             resize=self.raw_frame_dims,
         )
@@ -640,7 +660,7 @@ class CameraToDisk:
             filename=current_path.joinpath("clip.h264"), is_start=start
         )
         self._raw_buffer.write_inactive_stream(
-            filename=current_path.joinpath("clip.dat"), is_start=start
+            filename=current_path.joinpath("clip.mjpeg"), is_start=start
         )
         self._motion_buffer.write_inactive_stream(
             filename=current_path.joinpath("clip_vect.dat"), is_start=start
