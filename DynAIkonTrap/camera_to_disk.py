@@ -579,7 +579,6 @@ class CameraToDisk:
             resize=self.raw_frame_dims,
         )
         self._camera.wait_recording(5)  # camera warm-up
-        empty_times = []
         try:
             while self._on:
                 self._camera.wait_recording(1)
@@ -591,23 +590,25 @@ class CameraToDisk:
                     self.empty_all_buffers(current_path, start=True)
                     self._ram_access_times_queue.append(time() - last_buffer_empty_t)
 
-                    # continue writing to buffers while motion
+                    # continue writing to buffers while motion and there's still time to empty io buffers within the max event length
                     while (
                         self._motion_buffer.is_motion
-                        and (time() - motion_start_time) < self._maximum_event_length_s
+                        and (time() - motion_start_time) < (self._maximum_event_length_s - (sum(self._ram_access_times_queue)/len(self._ram_access_times_queue)))
                     ):
                         # check if buffers are getting near-full, to keep all three buffers in sync this is done by simply checking the time.
                         if (time() - last_buffer_empty_t) > (0.75 * self._buffer_secs):
                             last_buffer_empty_t = time()
                             self.empty_all_buffers(current_path, start=False)
                             self._ram_access_times_queue.append(time() - last_buffer_empty_t)
-                    # motion finished, wait for context period
-                    self._camera.wait_recording(self._context_length_s)
+                    #motion finished, notify the user
                     logger.info(
-                        "Motion ended, total event length (plus trailing context of {} seconds): {:.2f}secs".format(self._context_length_s,
+                        "Motion ended, total event length {:.2f}secs".format(self._context_length_s,
                             time() - motion_start_time
                         )
                     )
+                    # motion finished, wait for context period
+                    self._camera.wait_recording(self._context_length_s)
+                    
                     # empty buffers, record how long that took!
                     last_buffer_empty_t = time()
                     self.empty_all_buffers(current_path, start=False)
