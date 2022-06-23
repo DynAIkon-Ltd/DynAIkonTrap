@@ -593,7 +593,7 @@ class CameraToDisk:
                     # continue writing to buffers while motion and there's still time to empty io buffers within the max event length
                     while (
                         self._motion_buffer.is_motion
-                        and (time() - motion_start_time) < (self._maximum_event_length_s - (sum(self._ram_access_times_queue)/len(self._ram_access_times_queue)))
+                        and (time() - motion_start_time) < self._maximum_event_length_s
                     ):
                         # check if buffers are getting near-full, to keep all three buffers in sync this is done by simply checking the time.
                         if (time() - last_buffer_empty_t) > (0.75 * self._buffer_secs):
