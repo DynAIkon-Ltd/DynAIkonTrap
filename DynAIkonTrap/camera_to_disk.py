@@ -602,7 +602,7 @@ class CameraToDisk:
                             self._ram_access_times_queue.append(time() - last_buffer_empty_t)
                     #motion finished, notify the user
                     logger.info(
-                        "Motion ended, total event length {:.2f}secs".format(self._context_length_s,
+                        "Motion ended, total event length (excluding context time) {:.2f}secs".format(
                             time() - motion_start_time
                         )
                     )
