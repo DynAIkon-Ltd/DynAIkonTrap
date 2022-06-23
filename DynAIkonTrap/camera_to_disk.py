@@ -205,7 +205,7 @@ class MotionRAMBuffer(PiMotionAnalysis):
 
         with open(filename, "ab") as output:
             while True:
-                buf = self._inactive_stream.read1()
+                buf = self._inactive_stream.read()
                 if not buf:
                     break
                 output.write(buf)
@@ -312,7 +312,7 @@ class VideoRAMBuffer:
         """
         with open(filename, "ab") as output:
             while True:
-                buf = self._inactive_stream.read1()
+                buf = self._inactive_stream.read()
                 if not buf:
                     break
                 output.write(buf)
@@ -387,27 +387,6 @@ class H264RAMBuffer(VideoRAMBuffer):
         else:
             self._inactive_stream.seek(0)
             return super().write_inactive_stream(filename)
-
-# class MjpegRAMBuffer(VideoRAMBuffer):
-#     """This class inherits from :class:`~DynAIkonTrap.camera_to_disk.VideoRAMBuffer` to specialise for mjpeg format compressed image frames.
-
-
-#     Args:
-#         VideoRAMBuffer (_type_): _description_
-
-#     Raises:
-#         Empty: _description_
-
-#     Returns:
-#         _type_: _description_
-#     """
-#     def __init__(self, context_length_s, camera: DynCamera, *args, **kwargs) -> None:
-#         self._context_length_s = context_length_s
-#         super(MjpegRAMBuffer, self).__init__(camera, *args, **kwargs)
-        
-#     def write_inactive_stream(self, filename: Path):
-#         return super().write_inactive_stream(filename)
-
     
 class RawRAMBuffer(VideoRAMBuffer):
     """This class inherits from :class:`~DynAIkonTrap.camera_to_disk.VideoRAMBuffer` to specialise for raw format image frames."""
