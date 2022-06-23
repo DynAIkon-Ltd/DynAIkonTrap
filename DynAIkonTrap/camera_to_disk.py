@@ -608,6 +608,8 @@ class CameraToDisk:
                     motion_start_time = time()
                     last_buffer_empty_t = time()
                     self.empty_all_buffers(current_path, start=True)
+                    empty_times.append(time() - last_buffer_empty_t)
+
 
                     # continue writing to buffers while motion
                     while (
@@ -618,6 +620,7 @@ class CameraToDisk:
                         if (time() - last_buffer_empty_t) > (0.75 * self._buffer_secs):
                             last_buffer_empty_t = time()
                             self.empty_all_buffers(current_path, start=False)
+                            empty_times.append(time() - last_buffer_empty_t)
                         self._camera.wait_recording(1)
                     # motion finished, wait for trail-off period
                     self._camera.wait_recording(self._context_length_s)
