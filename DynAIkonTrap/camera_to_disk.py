@@ -205,7 +205,7 @@ class MotionRAMBuffer(PiMotionAnalysis):
 
         with open(filename, "ab") as output:
             while True:
-                buf = self._inactive_stream.read()
+                buf = self._inactive_stream.read1()
                 if not buf:
                     break
                 output.write(buf)
@@ -312,7 +312,7 @@ class VideoRAMBuffer:
         """
         with open(filename, "ab") as output:
             while True:
-                buf = self._inactive_stream.read()
+                buf = self._inactive_stream.read1()
                 if not buf:
                     break
                 output.write(buf)
@@ -547,6 +547,8 @@ class CameraToDisk:
             self._buffer_secs,
             filter_settings.processing.context_length_s,
         )
+        self._ram_access_times_queue = deque([], maxlen=100)
+
         self._directory_maker: DirectoryMaker = DirectoryMaker(
             Path(writer_settings.path)
         )
@@ -587,8 +589,7 @@ class CameraToDisk:
                     motion_start_time = time()
                     last_buffer_empty_t = time()
                     self.empty_all_buffers(current_path, start=True)
-                    empty_times.append(time() - last_buffer_empty_t)
-
+                    self._ram_access_times_queue.append(time() - last_buffer_empty_t)
 
                     # continue writing to buffers while motion
                     while (
@@ -599,14 +600,17 @@ class CameraToDisk:
                         if (time() - last_buffer_empty_t) > (0.75 * self._buffer_secs):
                             last_buffer_empty_t = time()
                             self.empty_all_buffers(current_path, start=False)
-                            empty_times.append(time() - last_buffer_empty_t)
+                            self._ram_access_times_queue.append(time() - last_buffer_empty_t)
                         self._camera.wait_recording(1)
-                    # motion finished, wait for trail-off period
+                    # motion finished, wait for context period
                     self._camera.wait_recording(self._context_length_s)
-                    # empty buffers
-                    t1 = time()
+
+                    # empty buffers, record how long that took!
+                    last_buffer_empty_t = time()
                     self.empty_all_buffers(current_path, start=False)
-                    empty_times.append(time() - t1)
+                    t = time() - last_buffer_empty_t
+                    self._ram_access_times_queue.append(time() - last_buffer_empty_t) 
+
                     self._output_queue.put(event_dir)
                     logger.info(
                         "Motion ended, total event length: {:.2f}secs".format(
@@ -619,8 +623,8 @@ class CameraToDisk:
                         )
                     )
                     logger.debug(
-                        "Average time to empty all buffers over the event: {:.4f}secs".format(
-                            (len(empty_times)/sum(empty_times))
+                        "Average IO access latency for buffer empties over the event: {:.4f}secs".format(
+                            (sum(self._ram_access_times_queue)/len(self._ram_access_times_queue))
                         )
                     )
                     current_path = self._directory_maker.get_event()[0]
