@@ -3,20 +3,17 @@
         "pipeline_variant": 1
     },
     "camera": {
-        "framerate": 10,
+        "framerate": 20,
         "resolution": [
             1920,
             1080
-        ],
-        "raw_framerate_divisor": 1,
-        "io_buffer_size_s": 20,
-        "raw_stream_image_format": 0
+        ]
     },
     "filter": {
         "motion": {
             "small_threshold": 10,
-            "sotv_threshold": 5398.984990821726,
-            "iir_cutoff_hz": 1.2400793650793651,
+            "sotv_threshold": 8638.375985314762,
+            "iir_cutoff_hz": 0.9920634920634922,
             "iir_order": 3,
             "iir_attenuation": 35
         },
