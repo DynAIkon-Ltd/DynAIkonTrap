@@ -7,6 +7,11 @@
 ### Added - 2022-06-09
 - ability to output log to a set file or standard out
 - a much faster solution for SOTV of motion vectors. Can be seen in `motion.py` and `mvector_sum.pyx`, is written with Cython and tackles the biggest bottleneck of ndarray access time by accessing the memory directly using C. Around 50x faster than the original solution, produces the same results. 
+- facility to read and save raw format YUV files
+    - can now save YUV stream to `clip.dat` per event
+    - decoding of all saved image frames now performed within `imdecode.py`
+    - added YUV format to settings and tuner
+    - YUV format uses less bandwidth, RPi zero w can now run at 20fps
 
 ### Changed - 2022-06-04
 - removed many settings from `tuner.py` 
