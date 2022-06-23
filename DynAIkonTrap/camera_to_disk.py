@@ -511,6 +511,9 @@ class CameraToDisk:
         elif self.raw_image_format is RawImageFormat.RGB:
             self._raw_format = "rgb"
             self.bits_per_pixel_raw = 3
+        elif self.raw_image_format is RawImageFormat.YUV:
+            self._raw_format = "yuv"
+            self.bits_per_pixel_raw = 1.5
         if (
             filter_settings.animal.detect_humans
             or filter_settings.animal.fast_animal_detect
@@ -590,7 +593,7 @@ class CameraToDisk:
         )
         self._camera.start_recording(
             self._raw_buffer,
-            format="mjpeg",
+            format=self._raw_format,
             splitter_port=2,
             resize=self.raw_frame_dims,
         )
@@ -660,7 +663,7 @@ class CameraToDisk:
             filename=current_path.joinpath("clip.h264"), is_start=start
         )
         self._raw_buffer.write_inactive_stream(
-            filename=current_path.joinpath("clip.mjpeg"), is_start=start
+            filename=current_path.joinpath("clip.dat"), is_start=start
         )
         self._motion_buffer.write_inactive_stream(
             filename=current_path.joinpath("clip_vect.dat"), is_start=start

@@ -114,10 +114,10 @@ class EventProcessor:
         with open(event.raw_raster_path, "rb") as file:
             file.seek(frame_idx)
             buf = file.read1(
-                event.raw_x_dim * event.raw_y_dim * event.raw_bpp
+                int(event.raw_x_dim * event.raw_y_dim * event.raw_bpp)
             )
         return buf
-
+    
     def _delete_event(self, event: EventData):
         """Deletes an event on disk.
 

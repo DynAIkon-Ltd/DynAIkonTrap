@@ -25,12 +25,14 @@ from enum import Enum
 from typing import Tuple, Union
 from math import sqrt
 import cv2
+from cv2 import imwrite
 import numpy as np
 from PIL import Image
 import time
 
 from DynAIkonTrap.settings import AnimalFilterSettings, RawImageFormat
 from DynAIkonTrap.logging import get_logger
+from DynAIkonTrap.imdecode import decoder
 
 logger = get_logger(__name__)
 
@@ -120,7 +122,7 @@ class AnimalFilter:
         """
         decoded_image = []
         if img_format is CompressedImageFormat.JPEG:
-            decoded_image = cv2.imdecode(np.asarray(image), cv2.IMREAD_COLOR)
+            decoded_image = decoder.jpg_buf_to_rgb_array(image)
         elif img_format is RawImageFormat.RGBA:
             sz = int(sqrt(len(image) / 4))
             decoded_image = np.asarray(
@@ -134,6 +136,9 @@ class AnimalFilter:
                 Image.frombytes("RGB", (sz, sz), image, "raw", "RGB")
             )
             decoded_image = cv2.cvtColor(decoded_image, cv2.COLOR_RGB2BGR)
+        elif img_format is RawImageFormat.YUV:
+            decoded_image = decoder.yuv_buf_to_rgb_array(image)
+            cv2.imwrite('test.jpg', decoded_image)
         decoded_image = cv2.resize(decoded_image, (self.input_size))
         animal_confidence = 0.0
         human_confidence = 0.0

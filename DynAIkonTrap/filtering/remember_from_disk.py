@@ -107,7 +107,7 @@ class EventRememberer:
                 while True:
                     file_index = file.tell()
                     buf = file.read1(
-                        self.raw_dims[0] * self.raw_dims[1] * self.raw_bpp
+                        int(self.raw_dims[0] * self.raw_dims[1] * self.raw_bpp)
                     )
                     if not buf:
                         break
@@ -118,7 +118,7 @@ class EventRememberer:
 
         except IOError as e:
             logger.error(
-                "Problem opening or reading file: {}".format(e.filename))
+                "Problem opening or reading file: {} (IOError: {})".format(e.filename, e))
         return EventData(
             raw_raster_file_indices=raw_raster_file_indices,
             raw_raster_path=raw_raster_path,

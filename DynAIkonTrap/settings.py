@@ -114,6 +114,7 @@ class RawImageFormat(Enum):
 
     RGBA = 0
     RGB = 1
+    YUV = 2
 
 
 @dataclass
@@ -124,8 +125,7 @@ class CameraSettings:
     resolution: Tuple[int, int] = (1920, 1080)
     raw_framerate_divisor: int = 1
     io_buffer_size_s: int = 20
-    raw_stream_image_format: RawImageFormat = RawImageFormat.RGBA.value
-
+    raw_stream_image_format: RawImageFormat = RawImageFormat.YUV.value
 
 @dataclass
 class MotionFilterSettings:
