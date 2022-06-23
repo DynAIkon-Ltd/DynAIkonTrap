@@ -604,7 +604,11 @@ class CameraToDisk:
                         self._camera.wait_recording(1)
                     # motion finished, wait for context period
                     self._camera.wait_recording(self._context_length_s)
-
+                    logger.info(
+                        "Motion ended, total event length: {:.2f}secs".format(
+                            time() - motion_start_time
+                        )
+                    )
                     # empty buffers, record how long that took!
                     last_buffer_empty_t = time()
                     self.empty_all_buffers(current_path, start=False)
@@ -612,11 +616,7 @@ class CameraToDisk:
                     self._ram_access_times_queue.append(time() - last_buffer_empty_t) 
 
                     self._output_queue.put(event_dir)
-                    logger.info(
-                        "Motion ended, total event length: {:.2f}secs".format(
-                            time() - motion_start_time
-                        )
-                    )
+                    
                     logger.debug(
                         "Average time for motion computation over the event: {:.6f}secs".format(
                             self._motion_buffer.get_avg_motion_compute_time()
