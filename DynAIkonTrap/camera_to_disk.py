@@ -598,7 +598,7 @@ class CameraToDisk:
             resize=self.raw_frame_dims,
         )
         self._camera.wait_recording(5)  # camera warm-up
-
+        empty_times = []
         try:
             while self._on:
                 self._camera.wait_recording(1)
@@ -622,7 +622,9 @@ class CameraToDisk:
                     # motion finished, wait for trail-off period
                     self._camera.wait_recording(self._context_length_s)
                     # empty buffers
+                    t1 = time()
                     self.empty_all_buffers(current_path, start=False)
+                    empty_times.append(time() - t1)
                     self._output_queue.put(event_dir)
                     logger.info(
                         "Motion ended, total event length: {:.2f}secs".format(
@@ -632,6 +634,11 @@ class CameraToDisk:
                     logger.debug(
                         "Average time for motion computation over the event: {:.6f}secs".format(
                             self._motion_buffer.get_avg_motion_compute_time()
+                        )
+                    )
+                    logger.debug(
+                        "Average time to empty all buffers over the event: {:.4f}secs".format(
+                            (len(empty_times)/sum(empty_times))
                         )
                     )
                     current_path = self._directory_maker.get_event()[0]
