@@ -601,11 +601,10 @@ class CameraToDisk:
                             last_buffer_empty_t = time()
                             self.empty_all_buffers(current_path, start=False)
                             self._ram_access_times_queue.append(time() - last_buffer_empty_t)
-                        self._camera.wait_recording(1)
                     # motion finished, wait for context period
                     self._camera.wait_recording(self._context_length_s)
                     logger.info(
-                        "Motion ended, total event length: {:.2f}secs".format(
+                        "Motion ended, total event length (plus trailing context of {} seconds): {:.2f}secs".format(self._context_length_s,
                             time() - motion_start_time
                         )
                     )
