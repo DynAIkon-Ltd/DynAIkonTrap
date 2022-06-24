@@ -30,7 +30,7 @@ import numpy as np
 from PIL import Image
 import time
 
-from DynAIkonTrap.settings import AnimalFilterSettings, RawImageFormat
+from DynAIkonTrap.settings import AnimalFilterSettings
 from DynAIkonTrap.logging import get_logger
 from DynAIkonTrap.imdecode import decoder
 
@@ -107,9 +107,7 @@ class AnimalFilter:
     def run_raw(
         self,
         image: bytes,
-        img_format: Union[
-            RawImageFormat, CompressedImageFormat
-        ] = CompressedImageFormat.JPEG,
+        is_jpeg : bool = False,
     ) -> Tuple[float, float]:
         """Run the animal filter on the image to give a confidence that the image frame contains an animal and/or a human. For configurations where an animal-only detector is initialised, human confidence will always equal 0.0.
 
@@ -121,25 +119,12 @@ class AnimalFilter:
             Tuple(float, float): Confidences in the output containing an animal and a human as a decimal fraction
         """
         decoded_image = []
-        if img_format is CompressedImageFormat.JPEG:
+        if is_jpeg:
             decoded_image = decoder.jpg_buf_to_rgb_array(image)
-        elif img_format is RawImageFormat.RGBA:
-            sz = int(sqrt(len(image) / 4))
-            decoded_image = np.asarray(
-                Image.frombytes("RGBA", (sz, sz), image, "raw", "RGBA")
-            )
-            decoded_image = cv2.cvtColor(decoded_image, cv2.COLOR_RGBA2BGR)
-        elif img_format is RawImageFormat.RGB:
-            sz = int(sqrt(len(image) / 3))
-
-            decoded_image = np.asarray(
-                Image.frombytes("RGB", (sz, sz), image, "raw", "RGB")
-            )
-            decoded_image = cv2.cvtColor(decoded_image, cv2.COLOR_RGB2BGR)
-        elif img_format is RawImageFormat.YUV:
+        else: 
             decoded_image = decoder.yuv_buf_to_rgb_array(image)
-            cv2.imwrite('test.jpg', decoded_image)
         decoded_image = cv2.resize(decoded_image, (self.input_size))
+        cv2.imwrite('test.jpg', decoded_image)
         animal_confidence = 0.0
         human_confidence = 0.0
         if self.detect_humans or self.fast_animal_detect:
@@ -147,7 +132,7 @@ class AnimalFilter:
             # convert to floating point input
             # in future, tflite conversion process should be modified to accept int input, it's not clear how that's done yet
             decoded_image = decoded_image.astype("float32")
-            decoded_image = decoded_image / decoded_image.max()
+            decoded_image = decoded_image / 255.0
             model_input = [decoded_image]
             self.model.set_tensor(self.tfl_input_details[0]["index"], model_input)
             self.model.invoke()
@@ -191,9 +176,7 @@ class AnimalFilter:
     def run(
         self,
         image: bytes,
-        img_format: Union[
-            RawImageFormat, CompressedImageFormat
-        ] = CompressedImageFormat.JPEG,
+        is_jpeg : bool = False
     ) -> Tuple[bool, bool]:
         """The same as :func:`run_raw()`, but with a threshold applied. This function outputs a boolean to indicate if the confidences are at least as large as the threshold
 
@@ -205,7 +188,7 @@ class AnimalFilter:
             Tuple(bool, bool): Each element is `True` if the confidence is at least the threshold, otherwise `False`. Elements represent detections for animal and human class.
         """
         start_time = time.time()
-        animal_confidence, human_confidence = self.run_raw(image, img_format)
+        animal_confidence, human_confidence = self.run_raw(image, is_jpeg)
         logger.debug(
             "Deep network inference run. Propagation latency: {:.2f}secs. Animal Confidence :{:.2f}%. Human Confidence :{:.2f}%.".format(
                 time.time() - start_time, animal_confidence, human_confidence

@@ -47,13 +47,11 @@ except (OSError, ModuleNotFoundError):
         pass
 
 
-from DynAIkonTrap.custom_picamera import DynCamera
 from DynAIkonTrap.filtering.animal import NetworkInputSizes
 from DynAIkonTrap.filtering.motion import MotionFilter
 from DynAIkonTrap.settings import (
     CameraSettings,
     FilterSettings,
-    RawImageFormat,
     WriterSettings,
     MotionFilterSettings,
 )
@@ -61,6 +59,12 @@ from DynAIkonTrap.logging import get_logger
 
 logger = get_logger(__name__)
 
+#constants for camera operation
+BITRATE = 17000000
+#buffer size (seconds)
+BUFF_SZ_S = 10
+#YUV pixel size (bytes)
+YUV_BYTE_PER_PIX = 1.5
 
 @dataclass
 class MotionData:
@@ -85,9 +89,8 @@ class MotionRAMBuffer(PiMotionAnalysis):
 
     def __init__(
         self,
-        camera: DynCamera,
+        camera: PiCamera,
         settings: MotionFilterSettings,
-        seconds: float,
         context_len_s: float,
     ) -> None:
         """Initialiser, creates two instances of :class:`CircularIO`. Each sized to be large enough to hold several seconds (configurable) of motion vector data.
@@ -104,10 +107,10 @@ class MotionRAMBuffer(PiMotionAnalysis):
             self._rows, self._cols
         )
         self._active_stream: CircularIO = CircularIO(
-            self._element_size * seconds * camera.framerate
+            self._element_size * BUFF_SZ_S * camera.framerate
         )
         self._inactive_stream: CircularIO = CircularIO(
-            self._element_size * seconds * camera.framerate
+            self._element_size * BUFF_SZ_S * camera.framerate
         )
         self._bytes_written: int = 0
         self._framerate = camera.framerate
@@ -269,7 +272,7 @@ class VideoRAMBuffer:
     Buffering is implemented by making use of two :class:`PiCameraCircularIO` ring buffers - refered to as active and inactive streams. The active stream is being written when the camera is on and producing frames. When saving is requested, the active and inactive streams are swapped, and the new inactive stream is written to disk and it's contents deleted.
     """
 
-    def __init__(self, camera: DynCamera, splitter_port: int, size: int) -> None:
+    def __init__(self, camera: PiCamera, splitter_port: int, size: int = ((BITRATE // 8) * BUFF_SZ_S)) -> None:
         """Initialise stream object.
 
         Args:
@@ -391,11 +394,10 @@ class H264RAMBuffer(VideoRAMBuffer):
 class RawRAMBuffer(VideoRAMBuffer):
     """This class inherits from :class:`~DynAIkonTrap.camera_to_disk.VideoRAMBuffer` to specialise for raw format image frames."""
 
-    def __init__(self, context_length_s, camera: DynCamera, *args, **kwargs) -> None:
+    def __init__(self, context_length_s, camera: PiCamera, dim : Tuple[int, int],  *args, **kwargs) -> None:
         self._context_length_s = context_length_s
-
-        super(RawRAMBuffer, self).__init__(camera, *args, **kwargs)
-        self._raw_framerate = self._framerate // camera.raw_divisor
+        sz = dim[0] * dim[1] * YUV_BYTE_PER_PIX * BUFF_SZ_S * camera.framerate
+        super(RawRAMBuffer, self).__init__(camera, size=sz, *args, **kwargs)
 
     def write_inactive_stream(self, filename: Path, is_start=False):
         """Dump the inactive stream to file, then delete it's contents, will append to existing files.
@@ -413,7 +415,7 @@ class RawRAMBuffer(VideoRAMBuffer):
                     max(
                         0,
                         len(lst_frames)
-                        - (self._context_length_s * self._raw_framerate),
+                        - (self._context_length_s * self._framerate),
                     )
                 )
             )
@@ -478,21 +480,7 @@ class CameraToDisk:
             filter_settings (FilterSettings): settings object for filter parameters
         """
         self.resolution = camera_settings.resolution
-        self._buffer_secs = camera_settings.io_buffer_size_s
-        self._raw_stream_image_format = camera_settings.raw_stream_image_format
-        self.bits_per_pixel_raw = 0
-        self.bitrate = 17000000
-        self.raw_image_format = RawImageFormat(
-            camera_settings.raw_stream_image_format)
-        if self.raw_image_format is RawImageFormat.RGBA:
-            self._raw_format = "rgba"
-            self.bits_per_pixel_raw = 4
-        elif self.raw_image_format is RawImageFormat.RGB:
-            self._raw_format = "rgb"
-            self.bits_per_pixel_raw = 3
-        elif self.raw_image_format is RawImageFormat.YUV:
-            self._raw_format = "yuv"
-            self.bits_per_pixel_raw = 1.5
+        
         if (
             filter_settings.animal.detect_humans
             or filter_settings.animal.fast_animal_detect
@@ -505,8 +493,7 @@ class CameraToDisk:
         factor_32 = tuple(map(lambda x: ceil(x / 32.0), self.raw_frame_dims))
         self.raw_frame_dims = tuple(map(lambda x: int(x * 32), factor_32))
         self.framerate = camera_settings.framerate
-        self._camera = DynCamera(
-            raw_divisor=camera_settings.raw_framerate_divisor,
+        self._camera =  PiCamera(
             resolution=camera_settings.resolution,
             framerate=camera_settings.framerate,
         )
@@ -523,28 +510,17 @@ class CameraToDisk:
             filter_settings.processing.context_length_s,
             self._camera,
             splitter_port=1,
-            size=(self.bitrate *
-                  camera_settings.io_buffer_size_s) // 8,
         )
         self._raw_buffer: RawRAMBuffer = RawRAMBuffer(
             filter_settings.processing.context_length_s,
             self._camera,
             splitter_port=2,
-            size=(
-                (
-                    self.raw_frame_dims[0]
-                    * self.raw_frame_dims[1]
-                    * self.bits_per_pixel_raw
-                )
-                * (camera_settings.framerate // camera_settings.raw_framerate_divisor)
-                * camera_settings.io_buffer_size_s
-            ),
+            dim=self.raw_frame_dims,
         )
 
         self._motion_buffer: MotionRAMBuffer = MotionRAMBuffer(
             self._camera,
             filter_settings.motion,
-            self._buffer_secs,
             filter_settings.processing.context_length_s,
         )
         self._ram_access_times_queue = deque([], maxlen=100)
@@ -569,12 +545,12 @@ class CameraToDisk:
             format="h264",
             splitter_port=1,
             motion_output=self._motion_buffer,
-            bitrate=self.bitrate,
+            bitrate=BITRATE,
             intra_period=int((self._context_length_s / 2) * self.framerate),
         )
         self._camera.start_recording(
             self._raw_buffer,
-            format=self._raw_format,
+            format='yuv',
             splitter_port=2,
             resize=self.raw_frame_dims,
         )
@@ -596,7 +572,7 @@ class CameraToDisk:
                         and (time() - motion_start_time) < self._maximum_event_length_s
                     ):
                         # check if buffers are getting near-full, to keep all three buffers in sync this is done by simply checking the time.
-                        if (time() - last_buffer_empty_t) > (0.75 * self._buffer_secs):
+                        if (time() - last_buffer_empty_t) > (0.75 * BUFF_SZ_S):
                             last_buffer_empty_t = time()
                             self.empty_all_buffers(current_path, start=False)
                             self._ram_access_times_queue.append(time() - last_buffer_empty_t)

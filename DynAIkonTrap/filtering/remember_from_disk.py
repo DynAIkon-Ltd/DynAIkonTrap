@@ -31,7 +31,6 @@ from time import time
 from typing import List
 from io import open
 
-from DynAIkonTrap.settings import RawImageFormat
 from DynAIkonTrap.camera_to_disk import CameraToDisk, MotionRAMBuffer
 from DynAIkonTrap.filtering.animal import AnimalFilter
 from DynAIkonTrap.logging import get_logger
@@ -49,7 +48,6 @@ class EventData:
     raw_x_dim: int
     raw_y_dim: int
     raw_bpp: int
-    raw_img_format: RawImageFormat
 
 
 class EventRememberer:
@@ -64,8 +62,7 @@ class EventRememberer:
         self._output_queue: QueueType[EventData] = Queue(maxsize=1)
         self._input_queue = read_from
         self.raw_dims = read_from.raw_frame_dims
-        self.raw_image_format = read_from.raw_image_format
-        self.raw_bpp = read_from.bits_per_pixel_raw
+        self.raw_bpp = 1.5
         self.framerate = read_from.framerate
         width, height = read_from.resolution
 
@@ -127,7 +124,6 @@ class EventRememberer:
             raw_x_dim=self.raw_dims[0],
             raw_y_dim=self.raw_dims[1],
             raw_bpp=self.raw_bpp,
-            raw_img_format=self.raw_image_format
         )
 
     def get(self) -> EventData:
