@@ -332,7 +332,8 @@ class H264RAMBuffer(VideoRAMBuffer):
 
     def __init__(self, context_length_s, *args, **kwargs) -> None:
         self._context_length_s = context_length_s
-        super(H264RAMBuffer, self).__init__(*args, **kwargs)
+        sz = (BITRATE * BUFF_SZ_S) // 8
+        super(H264RAMBuffer, self).__init__(size=sz, *args, **kwargs)
 
     def write_inactive_stream(self, filename: Path, is_start=False):
         """Dump the inactive stream to file, then delete it's contents, will append to existing files.
@@ -396,7 +397,7 @@ class RawRAMBuffer(VideoRAMBuffer):
 
     def __init__(self, context_length_s, camera: PiCamera, dim : Tuple[int, int],  *args, **kwargs) -> None:
         self._context_length_s = context_length_s
-        sz = dim[0] * dim[1] * YUV_BYTE_PER_PIX * BUFF_SZ_S * camera.framerate
+        sz = int(dim[0] * dim[1] * YUV_BYTE_PER_PIX * BUFF_SZ_S * camera.framerate)
         super(RawRAMBuffer, self).__init__(camera, size=sz, *args, **kwargs)
 
     def write_inactive_stream(self, filename: Path, is_start=False):
@@ -509,7 +510,7 @@ class CameraToDisk:
         self._h264_buffer: H264RAMBuffer = H264RAMBuffer(
             filter_settings.processing.context_length_s,
             self._camera,
-            splitter_port=1,
+            splitter_port=1
         )
         self._raw_buffer: RawRAMBuffer = RawRAMBuffer(
             filter_settings.processing.context_length_s,
