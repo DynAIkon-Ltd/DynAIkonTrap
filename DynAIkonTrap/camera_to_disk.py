@@ -524,7 +524,6 @@ class CameraToDisk:
             filter_settings.motion,
             filter_settings.processing.context_length_s,
         )
-        self._ram_access_times_queue = deque([], maxlen=100)
 
         self._directory_maker: DirectoryMaker = DirectoryMaker(
             Path(writer_settings.path)
@@ -541,6 +540,7 @@ class CameraToDisk:
         """
         nice(0)
         current_path = self._directory_maker.get_event()[0]
+        event_io_latencies = []
         self._camera.start_recording(
             self._h264_buffer,
             format="h264",
@@ -565,9 +565,9 @@ class CameraToDisk:
                     motion_start_time = time()
                     last_buffer_empty_t = time()
                     self.empty_all_buffers(current_path, start=True)
-                    self._ram_access_times_queue.append(time() - last_buffer_empty_t)
+                    event_io_latencies.append(time() - last_buffer_empty_t)
 
-                    # continue writing to buffers while motion and there's still time to empty io buffers within the max event length
+                    # continue writing to buffers while motion and the max event length is not reached
                     while (
                         self._motion_buffer.is_motion
                         and (time() - motion_start_time) < self._maximum_event_length_s
@@ -576,7 +576,8 @@ class CameraToDisk:
                         if (time() - last_buffer_empty_t) > (0.75 * BUFF_SZ_S):
                             last_buffer_empty_t = time()
                             self.empty_all_buffers(current_path, start=False)
-                            self._ram_access_times_queue.append(time() - last_buffer_empty_t)
+                            event_io_latencies.append(time() - last_buffer_empty_t)
+                        self._camera.wait_recording(0.2)
                     #motion finished, notify the user
                     logger.info(
                         "Motion ended, total event length (excluding context time) {:.2f}secs".format(
@@ -590,7 +591,7 @@ class CameraToDisk:
                     last_buffer_empty_t = time()
                     self.empty_all_buffers(current_path, start=False)
                     t = time() - last_buffer_empty_t
-                    self._ram_access_times_queue.append(time() - last_buffer_empty_t) 
+                    event_io_latencies.append(time() - last_buffer_empty_t) 
 
                     self._output_queue.put(event_dir)
                     
@@ -600,11 +601,12 @@ class CameraToDisk:
                         )
                     )
                     logger.debug(
-                        "Average IO access latency for buffer empties over the event: {:.4f}secs".format(
-                            (sum(self._ram_access_times_queue)/len(self._ram_access_times_queue))
+                        "Average IO access latency for {} buffer empties over the event: {:.4f}secs".format(len(event_io_latencies),
+                            (sum(event_io_latencies)/len(event_io_latencies))
                         )
                     )
                     current_path = self._directory_maker.get_event()[0]
+                    event_io_latencies = []
 
         finally:
             self._camera.stop_recording()

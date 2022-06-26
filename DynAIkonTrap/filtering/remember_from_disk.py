@@ -30,6 +30,7 @@ from queue import Empty
 from time import time
 from typing import List
 from io import open
+from os import path
 
 from DynAIkonTrap.camera_to_disk import CameraToDisk, MotionRAMBuffer
 from DynAIkonTrap.filtering.animal import AnimalFilter
@@ -99,28 +100,20 @@ class EventRememberer:
         raw_raster_frames = []
         raw_raster_file_indices = []
         try:
-            # open file and check buffers exist on disk
-            with open(raw_path, "rb") as file:
-                while True:
-                    file_index = file.tell()
-                    buf = file.read1(
-                        int(self.raw_dims[0] * self.raw_dims[1] * self.raw_bpp)
-                    )
-                    if not buf:
-                        break
-                    raw_raster_file_indices.append(file_index)
-
-                raw_raster_path = raw_path
-            event_time = time()  # by default event time set to now
-
-        except IOError as e:
+            file_size = path.getsize(raw_path)
+            file_indx = 0
+            while file_indx < file_size:
+                raw_raster_file_indices.append(int(file_indx))
+                file_indx += (self.raw_dims[0] * self.raw_dims[1] * self.raw_bpp)
+        except OSError as e:
             logger.error(
                 "Problem opening or reading file: {} (IOError: {})".format(e.filename, e))
+        
         return EventData(
             raw_raster_file_indices=raw_raster_file_indices,
-            raw_raster_path=raw_raster_path,
+            raw_raster_path=raw_path,
             dir=dir,
-            start_timestamp=event_time,
+            start_timestamp=time(),  # set event time set to now
             raw_x_dim=self.raw_dims[0],
             raw_y_dim=self.raw_dims[1],
             raw_bpp=self.raw_bpp,

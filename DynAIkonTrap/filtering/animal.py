@@ -124,7 +124,6 @@ class AnimalFilter:
         else: 
             decoded_image = decoder.yuv_buf_to_rgb_array(image)
         decoded_image = cv2.resize(decoded_image, (self.input_size))
-        cv2.imwrite('test.jpg', decoded_image)
         animal_confidence = 0.0
         human_confidence = 0.0
         if self.detect_humans or self.fast_animal_detect:
