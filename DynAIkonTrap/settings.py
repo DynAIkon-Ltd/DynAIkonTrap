@@ -115,8 +115,8 @@ class MotionFilterSettings:
     """Settings for a :class:`~DynAIkonTrap.filtering.motion.MotionFilter`"""
 
     small_threshold: int = 10
-    sotv_threshold: float = 300.0
-    iir_cutoff_hz: float = 2.0
+    sotv_threshold: float = 5400.0
+    iir_cutoff_hz: float = 1.25
     iir_order: int = 3
     iir_attenuation: int = 35
 
@@ -125,9 +125,9 @@ class MotionFilterSettings:
 class AnimalFilterSettings:
     """Settings for a :class:`~DynAIkonTrap.filtering.animal.AnimalFilter`"""
 
-    animal_threshold: float = 0.8
+    animal_threshold: float = 0.75
     detect_humans: bool = True
-    human_threshold: float = 0.8
+    human_threshold: float = 0.75
     fast_animal_detect: bool = True
 
 
