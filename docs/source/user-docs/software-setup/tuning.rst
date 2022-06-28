@@ -81,6 +81,16 @@ You will be asked some questions to help determine the best parameters for the s
 
    Maximum length for a single motion sequence, in seconds. A new motion sequence is started if the current one exceed this limit.
 
+.. admonition:: Motion context buffer length
+   :class: note, dropdown
+
+   This is a low-powered pipeline parameter. The number of seconds selects the amount of video for head and tail context to detections. For example, a produced video may have a number of recorded seconds before animal enters frame and some seconds of video after it has left. We call this context time.
+
+.. admonition:: Fraction of event to process with neural network. 
+   :class: note, dropdown
+
+   This is a low-powered pipeline parameter. This is the fraction of raw frames which are processed with a neural network in the worst case in our spiral inference scheme. Higher fractions will result in more required computation as a trade off for higher recall of animal events. It is reccomended to set this value to 0.0 for low-compute capable devices, such as Raspberry Pi Zero W and to 1.0 for more capable devices, such as Raspberry Pi 4B 
+
 .. admonition:: Sensor board port
    :class: note, dropdown
 
