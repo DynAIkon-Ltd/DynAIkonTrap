@@ -19,12 +19,12 @@ You will be asked some questions to help determine the best parameters for the s
 .. admonition:: Framerate
    :class: note, dropdown
 
-   Number of frames that are captured by the camera every second. Testing indicates this should not exceed 40 FPS on a Raspberry Pi 4B.
+   Number of frames that are captured by the camera every second. Testing indicates this should not exceed 20 FPS for HD resolutions. If you require a higher frame-rate than this, it is recomended to use the legacy pipeline and drop the resolution down considerably, ie to 640x480 (VGA).
 
 .. admonition:: Resolution
    :class: note, dropdown
 
-   Dimensions of the captured image. This is specified using width and height in the tuning script. Take a look at the relevant `PiCamera documentation <https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes>`_ for information on valid width and height combinations for your camera model. Also check that the chosen resolution supports video mode at the desired framerate. Note that certain dimensions limit the field of view of the camera.
+   Dimensions of the captured images and video. This is specified using width and height in the tuning script. Take a look at the relevant `PiCamera documentation <https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes>`_ for information on valid width and height combinations for your camera model. Also check that the chosen resolution supports video mode at the desired framerate. Note that certain dimensions limit the field of view of the camera.
 
 .. admonition:: Visible animal area to trigger
    :class: note, dropdown
@@ -104,7 +104,7 @@ You will be asked some questions to help determine the best parameters for the s
 .. admonition:: Output path
    :class: note, dropdown
 
-   A location for all recordings to be saved to. Leaving this empty saves them in the DynAIkonTrap project directory.
+   A location for all recordings to be saved to. Leaving this empty saves them in the DynAIkonTrap project directory, by default, it's set to a folder called `output`.
 
 .. admonition:: Server address
    :class: note, dropdown
@@ -126,3 +126,7 @@ You will be asked some questions to help determine the best parameters for the s
 
    Choose the minimum threshold for logging. Messages with a level below this will not be output. The recommended level is ``INFO`` as this provides informative, but not excessive, output.
 
+.. admonition:: Logger output file
+   :class: note, dropdown
+
+   This dictates the file DynAikonTrap will output log messages to. By default, this is set to `/dev/stdout`, which will cause log messages to appear at the terminal. If you wish to save a system log, add a file name of your choice. 
