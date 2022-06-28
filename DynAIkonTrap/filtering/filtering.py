@@ -45,7 +45,7 @@ from DynAIkonTrap.filtering.motion_queue import MotionLabelledQueue
 from DynAIkonTrap.filtering.motion_queue import MotionStatus
 from DynAIkonTrap.filtering.remember_from_disk import EventData, EventRememberer
 from DynAIkonTrap.logging import get_logger
-from DynAIkonTrap.settings import FilterSettings, RawImageFormat
+from DynAIkonTrap.settings import FilterSettings
 
 logger = get_logger(__name__)
 
@@ -92,7 +92,6 @@ class Filter:
 
         elif isinstance(read_from, EventRememberer):
             self.mode = FilterMode.BY_EVENT
-            self._raw_image_format = read_from.raw_image_format
             self._event_processor = EventProcessor(
                 self._animal_filter, settings.processing.detector_fraction)
             self._output_queue: QueueType[EventData] = Queue()

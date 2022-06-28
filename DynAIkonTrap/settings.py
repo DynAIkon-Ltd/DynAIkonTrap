@@ -34,20 +34,17 @@ The JSON file should be structured as follows (of course the values can be chang
         "pipeline_variant": 1
     },
     "camera": {
-        "framerate": 10,
+        "framerate": 20,
         "resolution": [
             1920,
             1080
-        ],
-        "raw_framerate_divisor": 1,
-        "io_buffer_size_s": 20,
-        "raw_stream_image_format": 0
+        ]
     },
     "filter": {
         "motion": {
             "small_threshold": 10,
-            "sotv_threshold": 17276.751970629524,
-            "iir_cutoff_hz": 0.9920634920634922,
+            "sotv_threshold": 5398.984990821726,
+            "iir_cutoff_hz": 1.2400793650793651,
             "iir_order": 3,
             "iir_attenuation": 35
         },
@@ -78,7 +75,7 @@ The JSON file should be structured as follows (of course the values can be chang
         "device_id": 0
     },
     "logging": {
-        "level": "DEBUG",
+        "level": "INFO",
         "path": "/dev/stdout"
     },
     "version": "1.2.2"
@@ -107,25 +104,11 @@ class PipelineSettings:
 
     pipeline_variant: PipelineVariant = PipelineVariant.LOW_POWER.value
 
-
-@dataclass
-class RawImageFormat(Enum):
-    """Raw stream image format"""
-
-    RGBA = 0
-    RGB = 1
-    YUV = 2
-
-
 @dataclass
 class CameraSettings:
     """Settings for  :class:`~DynAIkonTrap.camera.Camera` and :class:`~DynAIkonTrap.camera_to_disk.CameraToDisk"""
-
-    framerate: int = 10
+    framerate: int = 20
     resolution: Tuple[int, int] = (1920, 1080)
-    raw_framerate_divisor: int = 1
-    io_buffer_size_s: int = 20
-    raw_stream_image_format: RawImageFormat = RawImageFormat.YUV.value
 
 @dataclass
 class MotionFilterSettings:

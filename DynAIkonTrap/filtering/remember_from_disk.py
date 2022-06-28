@@ -25,15 +25,13 @@ from os import nice
 from multiprocessing import Array, Process, Queue
 from multiprocessing.queues import Queue as QueueType
 from pathlib import Path
-from struct import unpack
 from queue import Empty
 from time import time
 from typing import List
-from io import open
+from os import path
 
-from DynAIkonTrap.settings import RawImageFormat
 from DynAIkonTrap.camera_to_disk import CameraToDisk, MotionRAMBuffer
-from DynAIkonTrap.filtering.animal import AnimalFilter
+from DynAIkonTrap.imdecode import YUV_BYTE_PER_PIX
 from DynAIkonTrap.logging import get_logger
 
 logger = get_logger(__name__)
@@ -49,7 +47,6 @@ class EventData:
     raw_x_dim: int
     raw_y_dim: int
     raw_bpp: int
-    raw_img_format: RawImageFormat
 
 
 class EventRememberer:
@@ -64,8 +61,6 @@ class EventRememberer:
         self._output_queue: QueueType[EventData] = Queue(maxsize=1)
         self._input_queue = read_from
         self.raw_dims = read_from.raw_frame_dims
-        self.raw_image_format = read_from.raw_image_format
-        self.raw_bpp = read_from.bits_per_pixel_raw
         self.framerate = read_from.framerate
         width, height = read_from.resolution
 
@@ -98,36 +93,26 @@ class EventRememberer:
             EventData: populated instance of event data.
         """
         raw_path = Path(dir).joinpath("clip.dat")
-        vect_path = Path(dir).joinpath("clip_vect.dat")
-        raw_raster_frames = []
-        raw_raster_file_indices = []
+        raw_raster_frame_indices = []
         try:
-            # open file and check buffers exist on disk
-            with open(raw_path, "rb") as file:
-                while True:
-                    file_index = file.tell()
-                    buf = file.read1(
-                        int(self.raw_dims[0] * self.raw_dims[1] * self.raw_bpp)
-                    )
-                    if not buf:
-                        break
-                    raw_raster_file_indices.append(file_index)
-
-                raw_raster_path = raw_path
-            event_time = time()  # by default event time set to now
-
-        except IOError as e:
+            file_size = path.getsize(raw_path)
+            file_indx = 0
+            while file_indx < file_size:
+                raw_raster_frame_indices.append(int(file_indx))
+                file_indx += (self.raw_dims[0] * self.raw_dims[1] * YUV_BYTE_PER_PIX)
+        except OSError as e:
             logger.error(
                 "Problem opening or reading file: {} (IOError: {})".format(e.filename, e))
+        
         return EventData(
-            raw_raster_file_indices=raw_raster_file_indices,
-            raw_raster_path=raw_raster_path,
+            raw_raster_file_indices=raw_raster_frame_indices,
+            raw_raster_path=raw_path,
             dir=dir,
-            start_timestamp=event_time,
+            start_timestamp=time(),  # set event time set to now
             raw_x_dim=self.raw_dims[0],
             raw_y_dim=self.raw_dims[1],
-            raw_bpp=self.raw_bpp,
-            raw_img_format=self.raw_image_format
+            raw_bpp=YUV_BYTE_PER_PIX
+,
         )
 
     def get(self) -> EventData:

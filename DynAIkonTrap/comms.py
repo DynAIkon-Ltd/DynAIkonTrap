@@ -433,10 +433,16 @@ class Writer(AbstractOutput):
         logger.info("Image and meta-data saved")
 
     def output_video(self, video: IO[bytes], caption: StringIO, time: float, **kwargs):
+<<<<<<< HEAD
         name = self._unique_name(time)
         move(video.name, name + self._video_suffix)
         #with open(name + self._video_suffix, "wb") as f:
         #    f.write(video.read())
+=======
+        name = self._unique_name(time)        
+   
+        move(video.name, name + self._video_suffix)
+>>>>>>> refactor-settings
 
         with open(name + ".json", "w") as f:
             f.write(caption.getvalue())

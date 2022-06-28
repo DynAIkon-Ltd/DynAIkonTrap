@@ -1,22 +1,41 @@
+# DynAIkonTrap is an AI-infused camera trapping software package.
+# Copyright (C) 2022 Ross Gardiner
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""Static functions providing access to decoding byte arrays into image formats, returned data are numpy ndarrays."""
 import cv2
 import numpy as np
-from PIL import Image
 from math import sqrt
 
+YUV_BYTE_PER_PIX = 1.5 
+
 class decoder:
+    """A class containing static methods to decode image formats YUV and JPEG, depends on numpy and opencv (cv2) python packages. YUV formats are assumed to be YUV420, with 1.5 bytes per pixel, as described here: https://en.wikipedia.org/wiki/YUV#Y.E2.80.B2UV420p_.28and_Y.E2.80.B2V12_or_YV12.29_to_RGB888_conversion
+
+    Included methods convert a given byte array into numpy ndarrays of pixel values. 
+    """
     @staticmethod
-    def yuv_buf_to_rgb_array(buf : bytes) -> np.ndarray:
-        """_summary_
+    def yuv_buf_to_bgr_array(buf : bytes) -> np.ndarray:
+        """converts a given byte buffer in YUV420 format into an ndarray of pixel values in BGR format. Code inspired from Picamera example, availble: https://picamera.readthedocs.io/en/release-1.13/recipes2.html#unencoded-image-capture-yuv-format
 
         Args:
-            buf (bytes): _description_
-            fheight (int): _description_
-            fwidth (int): _description_
+            buf (bytes): a bytes object containing the raw pixel data in YUV format. Dimensions of the buffer are assumed to be square, the width and height are calculated from this from using the buffer length.
 
         Returns:
-            np.ndarray: _description_
+            np.ndarray: an ndarray with size (width, height, 3) where each element is a pixel, pixel format is BGR, one byte per colour
         """
-        sz = int(sqrt(len(buf) / 1.5))
+        sz = int(sqrt(len(buf) / YUV_BYTE_PER_PIX))
         fheight = fwidth = sz
         Y_end = int(fheight * fwidth)
         U_end = Y_end + int((fheight//2) * (fwidth//2))
@@ -42,20 +61,16 @@ class decoder:
         return BGR
 
     @staticmethod
-    def jpg_buf_to_rgb_array(buf : bytes) -> np.ndarray:
-        """_summary_
+    def jpg_buf_to_bgr_array(buf : bytes) -> np.ndarray:
+        """Wraps around the OpenCV imdecode method, to decode colour jpeg images produces a numpy ndarray in BGR format of uncompressed data
 
         Args:
-            buf (bytes): _description_
+            buf (bytes): a bytes buffer containing image data compressed in jpeg format, data is assumed to be a 3-channel, colour image
 
         Returns:
-            np.ndarray: _description_
+            np.ndarray: an ndarray with size (width, height, 3) where each element is a pixel, pixel format is BGR, one byte per colour
         """
         return cv2.imdecode(np.asarray(buf), cv2.IMREAD_COLOR)
 
     
-    @staticmethod
-    def im_resize(im: np.ndarray, w : int, h : int) -> np.ndarray:
-        return cv2.resize(im, (w, h))
-
 

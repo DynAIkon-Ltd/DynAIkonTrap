@@ -349,7 +349,7 @@ class MotionLabelledQueue:
             frame = sequence.get_highest_priority()
             while frame:
                 is_animal, is_human = self._animal_detector.run(
-                    frame.frame.image, img_format=CompressedImageFormat.JPEG
+                    frame.frame.image, is_jpeg=True
                 )
 
                 _t = time()

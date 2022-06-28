@@ -71,7 +71,7 @@ class EventProcessor:
             frame = self._get_frame_from_index(
                 event, frame_idx)
             is_animal, is_human = self._animal_filter.run(
-                frame, img_format=event.raw_img_format
+                frame
             )
             inf_count += 1
             return (is_animal and not is_human, inf_count)
@@ -91,7 +91,7 @@ class EventProcessor:
                 frame = self._get_frame_from_index(
                     event, frame_index)
                 is_animal, is_human = self._animal_filter.run(
-                    frame, img_format=event.raw_img_format
+                    frame
                 )
                 inf_count += 1
                 if is_human:

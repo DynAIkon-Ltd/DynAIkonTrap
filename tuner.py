@@ -20,7 +20,6 @@ from DynAIkonTrap.settings import (
     OutputMode,
     OutputVideoCodec,
     PipelineVariant,
-    RawImageFormat,
     SenderSettings,
     Settings,
     FilterSettings,

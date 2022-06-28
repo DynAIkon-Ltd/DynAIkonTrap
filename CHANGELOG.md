@@ -12,6 +12,9 @@
     - decoding of all saved image frames now performed within `imdecode.py`
     - added YUV format to settings and tuner
     - YUV format uses less bandwidth, RPi zero w can now run at 20fps
+- `camera_to_disk.py` is refactored so that video-buffer components exist in thier own file, `video_buffers.py`, better encapsulation.
+- some further debugging features are added to the log, including per-event average IO access latency and motion vector computation times
+- `video_buffers.py` make use of ionice (accessed via the `psutil` package). This should prioritise io access to the buffers above other dyntrap operations (such as ffmpeg copies)
 
 ### Changed - 2022-06-04
 - removed many settings from `tuner.py` 
@@ -21,11 +24,12 @@
     - buffer size, removed from `tuner.py`, still configurable via `settings.py` now set to 20 secs, tested and works on rpi0, rpi4
 - event processing now in its own file `DynAIkonTrap/filtering/event.py`
     - makes `filter.py` more concise
-    - not built as a pipeline element (ie no input and output queues), perhaps to-do although seems superfluous...
+    - not built as a pipeline element (ie no input and output queues), perhaps to-do although seems superfluous for now
 - `EventData` class no longer carries frame buffers for an entire event
-    - `remember_from_disk.py` no longer reads frame buffers, instead it scans the event file, making sure buffers exist and produces file pointers for the beginnning of each buffer, these are added to `EventData`
+    - `remember_from_disk.py` no longer reads frame buffers, instead it scans the event file, checking it does actually exist and produces file pointers for the beginnning of each buffer, these are added to `EventData`
     - `EventData` also contains fields for frame width, height and pixel format, seems neater to pass them around as `EventData` than configure each pipeline element with those settings
-
+- `comms.py` no longer reads and copies all data within a file when outputting a video, instead it is moved (renamed) this saves on disk usage
+- `requirements.txt` no longer includes `Pillow` as YUV decoding method uses numpy only, instead includes an appropriate version of `psutil`
 ## [v1.2.1] - 2021-11-24
 
 ### Added
