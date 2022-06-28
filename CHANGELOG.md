@@ -4,6 +4,7 @@
 - Increase `Serial` timeout to read full sensor line
 - Memory overflow for reading large motion events from disk, new event processor only loads frames as and when required from IO
 
+
 ### Added - 2022-06-09
 - ability to output log to a set file or standard out
 - a much faster solution for SOTV of motion vectors. Can be seen in `motion.py` and `mvector_sum.pyx`, is written with Cython and tackles the biggest bottleneck of ndarray access time by accessing the memory directly using C. Around 50x faster than the original solution, produces the same results. 
@@ -30,6 +31,8 @@
     - `EventData` also contains fields for frame width, height and pixel format, seems neater to pass them around as `EventData` than configure each pipeline element with those settings
 - `comms.py` no longer reads and copies all data within a file when outputting a video, instead it is moved (renamed) this saves on disk usage
 - `requirements.txt` no longer includes `Pillow` as YUV decoding method uses numpy only, instead includes an appropriate version of `psutil`
+- docs updated (28/06/2022)
+
 ## [v1.2.1] - 2021-11-24
 
 ### Added
