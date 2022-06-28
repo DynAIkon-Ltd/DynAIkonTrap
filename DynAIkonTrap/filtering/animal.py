@@ -112,17 +112,17 @@ class AnimalFilter:
         """Run the animal filter on the image to give a confidence that the image frame contains an animal and/or a human. For configurations where an animal-only detector is initialised, human confidence will always equal 0.0.
 
         Args:
-            image (bytes): The image frame to be analysed, can be in JPEG compressed format or RGBA, RGB raw format
-            img_format (Union[RawImageFormat, CompressedImageFormat], optional): Enum indicating which image format has been passed. Defaults to CompressedImageFormat.JPEG.
+            image (bytes): The image frame to be analysed, can be in JPEG compressed format or YUV420 raw format
+            is_jpeg (bool, optional): used to inform buffer reading, set to `True` if a jpeg is given, `False` for YUV420 buffer. Defaults to `False`.
 
         Returns:
-            Tuple(float, float): Confidences in the output containing an animal and a human as a decimal fraction
+            Tuple(float, float): Confidences in the output containing an animal and a human as a decimal fraction in range (0-1)
         """
         decoded_image = []
         if is_jpeg:
-            decoded_image = decoder.jpg_buf_to_rgb_array(image)
+            decoded_image = decoder.jpg_buf_to_bgr_array(image)
         else: 
-            decoded_image = decoder.yuv_buf_to_rgb_array(image)
+            decoded_image = decoder.yuv_buf_to_bgr_array(image)
         decoded_image = cv2.resize(decoded_image, (self.input_size))
         animal_confidence = 0.0
         human_confidence = 0.0
@@ -180,11 +180,11 @@ class AnimalFilter:
         """The same as :func:`run_raw()`, but with a threshold applied. This function outputs a boolean to indicate if the confidences are at least as large as the threshold
 
         Args:
-            image (bytes): The image frame to be analysed, can be in JPEG compressed format or RGBA, RGB raw format
-            img_format (Union[RawImageFormat, CompressedImageFormat], optional): Enum indicating which image format has been passed. Defaults to CompressedImageFormat.JPEG.
+            image (bytes): The image frame to be analysed, can be in JPEG compressed format or YUV420 raw format
+            is_jpeg (bool, optional): used to inform buffer reading, set to `True` if a jpeg is given, `False` for YUV420 buffer. Defaults to `False`.
 
         Returns:
-            Tuple(bool, bool): Each element is `True` if the confidence is at least the threshold, otherwise `False`. Elements represent detections for animal and human class.
+            Tuple(bool, bool): Each element is `True` if the confidence is at least the threshold, otherwise `False`. Elements represent detections for animal and human class.        
         """
         start_time = time.time()
         animal_confidence, human_confidence = self.run_raw(image, is_jpeg)
