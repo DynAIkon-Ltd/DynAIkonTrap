@@ -29,6 +29,7 @@ from pathlib import Path
 from math import ceil
 from time import sleep, time
 import numpy as np
+import psutil
 from struct import pack, unpack
 from multiprocessing import Event, Queue
 from multiprocessing.queues import Queue as QueueType
@@ -143,6 +144,8 @@ class MotionRAMBuffer(PiMotionAnalysis):
         """This function processes vectors on the internal process queue to filter for motion. An aim is to compute motion detection within half a frame interval, as defined by the field _target_time. On some hardware platforms and some resolutions, detection time may go over this budget. In these cases, this function skips computing the next few vector frames to make up for lost time.
         In any case, this function writes a timestamp, motion score and motion vector data to the active stream. If the motion score has not been computed, a value of -1 is written instead.
         """
+        p = psutil.Process()
+        p.ionice(psutil.IOPRIO_CLASS_BE, 0)
         nice(0)
         skip_frames = 0
         count_frames = 0
@@ -538,7 +541,8 @@ class CameraToDisk:
 
         When a motion event finishes, it's saved directory is added to the output queue.
         """
-        nice(0)
+        p = psutil.Process()
+        p.ionice(psutil.IOPRIO_CLASS_BE, 0)
         current_path = self._directory_maker.get_event()[0]
         event_io_latencies = []
         self._camera.start_recording(

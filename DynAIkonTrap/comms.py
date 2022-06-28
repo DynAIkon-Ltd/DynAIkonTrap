@@ -27,6 +27,7 @@ from os import listdir, nice
 from os.path import join
 from json import dump, dumps
 from subprocess import CalledProcessError, call, check_call
+from shutil import move
 
 from requests import post
 from requests.exceptions import HTTPError, ConnectionError
@@ -432,10 +433,9 @@ class Writer(AbstractOutput):
         logger.info("Image and meta-data saved")
 
     def output_video(self, video: IO[bytes], caption: StringIO, time: float, **kwargs):
-        name = self._unique_name(time)
-
-        with open(name + self._video_suffix, "wb") as f:
-            f.write(video.read())
+        name = self._unique_name(time)        
+   
+        move(video.name, name + self._video_suffix)
 
         with open(name + ".json", "w") as f:
             f.write(caption.getvalue())
