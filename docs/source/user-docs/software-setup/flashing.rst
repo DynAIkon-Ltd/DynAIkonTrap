@@ -5,7 +5,7 @@ We will now "flash" the SD card. This is the process of installing the operating
 
 We recommend using the official RPi imaging tool for this, which can be downloaded `here <https://www.raspberrypi.org/software/>`_. If you usually use a different tool to flash SD cards, feel free to use that instead. We recommend a "headless" setup for the camera trap.
 
-At present, DynAIkonTrap is not compatiable with the latest version of Raspbian, Bullseye. We reccomend to use Raspbian 10 (Buster), this can be selected by opting for the "Legacy" image within the RPi imaging tool. Older versions of Raspbian images may be found online: `here <https://downloads.raspberrypi.org/raspbian/images/>`_.
+At present, DynAIkonTrap is not compatiable with the latest version of Raspbian, Bullseye. We recommend to use Raspbian 10 (Buster), this can be selected by opting for the "Legacy" image within the RPi imaging tool. Older versions of Raspbian images may be found online: `here <https://downloads.raspberrypi.org/raspbian/images/>`_.
 
 .. admonition:: What is a headless setup?
    :class: hint
