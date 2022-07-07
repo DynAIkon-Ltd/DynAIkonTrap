@@ -1,9 +1,8 @@
 # Change Log
-## [v1.2.2] - 2022-06-04
+## [v1.3.0] - 2022-06-04
 ### Fixed
 - Increase `Serial` timeout to read full sensor line
 - Memory overflow for reading large motion events from disk, new event processor only loads frames as and when required from IO
-
 
 ### Added - 2022-06-09
 - ability to output log to a set file or standard out
@@ -12,10 +11,7 @@
     - can now save YUV stream to `clip.dat` per event
     - decoding of all saved image frames now performed within `imdecode.py`
     - added YUV format to settings and tuner
-    - YUV format uses less bandwidth, RPi zero w can now run at 20fps
-- `camera_to_disk.py` is refactored so that video-buffer components exist in thier own file, `video_buffers.py`, better encapsulation.
-- some further debugging features are added to the log, including per-event average IO access latency and motion vector computation times
-- `video_buffers.py` make use of ionice (accessed via the `psutil` package). This should prioritise io access to the buffers above other dyntrap operations (such as ffmpeg copies)
+    - YUV format uses less IO bandwidth, RPi zero w can now run at 20fps
 
 ### Changed - 2022-06-04
 - removed many settings from `tuner.py` 
@@ -25,13 +21,10 @@
     - buffer size, removed from `tuner.py`, still configurable via `settings.py` now set to 20 secs, tested and works on rpi0, rpi4
 - event processing now in its own file `DynAIkonTrap/filtering/event.py`
     - makes `filter.py` more concise
-    - not built as a pipeline element (ie no input and output queues), perhaps to-do although seems superfluous for now
+    - not built as a pipeline element (ie no input and output queues), perhaps to-do although seems superfluous...
 - `EventData` class no longer carries frame buffers for an entire event
-    - `remember_from_disk.py` no longer reads frame buffers, instead it scans the event file, checking it does actually exist and produces file pointers for the beginnning of each buffer, these are added to `EventData`
+    - `remember_from_disk.py` no longer reads frame buffers, instead it scans the event file, making sure buffers exist and produces file pointers for the beginnning of each buffer, these are added to `EventData`
     - `EventData` also contains fields for frame width, height and pixel format, seems neater to pass them around as `EventData` than configure each pipeline element with those settings
-- `comms.py` no longer reads and copies all data within a file when outputting a video, instead it is moved (renamed) this saves on disk usage
-- `requirements.txt` no longer includes `Pillow` as YUV decoding method uses numpy only, instead includes an appropriate version of `psutil`
-- docs updated (28/06/2022)
 
 ## [v1.2.1] - 2021-11-24
 
