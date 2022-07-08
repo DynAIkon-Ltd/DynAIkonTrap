@@ -182,11 +182,20 @@ settings.sensor.obfuscation_distance_km = setter(
 
 print("\nOutput settings")
 print("---------------")
-mode = input("Output mode: save to disk, or server? (d/s) [d]> ")
+mode = input("Output mode: save to disk, or upload to server? (d/s) [d]> ")
 if mode == "s":
     settings.output = SenderSettings
     settings.output.output_mode = OutputMode.SEND.value
-    settings.output.server = setter("Server address", settings.output.server)
+    fcc = input("Would you like to upload your observations to FASTCAT-cloud? (y/n) [y]> ")
+    if fcc == "y":
+        settings.output.server = setter("Current FASTCAT-cloud backend address", settings.output.server)
+        settings.output.POST = setter("Current FASTCAT-cloud API POST endpoint", settings.output.POST)
+        settings.output.userId = input("Please input your FASTCAT-Cloud User ID")
+        settings.output.apiKey = input("Please input your FASTCAT-Cloud API key")
+        
+    else:
+        settings.output.server = input("Please input your own server address")
+        settings.output.POST   = input("Please input your own server POST endpoint")
 else:
     settings.output = WriterSettings
     settings.output.output_mode = OutputMode.DISK.value
@@ -195,13 +204,8 @@ else:
 
 format = input("Output format video? (y/n) [y]> ")
 if format == "n":
-    if mode == "s":
-        settings.output.POST = "capture/"
     settings.output.output_format = OutputFormat.STILL.value
 else:
-
-    if mode == "s":
-        settings.output.POST = "capture_video/"
     settings.output.output_format = OutputFormat.VIDEO.value
     codec = input("Codec: H264, or PIM1 [H264]> ")
     if codec == "PIM1":
