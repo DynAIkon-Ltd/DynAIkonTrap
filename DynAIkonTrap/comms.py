@@ -359,6 +359,8 @@ class Sender(AbstractOutput):
     def __init__(self, settings: SenderSettings, read_from: Tuple[Filter, SensorLogs]):
         self._server = settings.server
         self._device_id = settings.device_id
+        self._user_id = settings.userId
+        self._api_key = settings.apiKey
         self._path_POST = settings.POST
         super().__init__(settings, read_from)
 
@@ -379,12 +381,11 @@ class Sender(AbstractOutput):
 
     def output_video(self, video: IO[bytes], caption: StringIO, time: float, **kwargs):
         meta = {"trap_id": self._device_id, "time": time}
-        files_dict = {
-            "video": ("video", video, "video/mp4"),
-            "caption": ("caption", caption, "text/vtt"),
-        }
+        video_filename = video.name
+        files_arr = [('image', (video_filename, video, 'video/mp4' ))]
+        url = self._server + self._path_POST + '?userId=' + self._user_id + '&apiKey=' + self._api_key
         try:
-            r = post(self._server + self._path_POST, data=meta, files=files_dict)
+            r = post(self._server + self._path_POST, data=meta, files=files_arr)
             r.raise_for_status()
             logger.info("Video sent")
         except HTTPError as e:
