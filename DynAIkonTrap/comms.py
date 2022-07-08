@@ -367,11 +367,13 @@ class Sender(AbstractOutput):
         logger.debug("Sender started (format: {})".format(settings.output_format))
 
     def output_still(self, image: bytes, time: float, sensor_log: SensorLog):
-
-        files_dict = {"file": ("image", image, "image/jpeg")}
+        meta = sensor_log
+        image_filename = image.name
+        files_arr = [('image', (image_filename, image, 'image/jpeg'))]
+        url = self._server + self._path_POST + '?userId=' + self._user_id + '&apiKey=' + self._api_key
         logger.debug("Sending capture, meta = {}".format(sensor_log))
         try:
-            r = post(self._server + self._path_POST, data=sensor_log, files=files_dict)
+            r = post(self._server + self._path_POST, data=meta, files=files_arr)
             r.raise_for_status()
             logger.info("Image sent")
         except HTTPError as e:
@@ -385,7 +387,7 @@ class Sender(AbstractOutput):
         files_arr = [('image', (video_filename, video, 'video/mp4' ))]
         url = self._server + self._path_POST + '?userId=' + self._user_id + '&apiKey=' + self._api_key
         try:
-            r = post(self._server + self._path_POST, data=meta, files=files_arr)
+            r = post(url, data=meta, files=files_arr)
             r.raise_for_status()
             logger.info("Video sent")
         except HTTPError as e:
