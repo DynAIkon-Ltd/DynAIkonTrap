@@ -42,7 +42,7 @@ from DynAIkonTrap.camera_to_disk import CameraToDisk
 from DynAIkonTrap.filtering.remember_from_disk import EventRememberer
 from DynAIkonTrap.comms import Output
 from DynAIkonTrap.sensor import SensorLogs
-from DynAIkonTrap.settings import PipelineVariant, load_settings
+from DynAIkonTrap.settings import PipelineVariant, SenderSettings, load_settings
 from DynAIkonTrap.logging import set_logger_config
 
 # Make Ctrl-C quit gracefully
@@ -93,8 +93,8 @@ else:
 
 filters = Filter(read_from=source, settings=settings.filter)
 
+sensor_logs = SensorLogs(settings=settings.sensor)    
 
-sensor_logs = SensorLogs(settings=settings.sensor)
 Output(settings=settings.output, read_from=(filters, sensor_logs))
 
 while True:

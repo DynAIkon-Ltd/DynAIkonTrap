@@ -29,7 +29,7 @@ from json import dump, dumps
 from subprocess import CalledProcessError, call, check_call
 from shutil import move
 
-from requests import post
+from requests import RequestException, post, get, head
 from requests.exceptions import HTTPError, ConnectionError
 from numpy import asarray
 import cv2  # pdoc3 can't handle importing individual OpenCV functions
@@ -69,7 +69,8 @@ class VideoCaption:
 
             # Get existing or create new caption with this log
             key = int(
-                frame_number // (self._framerate * self._sensor_logs.read_interval)
+                frame_number // (self._framerate *
+                                 self._sensor_logs.read_interval)
             )
             caption = captions.get(
                 key,
@@ -183,7 +184,8 @@ class VideoCaption:
             log = c["log"]
             if log != None:
                 json_captions.append(
-                    {"start": c["start"], "end": c["stop"], "log": log.serialise()}
+                    {"start": c["start"], "end": c["stop"],
+                        "log": log.serialise()}
                 )
         return StringIO(dumps(json_captions))
 
@@ -209,15 +211,19 @@ class AbstractOutput(metaclass=ABCMeta):
 
         if settings.output_format == OutputFormat.VIDEO:
             if self._animal_queue.mode == FilterMode.BY_FRAME:
-                self._reader = Process(target=self._read_frames_to_video, daemon=True)
+                self._reader = Process(
+                    target=self._read_frames_to_video, daemon=True)
             elif self._animal_queue.mode == FilterMode.BY_EVENT:
-                self._reader = Process(target=self._read_events_to_video, daemon=True)
+                self._reader = Process(
+                    target=self._read_events_to_video, daemon=True)
 
         elif settings.output_format == OutputFormat.STILL:
             if self._animal_queue.mode == FilterMode.BY_FRAME:
-                self._reader = Process(target=self._read_frames_to_image, daemon=True)
+                self._reader = Process(
+                    target=self._read_frames_to_image, daemon=True)
             elif self._animal_queue.mode == FilterMode.BY_EVENT:
-                self._reader = Process(target=self._read_events_to_image, daemon=True)
+                self._reader = Process(
+                    target=self._read_events_to_image, daemon=True)
 
         self._reader.start()
 
@@ -251,12 +257,15 @@ class AbstractOutput(metaclass=ABCMeta):
             if frame is None and not start_new:
                 start_new = True
                 writer.release()
-                captions = caption_generator.generate_sensor_json(frame_timestamps)
-                self.output_video(video=file, caption=captions, time=start_time)
+                captions = caption_generator.generate_sensor_json(
+                    frame_timestamps)
+                self.output_video(
+                    video=file, caption=captions, time=start_time)
                 file.close()
                 continue
 
-            decoded_image = cv2.imdecode(asarray(frame.image), cv2.IMREAD_COLOR)
+            decoded_image = cv2.imdecode(
+                asarray(frame.image), cv2.IMREAD_COLOR)
 
             # Start of motion sequence
             if start_new:
@@ -289,7 +298,8 @@ class AbstractOutput(metaclass=ABCMeta):
                     check_call(
                         [
                             "nice -n 5 ffmpeg -hide_banner -loglevel error -framerate {} -probesize 42M -i {} -c copy {} -y".format(
-                                self.framerate, join(event.dir, "clip.h264"), file.name
+                                self.framerate, join(
+                                    event.dir, "clip.h264"), file.name
                             )
                         ],
                         shell=True,
@@ -320,7 +330,8 @@ class AbstractOutput(metaclass=ABCMeta):
                 while success:
                     if log is None:
                         logger.warning("No sensor readings")
-                        self.output_still(image=image, time=event.start_timestamp)
+                        self.output_still(
+                            image=image, time=event.start_timestamp)
                     else:
                         self.output_still(
                             image=image, time=event.start_timestamp, sensor_log=log
@@ -363,16 +374,19 @@ class Sender(AbstractOutput):
         self._path_POST = settings.POST
         super().__init__(settings, read_from)
 
-        logger.debug("Sender started (format: {})".format(settings.output_format))
+        logger.debug("Sender started (format: {})".format(
+            settings.output_format))
 
     def output_still(self, image: bytes, time: float, sensor_log: SensorLog):
         meta = sensor_log
         image_filename = image.name
         files_arr = [('image', (image_filename, image, 'image/jpeg'))]
-        url = self._server + self._path_POST + '?userId=' + self._user_id + '&apiKey=' + self._api_key
+        url = self._server + self._path_POST + '?userId=' + \
+            self._user_id + '&apiKey=' + self._api_key
         logger.debug("Sending capture, meta = {}".format(sensor_log))
         try:
-            r = post(self._server + self._path_POST, data=meta, files=files_arr)
+            r = post(self._server + self._path_POST,
+                     data=meta, files=files_arr)
             r.raise_for_status()
             logger.info("Image sent")
         except HTTPError as e:
@@ -383,8 +397,9 @@ class Sender(AbstractOutput):
     def output_video(self, video: IO[bytes], caption: StringIO, time: float, **kwargs):
         meta = {"trap_id": self._device_id, "time": time}
         video_filename = video.name
-        files_arr = [('image', (video_filename, video, 'video/mp4' ))]
-        url = self._server + self._path_POST + '?userId=' + self._user_id + '&apiKey=' + self._api_key
+        files_arr = [('image', (video_filename, video, 'video/mp4'))]
+        url = self._server + self._path_POST + '?userId=' + \
+            self._user_id + '&apiKey=' + self._api_key
         try:
             r = post(url, data=meta, files=files_arr)
             r.raise_for_status()
@@ -402,12 +417,14 @@ class Writer(AbstractOutput):
         path.mkdir(parents=True, exist_ok=True)
         self._path = path.resolve()
         super().__init__(settings, read_from)
-        logger.debug("Writer started (format: {})".format(settings.output_format))
+        logger.debug("Writer started (format: {})".format(
+            settings.output_format))
 
     def _unique_name(self, capture_time: float) -> str:
 
         # Get all filenames and remove extensions
-        names = map(lambda x: x[0], map(lambda x: x.split("."), listdir(self._path)))
+        names = map(lambda x: x[0], map(
+            lambda x: x.split("."), listdir(self._path)))
 
         # Base the new file's name on the capture time
         name = "{:%Y-%m-%d_%H-%M-%S-%f}".format(
@@ -435,7 +452,7 @@ class Writer(AbstractOutput):
         logger.info("Image and meta-data saved")
 
     def output_video(self, video: IO[bytes], caption: StringIO, time: float, **kwargs):
-        name = self._unique_name(time)        
+        name = self._unique_name(time)
         move(video.name, name + self._video_suffix)
 
         with open(name + ".json", "w") as f:
@@ -449,6 +466,63 @@ def Output(
 ) -> Union[Sender, Writer]:
     """Generator function to provide an implementation of the :class:`~AbstractOutput` based on the :class:`~DynAIkonTrap.settings.OutputMode` of the ``settings`` argument."""
     if settings.output_mode == OutputMode.SEND:
-        Sender(settings=settings, read_from=read_from)
+        # check a few things before we configure the sender...
+        sender_config_failure = False
+        try:
+            #check server is available
+            if settings.is_fcc:
+                #check api health
+                logger.info("Connecting to FASTCAT-Cloud at: {} ...".format(settings.server))
+                result = get(settings.server + "/status")
+                result.raise_for_status()
+                if result.status_code == 200:
+                    logger.info("Successful connection to URL: {}".format(settings.server))
+                     #check the api key and user ids have been set
+                    if settings.apiKey == "" or settings.userId == "":
+                        logger.error("User ID / API Key not set. Cannot authenticate FASTCAT-Cloud")
+                        sender_config_failure = True
+                    # check the user can authenticate FCC with credentials 
+                    else:
+                        logger.info("Checking FASTCAT-Cloud authentication with User ID: {} and API Key: {} ...".format(settings.userId, settings.apiKey))
+                        result = get(settings.server + "/api/v2/authentication/user?userId=" + settings.userId + "&apiKey=" + settings.apiKey)
+                        if result.status_code == 200:
+                            user = result.json()
+                            logger.info("Success! Authenticated as: {} with Email: {}".format(user["body"]["user"]["Name"], user["body"]["user"]["Email"]))
+                            Sender(settings=settings, read_from=read_from)
+                        else: 
+                            logger.error("Cannot authenticate with FASTCAT-Cloud. Error message from server: {}".format(result.json()["message"]))
+                            sender_config_failure = True
+                else:
+                    logger.error("Problem accessing FASTCAT-Cloud API. HTTPError: {}".format(result.raise_for_status()))
+                    sender_config_failure = True
+            else:
+                #check url is accessible
+                logger.info("Connecting to user's server at: {} ...".format(settings.server))
+                result = head(settings.server)
+                if result.status_code == 200:
+                    logger.info("Successful connection to URL: {}".format(settings.server))
+                    Sender(settings=settings, read_from=read_from)
+
+                else:
+                    logger.error("Problem connecting to the user's server. HTTPError: {}".format(result.raise_for_status()))
+                    sender_config_failure = True
+        except AttributeError as e:
+            logger.error(
+                "Attribute error raised when trying to check the SenderSettings: {}.".format(e)
+            )
+            sender_config_failure = True
+        except ConnectionError as e:
+            logger.error("Connection error. Server address: {}, are you sure this is correct? Error message: {}".format(settings.server, e))
+            sender_config_failure = True
+        except RequestException as e:
+            logger.error(
+                "Requests error: {}".format(e)
+            )
+            sender_config_failure = True
+        if sender_config_failure:
+            logger.info(
+                "Couldn't initialise Sender, continuing with a Writer instead."
+            )
+            Writer(settings=settings, read_from=read_from)
     else:
         Writer(settings=settings, read_from=read_from)
