@@ -187,15 +187,16 @@ if mode == "s":
     settings.output = SenderSettings
     settings.output.output_mode = OutputMode.SEND.value
     fcc = input("Would you like to upload your observations to FASTCAT-cloud? (y/n) [y]> ")
-    if fcc == "y":
+    if fcc == "n":
+        settings.output.is_fcc = False
+        settings.output.server = input("Please input your own server address > ")
+        settings.output.POST   = input("Please input your own server POST endpoint > ")        
+    else:
+        settings.output.is_fcc = True
         settings.output.server = setter("Current FASTCAT-cloud backend address", settings.output.server)
         settings.output.POST = setter("Current FASTCAT-cloud API POST endpoint", settings.output.POST)
-        settings.output.userId = input("Please input your FASTCAT-Cloud User ID")
-        settings.output.apiKey = input("Please input your FASTCAT-Cloud API key")
-        
-    else:
-        settings.output.server = input("Please input your own server address")
-        settings.output.POST   = input("Please input your own server POST endpoint")
+        settings.output.userId = input("Please input your FASTCAT-Cloud User ID > ")
+        settings.output.apiKey = input("Please input your FASTCAT-Cloud API key > ")
 else:
     settings.output = OutputSettings
     settings.output.output_mode = OutputMode.DISK.value
