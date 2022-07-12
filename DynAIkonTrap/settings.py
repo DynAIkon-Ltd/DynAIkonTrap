@@ -188,9 +188,9 @@ class OutputSettings:
 @dataclass
 class SenderSettings(OutputSettings):
     """Settings for a :class:`~DynAIkonTrap.comms.Sender`"""
-
-    server: str = "https://backend.fastcat-cloud.org/api/v2/"
-    POST: str = "/predictions/demo"
+    is_fcc: bool = True
+    server: str = "https://backend.fastcat-cloud.org"
+    POST: str = "/api/v2/predictions/demo"
     userId : str = ""
     apiKey : str = ""
 
