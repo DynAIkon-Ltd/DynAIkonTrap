@@ -1,4 +1,19 @@
 # Change Log
+## [v1.3.1] - 2022-07-12
+### Fixed
+- DynTrap crashes using new pipeline in Send mode - fixed
+    - WriterSettings object controled the `path` variable, this dictates where files are buffered on disk
+    - `path` is now made a property of the base-class `OutputSettings`, `WriterSettings` is removed. 
+    - We now have a base-class with required settings for send or disk modes, and an extension class, `SenderSettings` adds info for uploading detections to servers. 
+
+### Added 
+- New setttings fields are added to allow users to set
+    - upload to fastcat-cloud or to use thier own server
+    - add a userID and apiKey for fastcat-cloud uploads
+    - specify the FCC endpoints (in case these change in future, or we have multiple mirrors)
+- New sender modes in `comms.py`
+    - allow video and image detections to be uploaded to FCC 
+
 ## [v1.3.0] - 2022-06-04
 ### Fixed
 - Increase `Serial` timeout to read full sensor line
