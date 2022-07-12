@@ -24,7 +24,7 @@ from DynAIkonTrap.settings import (
     Settings,
     FilterSettings,
     OutputFormat,
-    WriterSettings,
+    OutputSettings,
 )
 
 
@@ -197,7 +197,7 @@ if mode == "s":
         settings.output.server = input("Please input your own server address")
         settings.output.POST   = input("Please input your own server POST endpoint")
 else:
-    settings.output = WriterSettings
+    settings.output = OutputSettings
     settings.output.output_mode = OutputMode.DISK.value
     settings.output.path = setter("Output path", settings.output.path)
 

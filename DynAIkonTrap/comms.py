@@ -43,7 +43,6 @@ from DynAIkonTrap.settings import (
     SenderSettings,
     OutputFormat,
     OutputSettings,
-    WriterSettings,
 )
 
 logger = get_logger(__name__)
@@ -397,7 +396,7 @@ class Sender(AbstractOutput):
 
 
 class Writer(AbstractOutput):
-    def __init__(self, settings: WriterSettings, read_from: Tuple[Filter, SensorLogs]):
+    def __init__(self, settings: OutputSettings, read_from: Tuple[Filter, SensorLogs]):
 
         path = Path(settings.path).expanduser()
         path.mkdir(parents=True, exist_ok=True)

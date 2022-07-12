@@ -177,10 +177,12 @@ class OutputVideoCodec(Enum):
 
 @dataclass
 class OutputSettings:
+    """Base-class of settings for outputting to disk or server uploads"""
     device_id: Any = 0
     output_format: OutputFormat = OutputFormat.STILL
     output_mode: OutputMode = OutputMode.DISK
     output_codec: OutputVideoCodec = OutputVideoCodec.H264
+    path: str = "output"
 
 
 @dataclass
@@ -191,14 +193,6 @@ class SenderSettings(OutputSettings):
     POST: str = "/predictions/demo"
     userId : str = ""
     apiKey : str = ""
-
-
-
-@dataclass
-class WriterSettings(OutputSettings):
-    """Settings for a :class:`~DynAIkonTrap.comms.Writer`"""
-
-    path: str = "output"
 
 
 @dataclass
@@ -227,7 +221,7 @@ class Settings:
     camera: CameraSettings = CameraSettings()
     filter: FilterSettings = FilterSettings()
     sensor: SensorSettings = SensorSettings()
-    output: Union[SenderSettings, WriterSettings] = WriterSettings()
+    output: Union[SenderSettings, OutputSettings] = OutputSettings()
     logging: LoggerSettings = LoggerSettings()
 
 
@@ -283,7 +277,7 @@ def load_settings() -> Settings:
                         ),
                     )
                 else:  # Default to writing to disk
-                    output = WriterSettings(
+                    output = OutputSettings(
                         device_id=settings_json["output"]["device_id"],
                         output_format=OutputFormat(
                             settings_json["output"]["output_format"]

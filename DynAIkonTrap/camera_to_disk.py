@@ -44,7 +44,7 @@ from DynAIkonTrap.imdecode import YUV_BYTE_PER_PIX
 from DynAIkonTrap.settings import (
     CameraSettings,
     FilterSettings,
-    WriterSettings,
+    OutputSettings,
 )
 from DynAIkonTrap.logging import get_logger
 
@@ -91,7 +91,7 @@ class CameraToDisk:
     def __init__(
         self,
         camera_settings: CameraSettings,
-        writer_settings: WriterSettings,
+        writer_settings: OutputSettings,
         filter_settings: FilterSettings,
     ):
         """Initialiser, creates instance of camera and buffers for catching it's output.
