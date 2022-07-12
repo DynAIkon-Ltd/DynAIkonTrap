@@ -13,6 +13,12 @@
     - specify the FCC endpoints (in case these change in future, or we have multiple mirrors)
 - New sender modes in `comms.py`
     - allow video and image detections to be uploaded to FCC 
+- Sender configuration testing in `comms.Output` function
+    - tests if the server, userId, api keys are configured appropriately, if this fails, the user is notified via the log and a `Writer` instance is used instead
+- Output methods in the `Sender` class now handle cases where the server is unavailable by saving to disk if the connection fails. 
+
+### Changed 
+- `Sender` now inherits from `Writer`
 
 ## [v1.3.0] - 2022-06-04
 ### Fixed

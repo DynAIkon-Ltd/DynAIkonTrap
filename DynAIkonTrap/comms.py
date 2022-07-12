@@ -362,54 +362,6 @@ class AbstractOutput(metaclass=ABCMeta):
         """
         pass
 
-
-class Sender(AbstractOutput):
-    """The Sender is a simple interface for sending the desired data to a server"""
-
-    def __init__(self, settings: SenderSettings, read_from: Tuple[Filter, SensorLogs]):
-        self._server = settings.server
-        self._device_id = settings.device_id
-        self._user_id = settings.userId
-        self._api_key = settings.apiKey
-        self._path_POST = settings.POST
-        super().__init__(settings, read_from)
-
-        logger.debug("Sender started (format: {})".format(
-            settings.output_format))
-
-    def output_still(self, image: bytes, time: float, sensor_log: SensorLog):
-        meta = sensor_log
-        image_filename = image.name
-        files_arr = [('image', (image_filename, image, 'image/jpeg'))]
-        url = self._server + self._path_POST + '?userId=' + \
-            self._user_id + '&apiKey=' + self._api_key
-        logger.debug("Sending capture, meta = {}".format(sensor_log))
-        try:
-            r = post(self._server + self._path_POST,
-                     data=meta, files=files_arr)
-            r.raise_for_status()
-            logger.info("Image sent")
-        except HTTPError as e:
-            logger.error(e)
-        except ConnectionError as e:
-            logger.error("Connection to server failed; could not send data")
-
-    def output_video(self, video: IO[bytes], caption: StringIO, time: float, **kwargs):
-        meta = {"trap_id": self._device_id, "time": time}
-        video_filename = video.name
-        files_arr = [('image', (video_filename, video, 'video/mp4'))]
-        url = self._server + self._path_POST + '?userId=' + \
-            self._user_id + '&apiKey=' + self._api_key
-        try:
-            r = post(url, data=meta, files=files_arr)
-            r.raise_for_status()
-            logger.info("Video sent")
-        except HTTPError as e:
-            logger.error(e)
-        except ConnectionError as e:
-            logger.error("Connection to server failed; could not send data")
-
-
 class Writer(AbstractOutput):
     def __init__(self, settings: OutputSettings, read_from: Tuple[Filter, SensorLogs]):
 
@@ -460,11 +412,109 @@ class Writer(AbstractOutput):
 
         logger.info("Video and caption saved")
 
+class Sender(Writer):
+    """The Sender is a simple interface for sending the desired data to a server. Inherits from :class:`~DynAIkonTrap.comms.Writer`, if server posts fail, Writer methods are called instead to save data on disk."""
+
+    def __init__(self, settings: SenderSettings, read_from: Tuple[Filter, SensorLogs]):
+        self._server = settings.server
+        self._device_id = settings.device_id
+        self._user_id = settings.userId
+        self._api_key = settings.apiKey
+        self._path_POST = settings.POST
+        self._is_fcc = settings.is_fcc
+        super().__init__(settings, read_from)
+
+        logger.debug("Sender started (format: {})".format(
+            settings.output_format))
+
+    def check_health(self) -> bool:
+        """Checks health of the server to send to
+
+        Returns:
+            bool: returns True if connection deemed healthy, False otherwise
+        """
+        try:
+            result 
+            if self._is_fcc:
+                result = get(self._server + "/status")
+            else: 
+                result = head(self.server)
+                result.raise_for_status()
+                return result.status_code == 200
+            
+        except ConnectionError as e:
+            logger.error("Connection error to server for uploads: {}".format(e))
+            return False
+        except HTTPError as e:
+            logger.error("HTTP error to server for uploads: {}".format(e))
+            return False
+        except RequestException as e: 
+            logger.error("Requests error to server for uploads: {}".format(e))
+            return False
+
+
+
+    def output_still(self, image: bytes, time: float, sensor_log: SensorLog):
+        healthy = self.check_health()
+        send_failure = False
+        if healthy:
+            meta = sensor_log
+            image_filename = image.name
+            files_arr = [('image', (image_filename, image, 'image/jpeg'))]
+            url = self._server + self._path_POST + '?userId=' + \
+                self._user_id + '&apiKey=' + self._api_key
+            logger.debug("Sending capture, meta = {}".format(sensor_log))
+            try:
+                r = post(self._server + self._path_POST,
+                        data=meta, files=files_arr)
+                r.raise_for_status()
+                logger.info("Image sent")
+            except HTTPError as e:
+                logger.error("HTTP error while sending detection: {}".format(e))
+                send_failure = True
+            except ConnectionError as e:
+                logger.error("Connection error while sending detection: {}".format(e))
+                send_failure = True
+            except RequestException as e:
+                logger.error("Requests error while sending detection: {}".format(e))
+                send_failure = True
+            
+        if not healthy or send_failure:
+            logger.info("Connection to server deemed unhealthy. Send cancelled, writing detection to disk instead.")
+            super().output_still(image, time, sensor_log)
+
+    def output_video(self, video: IO[bytes], caption: StringIO, time: float, **kwargs):
+        healthy = self.check_health()
+        send_failure = False
+        if healthy:
+            meta = {"trap_id": self._device_id, "time": time}
+            video_filename = video.name
+            files_arr = [('image', (video_filename, video, 'video/mp4'))]
+            url = self._server + self._path_POST + '?userId=' + \
+                self._user_id + '&apiKey=' + self._api_key
+            try:
+                r = post(url, data=meta, files=files_arr)
+                r.raise_for_status()
+                logger.info("Video sent")
+            except HTTPError as e:
+                logger.error("HTTP error while sending detection: {}".format(e))
+                send_failure = True
+            except ConnectionError as e:
+                logger.error("Connection error while sending detection: {}".format(e))
+                send_failure = True
+            except RequestException as e:
+                logger.error("Requests error while sending detection: {}".format(e))
+                send_failure = True
+        if not healthy or send_failure:
+            logger.info("Connection to server deemed unhealthy. Send cancelled, writing detection to disk instead.")
+            super().output_video(video, caption, time)
+
+
 
 def Output(
     settings: OutputSettings, read_from: Tuple[Filter, SensorLogs]
 ) -> Union[Sender, Writer]:
-    """Generator function to provide an implementation of the :class:`~AbstractOutput` based on the :class:`~DynAIkonTrap.settings.OutputMode` of the ``settings`` argument."""
+    """Generator function to provide an implementation of the :class:`~AbstractOutput` based on the :class:`~DynAIkonTrap.settings.OutputMode` of the ``settings`` argument. If the output mode is SEND, this function performs some error checking/handling before configuring a :class:`~DynAIkonTrap.comms.Sender` instance"""
     if settings.output_mode == OutputMode.SEND:
         # check a few things before we configure the sender...
         sender_config_failure = False
