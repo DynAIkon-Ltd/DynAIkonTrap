@@ -20,7 +20,7 @@ Events are loaded with into instances of :class:`~DynAIkonTrap.filtering.remembe
 
 The output is accessible via a queue. 
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from os import nice
 from multiprocessing import Array, Process, Queue
 from multiprocessing.queues import Queue as QueueType
@@ -40,13 +40,13 @@ logger = get_logger(__name__)
 @dataclass
 class EventData:
     """A class for storing motion event data for further processing."""
-    raw_raster_file_indices: List[int]
-    raw_raster_path: str
-    dir: str
-    start_timestamp: float
-    raw_x_dim: int
-    raw_y_dim: int
-    raw_bpp: int
+    raw_raster_file_indices: List[int] = field(default_factory=list)
+    raw_raster_path: str = ""
+    dir: str = ""
+    start_timestamp: float = 0.0
+    raw_x_dim: int = 0
+    raw_y_dim: int = 0
+    raw_bpp: int = 0
 
 
 class EventRememberer:
@@ -111,8 +111,7 @@ class EventRememberer:
             start_timestamp=time(),  # set event time set to now
             raw_x_dim=self.raw_dims[0],
             raw_y_dim=self.raw_dims[1],
-            raw_bpp=YUV_BYTE_PER_PIX
-,
+            raw_bpp=YUV_BYTE_PER_PIX,
         )
 
     def get(self) -> EventData:
