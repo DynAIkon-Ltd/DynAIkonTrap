@@ -14,11 +14,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """Static functions providing access to decoding byte arrays into image formats, returned data are numpy ndarrays."""
+from distutils.log import error
+from genericpath import exists
+from subprocess import CalledProcessError, check_call
+from tempfile import NamedTemporaryFile
+from typing import List
 import cv2
 import numpy as np
 from math import sqrt
+from os.path import join
+
+from DynAIkonTrap.logging import get_logger
 
 YUV_BYTE_PER_PIX = 1.5 
+
+logger = get_logger(__name__)
 
 class decoder:
     """A class containing static methods to decode image formats YUV and JPEG, depends on numpy and opencv (cv2) python packages. YUV formats are assumed to be YUV420, with 1.5 bytes per pixel, as described here: https://en.wikipedia.org/wiki/YUV#Y.E2.80.B2UV420p_.28and_Y.E2.80.B2V12_or_YV12.29_to_RGB888_conversion
@@ -71,6 +81,63 @@ class decoder:
             np.ndarray: an ndarray with size (width, height, 3) where each element is a pixel, pixel format is BGR, one byte per colour
         """
         return cv2.imdecode(np.asarray(buf), cv2.IMREAD_COLOR)
+
+    @staticmethod
+    def h264_to_jpeg_frames(h264_file : str) -> List[str]:
+        """Create a list of jpeg files stored on disk for every frame in the h264 recording file. If no valid file is given, returns empty list
+
+        Args:
+            h264_file (str): file path to a h264 encoded recording
+
+        Returns:
+            List[str]: list of file paths to saved jpeg images, one per h264 encoded frame. All files saved within the /tmp/ directory for further moving around. If the h264 path given, an empty list is returned
+        """
+        images = []
+        if exists(h264_file):
+            try:
+                vidcap = cv2.VideoCapture(h264_file)
+                success, image = vidcap.read()
+                images = []
+                while success:
+                    image_file = NamedTemporaryFile(suffix='.jpg', delete=False)
+                    cv2.imwrite(image_file.name, image)
+                    images.append(image_file.name)
+                    success, image = vidcap.read()
+            except cv2.error as e:
+                logger.error("H264 -> images decoding error: {}".format(e))    
+        return images
+
+    @staticmethod
+    def h264_to_mp4(h264_file: str , video_framerate: int, suffix:str = ".mp4" ) -> str:
+        """This wraps H264 files in the mp4 container format, this is performed calling FFMPEG. Video framerate is also required 
+
+        Args:
+            h264_file (str): The path to the h264 file to be converted 
+            video_framerate (int): The video framerate 
+            suffix (str, optional): An optional video suffix to produce other file formats such as .avi. Defaults to ".mp4".
+
+        Returns:
+            str: Path to the generated mp4 file on disk. This file may be empty if the encoding process fails. 
+        """
+        
+        file = NamedTemporaryFile(suffix=suffix, delete=False)
+        try:
+            check_call(
+                [
+                    "nice -n 5 ffmpeg -hide_banner -loglevel error -framerate {} -probesize 42M -i {} -c copy {} -y".format(
+                     video_framerate, h264_file, file.name
+                    )
+                ],
+                shell=True,
+            )
+        except CalledProcessError as e:
+            logger.error(
+                "Ffmpeg error converting .h264 to {}. Error: {}".format(
+                    suffix, e
+                )
+            )
+        return file.name
+
 
     
 
