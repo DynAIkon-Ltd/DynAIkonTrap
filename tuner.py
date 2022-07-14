@@ -200,7 +200,7 @@ if mode == "s":
 else:
     settings.output = OutputSettings
     settings.output.output_mode = OutputMode.DISK.value
-    settings.output.path = setter("Output path", settings.output.path)
+settings.output.path = setter("Output path", settings.output.path)
 
 
 format = input("Output format video? (y/n) [y]> ")
