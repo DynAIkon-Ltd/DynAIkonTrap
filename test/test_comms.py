@@ -64,14 +64,14 @@ class TestsWriterEventModeVideoOut(TestCase):
         return super().setUp()
 
     def test_output_video(self):
-        images = decoder.h264_to_jpeg_frames('test/data/event_example/clip.h264')
-        directory_name = self._writer.output_group_of_stills(images, 0.0, None)
-        #verify directory exists
-        self.assertTrue(exists(directory_name))
-        #verify directory contains 385 jpeg images
-        names = glob(directory_name + '/*.jpg')
-        nr_jpegs = len([name for name in names if isfile(name)])
-        self.assertTrue(nr_jpegs == 385)
+        video_file = decoder.h264_to_mp4('test/data/event_example/clip.h264', 20)
+        with open(video_file, 'rb') as f:
+            name = self._writer.output_video(f, 0.0, caption=None)
+            self.assertIsNot(name, "")
+            self.assertTrue(isfile(name + '.mp4'))
 
+class TestsSenderEventModeVideoOut(TestCase):
+    def setUp(self):
+        pass
 
 

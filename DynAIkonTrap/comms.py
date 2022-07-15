@@ -263,7 +263,7 @@ class AbstractOutput(metaclass=ABCMeta):
                 captions = caption_generator.generate_sensor_json(
                     frame_timestamps)
                 self.output_video(
-                    video=file, caption=captions, time=start_time)
+                    video=file, time=start_time, caption=captions)
                 file.close()
                 continue
 
@@ -300,7 +300,7 @@ class AbstractOutput(metaclass=ABCMeta):
                 )
                 with open(filename, 'rb') as file:
                     self.output_video(
-                        video=file, caption=caption, time=event.start_timestamp
+                        video=file, time=event.start_timestamp, caption=caption
                     )
                     file.close()
 
@@ -348,7 +348,7 @@ class AbstractOutput(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def output_video(self, video: IO[bytes], caption: StringIO, time: float, **kwargs):
+    def output_video(self, video: IO[bytes], time: float, caption: StringIO = None, **kwargs):
         """Output a video with its meta-data. The sensor data is provided via the video captions (``caption``).
 
         Args:
@@ -431,13 +431,15 @@ class Writer(AbstractOutput):
 
         return super().output_group_of_stills(images, time, sensor_log)
 
-    def output_video(self, video: IO[bytes], caption: StringIO, time: float, **kwargs):
-        """Takes a video file bytestream and saves to disk alongside a caption file with the same name. These names are set with a time parameter
+    def output_video(self, video: IO[bytes], time: float, caption: StringIO = None, **kwargs) -> str:
+        """Takes a video file bytestream and saves to disk alongside an optional caption file with the same name with a .json extension. These names are set with a timestamp.
 
         Args:
             video (IO[bytes]): The video file to be saved
-            caption (StringIO): The caption to be saved
             time (float): The time corresponding to this video 
+            caption (StringIO): The caption to be saved, can be None to save no caption file
+         Returns:
+            str: File path (excluding extension) for the caption file and/or saved video
         """
         name = self._unique_name(time)
         move(video.name, name + self._video_suffix)
@@ -447,6 +449,7 @@ class Writer(AbstractOutput):
                 f.write(caption.getvalue())
 
         logger.info("Video and caption saved")
+        return name
 
 class Sender(Writer):
     """The Sender is a simple interface for sending the desired data to a server. Inherits from :class:`~DynAIkonTrap.comms.Writer`, if server posts fail, Writer methods are called instead to save data on disk."""
@@ -454,6 +457,7 @@ class Sender(Writer):
     def __init__(self, settings: SenderSettings, read_from: Tuple[Filter, SensorLogs]):
         self._server = settings.server
         self._device_id = settings.device_id
+
         self._user_id = settings.userId
         self._api_key = settings.apiKey
         self._path_POST = settings.POST
@@ -495,8 +499,11 @@ class Sender(Writer):
         if healthy:
             image_filename = image.name
             files_arr = [('image', (image_filename, image, 'image/jpeg'))]
-            url = self._server + self._path_POST + '?userId=' + \
-                self._user_id + '&apiKey=' + self._api_key
+            if self._is_fcc:
+                url = self._server + self._path_POST + '?userId=' + \
+                    self._user_id + '&apiKey=' + self._api_key
+            else:
+                url = self._server + self._path_POST
             logger.info("Sending detection (image) to server with url: {}".format(url))
             try:
                 r = post(self._server + self._path_POST,
@@ -518,8 +525,6 @@ class Sender(Writer):
             super().output_still(image, time, sensor_log)
 
     def output_group_of_stills(self, images: List[str], time: float, sensor_log: SensorLog):
-        print(images)
-
         healthy = self.check_health()
         send_failure = False
         if healthy:
@@ -548,7 +553,7 @@ class Sender(Writer):
             logger.info("Connection to server deemed unhealthy. Send cancelled, writing detection to disk instead.")
             super().output_still(image, time, sensor_log)
 
-    def output_video(self, video: IO[bytes], caption: StringIO, time: float, **kwargs):
+    def output_video(self, video: IO[bytes], time: float, caption: StringIO = None,  **kwargs):
         healthy = self.check_health()
         send_failure = False
         if healthy:
@@ -573,7 +578,7 @@ class Sender(Writer):
                 send_failure = True
         if not healthy or send_failure:
             logger.info("Connection to server deemed unhealthy. Send cancelled, writing detection to disk instead.")
-            super().output_video(video, caption, time)
+            super().output_video(video, time, caption)
 
 
 
