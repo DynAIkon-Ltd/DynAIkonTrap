@@ -6,3 +6,4 @@ opencv-python-headless==4.4.0.44
 scipy
 Cython==0.29.30
 psutil==5.9.1
+responses==0.21.0
