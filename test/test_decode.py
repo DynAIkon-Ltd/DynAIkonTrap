@@ -11,8 +11,8 @@ class TestH264toJpg(TestCase):
 
     def test_H264_decoding(self):
         ret = decoder.h264_to_jpeg_frames(self._h264_filename)
-        #nr of frames for this file is known at 385
-        self.assertTrue(len(ret) == 385)
+        #nr of frames for this file is known at 3
+        self.assertTrue(len(ret) == 3)
         #check each of the files can be opened and read
         for file in ret:
             with open(file) as f:
