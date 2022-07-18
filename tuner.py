@@ -215,11 +215,12 @@ else:
         settings.output.output_codec = OutputVideoCodec.H264.value
 
 settings.output.device_id = setter("Device ID", settings.output.device_id)
-meta = input("Delete disk metadata after detections made? (y/n) [y]> ")
-if meta == "n":
-    settings.output.delete_metadata = False
-else: 
-    settings.output.delete_metadata = True
+if settings.pipeline.pipeline_variant == PipelineVariant.LOW_POWER:
+    meta = input("Delete disk metadata after detections made? (y/n) [y]> ")
+    if meta == "n":
+        settings.output.delete_metadata = False
+    else: 
+        settings.output.delete_metadata = True
 
 print("\nLogging settings")
 print("---------------")
