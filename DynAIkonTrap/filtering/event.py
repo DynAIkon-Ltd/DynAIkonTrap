@@ -134,6 +134,7 @@ class EventProcessor:
                     ["rm -r {}".format(event.dir)],
                     shell=True,
                 )
+                logger.debug("Deleted event with directory {}".format(event.dir))
         except CalledProcessError as e:
             logger.error(
                 "Problem deleting event with directory: {}. (CalledProcessError) : {}".format(

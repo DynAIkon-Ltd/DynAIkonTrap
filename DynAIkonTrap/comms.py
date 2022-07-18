@@ -327,7 +327,6 @@ class AbstractOutput(metaclass=ABCMeta):
                 if log is None:
                    logger.warning("No sensor readings for event captured at time: {}".format(datetime.fromtimestamp(event.start_timestamp)))
                 images = decoder.h264_to_jpeg_frames(join(event.dir, 'clip.h264'))
-                
                 self.output_group_of_stills(
                         images=images, time=event.start_timestamp, sensor_log=log
                     )
@@ -471,7 +470,7 @@ class Sender(Writer):
         self._device_id = settings.device_id
         self._path_POST = settings.POST
         self._is_fcc = settings.is_fcc
-
+        self._sender_log = SenderLog(settings)
         #form url for post
         if settings.is_fcc:
             self._url = self._server + self._path_POST + '?userId=' + \
@@ -526,6 +525,7 @@ class Sender(Writer):
                 logger.info("Image sent")
                 ret = {"status":"sent"}
                 ret.update({"response":r.json()})
+                self._sender_log.log(ret)
                 return ret
             except HTTPError as e:
                 logger.error("HTTP error while sending detection: {}".format(e))
@@ -538,9 +538,11 @@ class Sender(Writer):
                 send_failure = True
             
         if not healthy or send_failure:
-            logger.info("Connection to server deemed unhealthy. Send cancelled, writing detection to disk instead.")
+            logger.info("Connection to server down. Send cancelled, writing detection to disk instead.")
             filename = super().output_still(image, time, sensor_log)
-            return {"status":"to_disk", "path":filename}
+            ret = {"status":"to_disk", "path":filename}
+            self._sender_log.log(ret)
+            return ret
 
     def output_group_of_stills(self, images: List[str], time: float, sensor_log: SensorLog=None):
         healthy = self.check_health()
@@ -562,6 +564,7 @@ class Sender(Writer):
                 logger.info("Images sent")
                 ret = {"status":"sent"}
                 ret.update({"response":r.json()})
+                self._sender_log.log(ret)
                 return ret
             except HTTPError as e:
                 logger.error("HTTP error while sending detection: {}".format(e))
@@ -576,9 +579,11 @@ class Sender(Writer):
                 for file in file_handles:
                     file.close()
         if not healthy or send_failure:
-            logger.info("Connection to server deemed unhealthy. Send cancelled, writing detection to disk instead.")
+            logger.info("Connection to server down. Send cancelled, writing detection to disk instead.")
             dir_name = super().output_group_of_stills(images, time, sensor_log)
-            return { "status":"to_disk", "path":dir_name}
+            ret = { "status":"to_disk", "path":dir_name}
+            self._sender_log.log(ret)
+            return ret
 
     def output_video(self, video: IO[bytes], time: float, caption: StringIO = None,  **kwargs) -> Dict:
         """A function post a video clip to the sender's url. The video caption and timestamp are included in the post data. If a problem arises with the connection, the video will be saved to disk instead using the inherited Writer
@@ -604,6 +609,7 @@ class Sender(Writer):
                 logger.info("Video sent")
                 ret = {"status":"sent"}
                 ret.update({"response":r.json()})
+                self._sender_log.log(ret)
                 return ret
             except HTTPError as e:
                 logger.error("HTTP error while sending detection: {}".format(e))
@@ -615,9 +621,28 @@ class Sender(Writer):
                 logger.error("Requests error while sending detection: {}".format(e))
                 send_failure = True
         if not healthy or send_failure:
-            logger.info("Connection to server deemed unhealthy. Send cancelled, writing detection to disk instead.")
+            logger.info("Connection to server down. Send cancelled, writing detection to disk instead.")
             filename = super().output_video(video, time, caption)
-            return { "status":"to_disk", "path":filename}
+            ret = { "status":"to_disk", "path":filename}
+            self._sender_log.log(ret)
+            return ret
+
+class SenderLog:
+    """A class to keep a log about detections sent to remote servers, useful to record observation IDs from FASTCAT-Cloud"""
+    def __init__(self, settings: SenderSettings):
+        self._filename = settings.path + "/output_log.txt"
+    
+    def log(self, result: Dict):
+        """Logs a sender result to the log file
+
+        Args:
+            result (str): sender result from accessing server or saving to disk  
+        """
+        with open(self._filename, 'a') as f:
+            if result["status"] == "to_disk":
+                f.write("Detection written to disk at path: {}\n".format(str(result["path"])) )
+            elif result["status"] == "sent":
+                f.write("Detection sent to the server, response: {}\n".format(str(result["response"])))
 
 
 def Output(

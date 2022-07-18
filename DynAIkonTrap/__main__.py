@@ -94,7 +94,6 @@ else:
 filters = Filter(read_from=source, settings=settings.filter)
 
 sensor_logs = SensorLogs(settings=settings.sensor)    
-
 Output(settings=settings.output, read_from=(filters, sensor_logs))
 
 while True:
