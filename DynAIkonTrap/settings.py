@@ -183,12 +183,13 @@ class OutputSettings:
     output_mode: OutputMode = OutputMode.DISK
     output_codec: OutputVideoCodec = OutputVideoCodec.H264
     path: str = "output"
+    delete_metadata: bool = 0
 
 
 @dataclass
 class SenderSettings(OutputSettings):
     """Settings for a :class:`~DynAIkonTrap.comms.Sender`"""
-    is_fcc: bool = True
+    is_fcc: bool = 1
     server: str = "https://backend.fastcat-cloud.org"
     POST: str = "/api/v2/predictions/demo"
     userId : str = ""
@@ -268,6 +269,8 @@ def load_settings() -> Settings:
                         server=settings_json["output"]["server"],
                         POST=settings_json["output"]["POST"],
                         device_id=settings_json["output"]["device_id"],
+                        userId=settings_json["output"]["userId"],
+                        apiKey=settings_json["output"]["apiKey"],
                         output_format=OutputFormat(
                             settings_json["output"]["output_format"]
                         ),
