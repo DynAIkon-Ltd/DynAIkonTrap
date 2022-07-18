@@ -47,8 +47,8 @@ class Reading:
 class SensorLog:
     """A log of sensor readings taken at a given moment in time. ``system_time`` is represented as a UNIX-style timestamp. If a reading could not be taken for any of the attached sensors, the sensor may be represented by ``None`` in the log."""
 
-    system_time: float
-    readings: Dict[str, Reading]
+    system_time: float 
+    readings: Dict[str, Reading] 
 
     def serialise(self):
         serialised = {"system_time": {"value": self.system_time, "units": "s"}}

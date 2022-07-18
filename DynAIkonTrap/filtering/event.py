@@ -117,9 +117,10 @@ class EventProcessor:
                 int(event.raw_x_dim * event.raw_y_dim * event.raw_bpp)
             )
         return buf
-    
-    def _delete_event(self, event: EventData):
-        """Deletes an event on disk.
+
+    @staticmethod
+    def delete_event(event: EventData):
+        """Static method to delete an event on disk. 
 
         Args:
             event (EventData): Event to be deleted.
@@ -135,7 +136,7 @@ class EventProcessor:
                 )
         except CalledProcessError as e:
             logger.error(
-                "Problem deleting event with directory: {}. (CalledProcessError) Code: {}".format(
-                    event.dir, e.returncode
+                "Problem deleting event with directory: {}. (CalledProcessError) : {}".format(
+                    event.dir, e
                 )
             )

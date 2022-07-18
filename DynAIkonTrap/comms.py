@@ -39,7 +39,8 @@ from unittest import TextTestRunner
 from requests import RequestException, post, get, head
 from requests.exceptions import HTTPError, ConnectionError
 from numpy import asarray
-import cv2  # pdoc3 can't handle importing individual OpenCV functions
+import cv2
+from DynAIkonTrap.filtering.event import EventProcessor  # pdoc3 can't handle importing individual OpenCV functions
 
 from DynAIkonTrap.filtering.filtering import Filter, FilterMode
 from DynAIkonTrap.filtering.remember_from_disk import EventData
@@ -207,6 +208,7 @@ class AbstractOutput(metaclass=ABCMeta):
         self._sensor_logs = read_from[1]
         self.framerate = self._animal_queue.framerate
         self._video_codec = settings.output_codec.name
+        self._delete_metadata = settings.delete_metadata
         if settings.output_codec == OutputVideoCodec.H264:
             self._video_suffix = ".mp4"
         elif settings.output_codec == OutputVideoCodec.PIM1:
@@ -309,6 +311,8 @@ class AbstractOutput(metaclass=ABCMeta):
                         video=file, time=event.start_timestamp, caption=caption
                     )
                     file.close()
+                if self._delete_metadata:
+                    EventProcessor.delete_event(event)
 
             except Exception as e:
                 logger.error("Event to video error! Error: {}".format(e))

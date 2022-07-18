@@ -157,7 +157,7 @@ class Filter:
                 if not result:
                     logger.info(
                         "No Animal detected, deleting event from disk...")
-                    self._event_processor._delete_event(event)
+                    EventProcessor.delete_event(event)
                 else:
                     logger.info("Animal detected, save output video...")
                     self._output_queue.put(event)
