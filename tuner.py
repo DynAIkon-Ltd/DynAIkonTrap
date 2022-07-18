@@ -215,7 +215,7 @@ else:
         settings.output.output_codec = OutputVideoCodec.H264.value
 
 settings.output.device_id = setter("Device ID", settings.output.device_id)
-if settings.pipeline.pipeline_variant == PipelineVariant.LOW_POWER:
+if settings.pipeline.pipeline_variant == PipelineVariant.LOW_POWER.value:
     meta = input("Delete disk metadata after detections made? (y/n) [y]> ")
     if meta == "n":
         settings.output.delete_metadata = False
