@@ -331,6 +331,8 @@ class AbstractOutput(metaclass=ABCMeta):
                 self.output_group_of_stills(
                         images=images, time=event.start_timestamp, sensor_log=log
                     )
+                if self._delete_metadata:
+                    EventProcessor.delete_event(event)
             except Exception as e:
                 logger.error("Event to images error! Error: {}".format(e))
     
