@@ -22,21 +22,26 @@ The function, :func:`AnimalFilter.run` produces a tuple result, the first result
 """
 from dataclasses import dataclass
 from enum import Enum
-from typing import Tuple, Union
+import json
+from tempfile import NamedTemporaryFile
+from tokenize import endpats
+from typing import Tuple, Union, overload
 from math import sqrt
 import cv2
 from cv2 import imwrite
 import numpy as np
 from PIL import Image
 import time
+from requests import HTTPError, RequestException, post, get, request
 
-from DynAIkonTrap.settings import AnimalFilterSettings
+from DynAIkonTrap.settings import AnimalFilterSettings, SenderSettings
 from DynAIkonTrap.logging import get_logger
 from DynAIkonTrap.imdecode import decoder
 
 logger = get_logger(__name__)
 
-
+RESULTS_ENDPOINT = '/api/v2/predictions/results'
+RETRIES = 100
 TFL = True
 try:
     import tflite_runtime.interpreter as tflite
@@ -65,7 +70,7 @@ class NetworkInputSizes:
 class AnimalFilter:
     """Animal filter stage to indicate if a frame contains an animal"""
 
-    def __init__(self, settings: AnimalFilterSettings):
+    def __init__(self, settings: AnimalFilterSettings, sender_settings: SenderSettings =None):
         """
         Args:
             settings (AnimalFilterSettings): Settings for the filter
@@ -74,6 +79,8 @@ class AnimalFilter:
         self.human_threshold = settings.human_threshold
         self.detect_humans = settings.detect_humans
         self.fast_animal_detect = settings.fast_animal_detect
+        self.use_fcc = settings.fastcat_cloud_detect
+    
 
         if settings.detect_humans or settings.fast_animal_detect:
             self.input_size = NetworkInputSizes.SSDLITE_MOBILENET_V2
@@ -103,7 +110,90 @@ class AnimalFilter:
             self.output_layers = [
                 layer_names[i[0] - 1] for i in self.model.getUnconnectedOutLayers()
             ]
+        if sender_settings is not None and settings.fastcat_cloud_detect:
+            self.url_post = sender_settings.server + sender_settings.POST
+            self.url_get = sender_settings.server + RESULTS_ENDPOINT
 
+    def run_raw_fcc(
+        self,
+        image: bytes,
+        is_jpeg: bool=False
+    ) -> float:
+        """A function to run the animal detection method by querying the FASTCAT-Cloud Web API 
+
+        Args:
+            image (bytes):  The image frame to be analysed, can be in JPEG compressed format or YUV420 raw format
+            is_jpeg (bool, optional):  used to inform buffer reading, set to `True` if a jpeg is given, `False` for YUV420 buffer. Defaults to `False`.
+
+        Returns:
+            float: The score of the highest confidence animal bounding box, as returned by FASTCAT-Cloud API
+        """
+        files = []
+        if is_jpeg:
+            image_file = NamedTemporaryFile(suffix='.png', delete=False)
+            try:
+                cv2.imwrite(image_file, image)
+            except cv2.error:
+                logger.error('Error saving frame for FASTCAT-Cloud upload: {}'.format(e))
+                return 0.0
+        else: 
+            image_file = decoder.yuv_to_png_temp_file(image)
+        requestId=""
+        try:
+            with open(image_file, 'rb') as f:
+                r = post(self.url_post, files=[('image', (image_file, f, 'image/png'))], timeout=3)
+                r.raise_for_status()  
+                result = r.json()
+                if result['message'] == 'Success.':
+                    requestId=result['body']['predictionRequestPublicId']
+                else:
+                    logger.error("Error getting detection from FASTCAT-Cloud: {}".format(result))
+                    return 0.0
+        except HTTPError as e:
+            logger.error("HTTP error during FASTCAT-Cloud animal detection, POST: {}".format(e))
+            return 0.0
+        except ConnectionError as e:
+            logger.error("Connection error during FASTCAT-Cloud animal detection, POST {}".format(e))
+            return 0.0
+        except RequestException as e:
+            logger.error("Requests error during FASTCAT-Cloud animal detection, POST: {}".format(e))
+            return 0.0
+        try:
+            r = get(self.url_get + '?predictionRequestPublicId='+requestId)
+            r.raise_for_status()
+            result=r.json()
+            tries=1
+            while result['message'] == 'No results found for this query.' and tries < 100:
+                #wait for result to become available...
+                time.sleep(1)
+                r = get(self.url_get + '?predictionRequestPublicId='+requestId)
+                r.raise_for_status()
+                result=r.json()
+                tries += 1
+                
+            if result['message'] == 'Success.':
+                detections=json.loads(result['body']['formattedResults'][0]['classifications'][0]["Results"])
+                detections=sorted(detections, key=lambda x: x['score'], reverse=True)
+                if len(detections) > 0:
+                    return detections[0]['score']
+                else:
+                    return 0.0
+            else:
+                logger.error("Error getting detection from FASTCAT-Cloud: {}".format(result))
+                return 0.0
+        except HTTPError as e:
+            logger.error("HTTP error during FASTCAT-Cloud animal detection, GET: {}".format(e))
+            return 0.0
+        except ConnectionError as e:
+            logger.error("Connection error during FASTCAT-Cloud animal detection, GET: {}".format(e))
+            return 0.0
+        except RequestException as e:
+            logger.error("Requests error during FASTCAT-Cloud animal detection, GET: {}".format(e))
+            return 0.0
+        return 0.0
+
+
+            
     def run_raw(
         self,
         image: bytes,
@@ -118,59 +208,63 @@ class AnimalFilter:
         Returns:
             Tuple(float, float): Confidences in the output containing an animal and a human as a decimal fraction in range (0-1)
         """
-        decoded_image = []
-        if is_jpeg:
-            decoded_image = decoder.jpg_buf_to_bgr_array(image)
-        else: 
-            decoded_image = decoder.yuv_buf_to_bgr_array(image)
-        decoded_image = cv2.resize(decoded_image, (self.input_size))
-        animal_confidence = 0.0
-        human_confidence = 0.0
-        if self.detect_humans or self.fast_animal_detect:
-
-            # convert to floating point input
-            # in future, tflite conversion process should be modified to accept int input, it's not clear how that's done yet
-            decoded_image = decoded_image.astype("float32")
-            decoded_image = decoded_image / 255.0
-            model_input = [decoded_image]
-            self.model.set_tensor(self.tfl_input_details[0]["index"], model_input)
-            self.model.invoke()
-            output_confidences = self.model.get_tensor(
-                self.tfl_output_details[0]["index"]
-            )[0]
-            if self.detect_humans:
-                output_classes = self.model.get_tensor(
-                    self.tfl_output_details[3]["index"]
-                )[0].astype(int)
-                human_indexes = [
-                    i for (i, label) in enumerate(output_classes) if label == 0
-                ]
-                animal_indexes = [
-                    i for (i, label) in enumerate(output_classes) if label == 1
-                ]
-                if human_indexes:
-                    human_confidence = max(
-                        [output_confidences[i] for i in human_indexes]
-                    )
-                if animal_indexes:
-                    animal_confidence = max(
-                        [output_confidences[i] for i in animal_indexes]
-                    )
-            else:
-                animal_confidence = max(output_confidences)
-
+        if self.use_fcc:
+            fcc_result = self.run_raw_fcc(image, is_jpeg)
+            return fcc_result, 0.0
         else:
-            blob = cv2.dnn.blobFromImage(
-                decoded_image, 1, NetworkInputSizes.YOLOv4_TINY, (0, 0, 0)
-            )
+            decoded_image = []
+            if is_jpeg:
+                decoded_image = decoder.jpg_buf_to_bgr_array(image)
+            else: 
+                decoded_image = decoder.yuv_buf_to_bgr_array(image)
+            decoded_image = cv2.resize(decoded_image, (self.input_size))
+            animal_confidence = 0.0
+            human_confidence = 0.0
+            if self.detect_humans or self.fast_animal_detect:
 
-            blob = blob / 255.0  # Scale to be a float
-            self.model.setInput(blob)
-            output = self.model.forward(self.output_layers)
-            _, _, _, _, _, confidence0 = output[0].max(axis=0)
-            _, _, _, _, _, confidence1 = output[1].max(axis=0)
-            animal_confidence = max(confidence0, confidence1)
-        return animal_confidence, human_confidence
+                # convert to floating point input
+                # in future, tflite conversion process should be modified to accept int input, it's not clear how that's done yet
+                decoded_image = decoded_image.astype("float32")
+                decoded_image = decoded_image / 255.0
+                model_input = [decoded_image]
+                self.model.set_tensor(self.tfl_input_details[0]["index"], model_input)
+                self.model.invoke()
+                output_confidences = self.model.get_tensor(
+                    self.tfl_output_details[0]["index"]
+                )[0]
+                if self.detect_humans:
+                    output_classes = self.model.get_tensor(
+                        self.tfl_output_details[3]["index"]
+                    )[0].astype(int)
+                    human_indexes = [
+                        i for (i, label) in enumerate(output_classes) if label == 0
+                    ]
+                    animal_indexes = [
+                        i for (i, label) in enumerate(output_classes) if label == 1
+                    ]
+                    if human_indexes:
+                        human_confidence = max(
+                            [output_confidences[i] for i in human_indexes]
+                        )
+                    if animal_indexes:
+                        animal_confidence = max(
+                            [output_confidences[i] for i in animal_indexes]
+                        )
+                else:
+                    animal_confidence = max(output_confidences)
+
+            else:
+                blob = cv2.dnn.blobFromImage(
+                    decoded_image, 1, NetworkInputSizes.YOLOv4_TINY, (0, 0, 0)
+                )
+
+                blob = blob / 255.0  # Scale to be a float
+                self.model.setInput(blob)
+                output = self.model.forward(self.output_layers)
+                _, _, _, _, _, confidence0 = output[0].max(axis=0)
+                _, _, _, _, _, confidence1 = output[1].max(axis=0)
+                animal_confidence = max(confidence0, confidence1)
+            return animal_confidence, human_confidence
 
     def run(
         self,

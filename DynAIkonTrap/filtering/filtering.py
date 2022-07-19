@@ -45,7 +45,7 @@ from DynAIkonTrap.filtering.motion_queue import MotionLabelledQueue
 from DynAIkonTrap.filtering.motion_queue import MotionStatus
 from DynAIkonTrap.filtering.remember_from_disk import EventData, EventRememberer
 from DynAIkonTrap.logging import get_logger
-from DynAIkonTrap.settings import FilterSettings
+from DynAIkonTrap.settings import FilterSettings, SenderSettings
 
 logger = get_logger(__name__)
 
@@ -60,7 +60,7 @@ class Filter:
     """Wrapper for the complete image filtering pipeline"""
 
     def __init__(
-        self, read_from: Union[Camera, EventRememberer], settings: FilterSettings
+        self, read_from: Union[Camera, EventRememberer], settings: FilterSettings, sender_settings: SenderSettings=None
     ):
         """
         Args:
@@ -70,7 +70,10 @@ class Filter:
 
         self._input_queue = read_from
         self.framerate = read_from.framerate
-        self._animal_filter = AnimalFilter(settings=settings.animal)
+        if settings.animal.fastcat_cloud_detect and sender_settings is not None:
+            self._animal_filter = AnimalFilter(settings=settings.animal, sender_settings=sender_settings)
+        else: 
+            self._animal_filter = AnimalFilter(settings=settings.animal)
 
         if isinstance(read_from, Camera):
             self.mode = FilterMode.BY_FRAME

@@ -128,26 +128,32 @@ settings.filter.motion.iir_attenuation = setter(
 )
 
 print("----Animal filtering")
+
 settings.filter.animal.animal_threshold = setter(
     "Animal confidence threshold (ADVANCED)", settings.filter.animal.animal_threshold
 )
-detect_humans = input(
-    "Would you like DynAIkonTrap to also attempt to filter out humans from detections? YES or NO [YES]> "
-)
-if detect_humans == "NO":
-    settings.filter.animal.detect_humans = False
+animal_fcc = input("Would you like to use FASTCAT-Cloud for animal detections? (requires an internet connection) (y/n) [n] > ")
+if animal_fcc == "y":
+    settings.filter.animal.fastcat_cloud_detect = True
 else:
-    settings.filter.animal.detect_humans = True
-    settings.filter.animal.human_threshold = setter(
-        "Human confidence threshold (ADVANCED)", settings.filter.animal.human_threshold
+    detect_humans = input(
+        "Would you like DynAIkonTrap to also attempt to filter out humans from detections? YES or NO [YES]> "
     )
-faster_detector = input(
-    "Would you like DynAIkonTrap to use a faster, but less accurate detector (YES) or slower and more accurate (NO)? YES or NO [YES]> "
-)
-if faster_detector == "NO":
-    settings.filter.animal.fast_animal_detect = False
-else:
-    settings.filter.animal.fast_animal_detect = True
+    if detect_humans == "NO":
+        settings.filter.animal.detect_humans = False
+    else:
+        settings.filter.animal.detect_humans = True
+        settings.filter.animal.human_threshold = setter(
+            "Human confidence threshold (ADVANCED)", settings.filter.animal.human_threshold
+        )
+    faster_detector = input(
+        "Would you like DynAIkonTrap to use a faster, but less accurate detector (YES) or slower and more accurate (NO)? YES or NO [YES]> "
+    )
+    if faster_detector == "NO":
+        settings.filter.animal.fast_animal_detect = False
+    else:
+        settings.filter.animal.fast_animal_detect = True
+        
 print("----Processing settings")
 if settings.pipeline.pipeline_variant == PipelineVariant.LEGACY.value:
     settings.filter.processing.smoothing_factor = forced_setter(

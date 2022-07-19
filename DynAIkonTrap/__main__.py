@@ -91,7 +91,7 @@ else:
     )
     source = EventRememberer(read_from=camera)
 
-filters = Filter(read_from=source, settings=settings.filter)
+filters = Filter(read_from=source, settings=settings.filter, sender_settings=settings.output)
 
 sensor_logs = SensorLogs(settings=settings.sensor)    
 Output(settings=settings.output, read_from=(filters, sensor_logs))

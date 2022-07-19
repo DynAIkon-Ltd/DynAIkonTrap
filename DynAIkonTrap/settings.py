@@ -124,7 +124,7 @@ class MotionFilterSettings:
 @dataclass
 class AnimalFilterSettings:
     """Settings for a :class:`~DynAIkonTrap.filtering.animal.AnimalFilter`"""
-
+    fastcat_cloud_detect: bool = False
     animal_threshold: float = 0.75
     detect_humans: bool = True
     human_threshold: float = 0.75
@@ -183,7 +183,7 @@ class OutputSettings:
     output_mode: OutputMode = OutputMode.DISK
     output_codec: OutputVideoCodec = OutputVideoCodec.H264
     path: str = "output"
-    delete_metadata: bool = 0
+    delete_metadata: bool = 1
 
 
 @dataclass
@@ -222,7 +222,7 @@ class Settings:
     camera: CameraSettings = CameraSettings()
     filter: FilterSettings = FilterSettings()
     sensor: SensorSettings = SensorSettings()
-    output: Union[SenderSettings, OutputSettings] = OutputSettings()
+    output: Union[SenderSettings, OutputSettings] = SenderSettings()
     logging: LoggerSettings = LoggerSettings()
 
 
@@ -280,7 +280,7 @@ def load_settings() -> Settings:
                         ),
                     )
                 else:  # Default to writing to disk
-                    output = OutputSettings(
+                    output = SenderSettings(
                         device_id=settings_json["output"]["device_id"],
                         output_format=OutputFormat(
                             settings_json["output"]["output_format"]

@@ -70,6 +70,28 @@ class decoder:
         BGR = cv2.cvtColor(RGB, cv2.COLOR_RGB2BGR)
         return BGR
 
+    @staticmethod 
+    def yuv_to_png_temp_file(buf : bytes) -> str:
+        """converts a given buffer in YUV420 format into a temporary png file stored on disk 
+
+        Args:
+            buf (bytes):  a bytes object containing the raw pixel data in YUV format. Dimensions of the buffer are assumed to be square, the width and height are calculated from this from using the buffer length.
+
+        Returns:
+            str: path to png file on disk, returns empty string if no file could be created
+        """
+        img_array_bgr = decoder.yuv_buf_to_bgr_array(buf)
+        image_file = NamedTemporaryFile(suffix='.png', delete=False)
+        ret = ""
+        try:
+            cv2.imwrite(image_file.name, img_array_bgr)
+            ret = image_file.name
+        except cv2.error as e: 
+            logger.error("YUV -> png conversion error: {}".format(e))
+        return ret
+
+
+
     @staticmethod
     def jpg_buf_to_bgr_array(buf : bytes) -> np.ndarray:
         """Wraps around the OpenCV imdecode method, to decode colour jpeg images produces a numpy ndarray in BGR format of uncompressed data
