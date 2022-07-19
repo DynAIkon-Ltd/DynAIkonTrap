@@ -163,7 +163,7 @@ class AnimalFilter:
             r.raise_for_status()
             result=r.json()
             tries=1
-            while result['message'] == 'No results found for this query.' and tries < 100:
+            while result['message'] == 'No results found for this query.' and tries < RETRIES:
                 #wait for result to become available...
                 time.sleep(1)
                 r = get(self.url_get + '?predictionRequestPublicId='+requestId)
