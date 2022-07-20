@@ -16,6 +16,12 @@ Now that everything is installed the system needs to be tuned for your use-case.
 
 You will be asked some questions to help determine the best parameters for the system to use. These settings are saved in a ``settings.json`` file, which is loaded when you start the actual camera trap program. Below is relevant information for each question in the tuning script:
 
+
+.. admonition:: Pipeline
+   :class: note, dropdown
+   
+   This dictates the processing pipeline DynAikonTrap will use, information about each pipeline may be found in :doc:`../how-it-works`, for a low-powered HD resolution video camera trap, choose the LOW_POWER option.
+
 .. admonition:: Framerate
    :class: note, dropdown
 
@@ -76,6 +82,21 @@ You will be asked some questions to help determine the best parameters for the s
 
    Confidence value to be exceeded for the animal detector to declare a frame as containing an animal.
 
+.. admonition:: FASTCAT-Cloud animal detect
+   :class: note, dropdown
+
+   This option configures the camera trap to query our FASTCAT-Cloud API for deep neural network animal detection rather than running model inference on device. Our models available online are much larger and more accurate at detecting species and can be used so long as the device has a valid internet connection during deployment. 
+
+.. admonition:: Filter humans 
+   :class: note, dropdown
+
+   As well as filtering for animal detections, we also have a model available on-device which can distinguish humans from animals. If this option is selected, DynAIkonTrap will attempt to throw away any video/image detections which it deems as containing a human to protect individual privacy in deployed locations. 
+
+.. admonition:: Human confidence threshold
+   :class: note, dropdown
+
+   Confidence value to be exceeded for the human detector to declare a frame as containing an human.
+
 .. admonition:: Maximum motion sequence period
    :class: note, dropdown
 
@@ -111,6 +132,11 @@ You will be asked some questions to help determine the best parameters for the s
 
    Choose between saving to disk (``d``) or sending data to a server (``s``) via HTTP requests. If picking the latter you will need to configure a server to use the simple API.
 
+.. admonition:: FASTCAT-Cloud upload
+   :class: note, dropdown
+
+   This option configures DynAIkonTrap to upload its observations to your FASTCAT-Cloud account. If no internet connection can be established, detections will be written to disk instead. 
+
 .. admonition:: Output path
    :class: note, dropdown
 
@@ -130,6 +156,11 @@ You will be asked some questions to help determine the best parameters for the s
    :class: note, dropdown
 
    An identifier to use for the camera trap. This is not used other than in output meta-data. This could be used to uniquely identify camera traps if multiple of these are in use.
+
+.. admonition:: Delete metadata
+   :class: note, dropdown
+
+   In the low-powered pipeline, DynAIkonTrap buffers video to disk which is analysed with a background process. It may be desirable to keep these metadata for further processing/debugging. This option allows the user to disable deleting metadata. 
 
 .. admonition:: Logging level
    :class: note, dropdown

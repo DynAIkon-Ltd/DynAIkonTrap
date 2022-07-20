@@ -15,7 +15,11 @@ Check out our installation video below to see how you can build a basic DynAiKon
 
 .. raw:: html
    
-   <center><video controls src="_static/tutvid.webm"></video></center>
+   <center> <video controls width="640" height="480">
+  <source src="../_static/tutvid.webm" type="video/webm">
+   Your browser does not support the video tag.
+  </video> 
+  </center>
    
 Deploying
 ---------
