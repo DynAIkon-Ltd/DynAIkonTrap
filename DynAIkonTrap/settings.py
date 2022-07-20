@@ -179,7 +179,7 @@ class OutputVideoCodec(Enum):
 class OutputSettings:
     """Base-class of settings for outputting to disk or server uploads"""
     device_id: Any = 0
-    output_format: OutputFormat = OutputFormat.STILL
+    output_format: OutputFormat = OutputFormat.VIDEO
     output_mode: OutputMode = OutputMode.DISK
     output_codec: OutputVideoCodec = OutputVideoCodec.H264
     path: str = "output"
