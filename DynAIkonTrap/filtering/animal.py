@@ -30,7 +30,6 @@ from math import sqrt
 import cv2
 from cv2 import imwrite
 import numpy as np
-from PIL import Image
 import time
 from requests import HTTPError, RequestException, post, get, request
 
