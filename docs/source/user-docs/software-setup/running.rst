@@ -47,6 +47,10 @@ Now you will need to connect to your RPi by using ``ssh`` from the terminal. Thi
 
    After a few moments you should see the output from the camera trap software appearing. If you wave your hand in front of the camera you should begin to see messages about detected movement appearing.
 
+.. admonition:: First Boot
+   
+  The first time DynAIkonTrap is booted on a given device may have a short delay at the beginning as DynAIkonTrap is reliant on a just-in-time (JIT) compile for some features. This will only take a minates, thanks for your patience. IkonTrap is booted on a given device may have a short delay at the beginning as DynAIkonTrap is reliant on a just-in-time (JIT) compile for some features. 
+
 #. To quit the program hit :kbd:`Ctrl+C`.
 
 If you have reached this point, then well done! You have successfully set up the camera trap.
@@ -107,7 +111,7 @@ A still very simple approach might be to use SCP to copy files via SSH:
 
 .. code:: sh
 
-   scp pi@dynaikontrap.local:~/dynaikontrap/*.mp4 ./
+   scp pi@dynaikontrap.local:~/dynaikontrap/output/*.mp4 ./
 
 copies all mp4 files from the default video output directory onto the current directory on your computer.
 
@@ -132,4 +136,8 @@ Server
 ^^^^^^
 
 The camera trap does have a RESTful server API, but code for the server is not released. This is left as an exercise for the reader. Using frameworks like Django can make this a fairly simple process. We do not have the resources to write and maintain the necessary code for this, but we would be happy to answer questions you may have and hopefully help you set something up.
+
+FASTCAT-Cloud
+
+DynAIkonTrap integrates with DynAIkon's web API, FASTCAT-Cloud. This may be used to upload detections automatically to your account through our API endpoints. You can configure the camera trap to do this with your account details following instructions on the :doc:`tuning` page. 
 

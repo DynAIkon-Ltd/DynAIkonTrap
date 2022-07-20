@@ -1,7 +1,10 @@
+numpy==1.21.4
 picamera==1.13
 pyserial==3.4
 requests==2.24.0
-urllib3==1.25.9
+urllib3==1.25.10
 opencv-python-headless==4.4.0.44
 scipy
-Pillow==8.4.0
+Cython==0.29.30
+psutil==5.9.1
+responses==0.21.0

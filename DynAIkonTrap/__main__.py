@@ -13,7 +13,9 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-from logging import getLogger
+from distutils.log import Log
+from logging import getLogger, basicConfig
+import logging
 from signal import signal, SIGINT
 from argparse import ArgumentParser
 from time import sleep
@@ -40,7 +42,8 @@ from DynAIkonTrap.camera_to_disk import CameraToDisk
 from DynAIkonTrap.filtering.remember_from_disk import EventRememberer
 from DynAIkonTrap.comms import Output
 from DynAIkonTrap.sensor import SensorLogs
-from DynAIkonTrap.settings import PipelineVariant, load_settings
+from DynAIkonTrap.settings import PipelineVariant, SenderSettings, load_settings
+from DynAIkonTrap.logging import set_logger_config
 
 # Make Ctrl-C quit gracefully
 def handler(signal_num, stack_frame):
@@ -63,7 +66,18 @@ print("You can halt execution with <Ctrl>+C anytime\n")
 
 
 settings = load_settings()
-getLogger().setLevel(settings.logging.level)
+
+# set the logger output file
+set_logger_config(settings.logging.path)
+
+print(
+    """
+Logging to: {}
+""".format(
+        settings.logging.path
+    )
+)
+
 if settings.pipeline.pipeline_variant == PipelineVariant.LEGACY.value:
     # Legacy pipeline mode
     source = Camera(settings=settings.camera)
@@ -77,10 +91,9 @@ else:
     )
     source = EventRememberer(read_from=camera)
 
-filters = Filter(read_from=source, settings=settings.filter)
+filters = Filter(read_from=source, settings=settings.filter, sender_settings=settings.output)
 
-
-sensor_logs = SensorLogs(settings=settings.sensor)
+sensor_logs = SensorLogs(settings=settings.sensor)    
 Output(settings=settings.output, read_from=(filters, sensor_logs))
 
 while True:

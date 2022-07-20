@@ -20,13 +20,23 @@ The implementation can be replaced with another one easily as the interface simp
 
 This implementation makes use of the Sum of Thresholded Vectors (SoTV) approach. Under this approach initially a small threshold is applied to all motion vectors. This removes the smallest vectors that are more likely to be due to noise or unimportant movements. Secondly, the vectors are summed together giving a single average motion vector for the frame. This step implicitely checks for coherence in movement vectors, as well as the magnitude and size of the area of motion. Finally, the vector is smoothed in time using a Chebyshev type-2 filter to reduce frame-to-frame oscillations in movement and give an insight to the trend in motion. The magnitude of the single smoothed vector representing motion in the frame can then be thresholded to determine if sufficient movement is declared, or not.
 """
-import numpy as np
-import math
+from time import time
 from scipy import signal
+import math
+import numpy as np
+from certifi import where
 
-from DynAIkonTrap.filtering.iir import IIRFilter
-from DynAIkonTrap.settings import MotionFilterSettings
+import pyximport
+pyximport.install() # this line ensures that the .pyx files are compiled to .so and may be imported. Probably best to replace with the proper way, by modifying setup.py: https://cython.readthedocs.io/en/latest/src/userguide/source_files_and_compilation.html
+
+
 from DynAIkonTrap.logging import get_logger
+from DynAIkonTrap.settings import MotionFilterSettings
+from DynAIkonTrap.filtering.iir import IIRFilter
+import DynAIkonTrap.filtering.mvector_sum as mvector_sum
+
+
+
 
 logger = get_logger(__name__)
 
@@ -56,10 +66,12 @@ class MotionFilter:
         wn = wn(settings.iir_cutoff_hz)
         # Ensure wn is capped to the necessary bounds
         if wn <= 0:
-            logger.error("IIR cutoff frequency too low (wn = {:.2f})".format(wn))
+            logger.error(
+                "IIR cutoff frequency too low (wn = {:.2f})".format(wn))
             wn = 1e-10
         elif wn >= 1:
-            logger.error("IIR cutoff frequency too high (wn = {:.2f})".format(wn))
+            logger.error(
+                "IIR cutoff frequency too high (wn = {:.2f})".format(wn))
             wn = 1 - 1e-10
 
         sos = signal.cheby2(
@@ -84,30 +96,14 @@ class MotionFilter:
         Returns:
             float: SoTV for the given frame
         """
-        magnitudes = np.sqrt(
-            np.square(motion_frame["x"].astype(np.float))
-            + np.square(motion_frame["y"].astype(np.float))
-        )
-        filtered = np.where(
-            magnitudes > self.threshold_small,
-            motion_frame,
-            np.array(
-                (0, 0, 0),
-                dtype=[
-                    ("x", "i1"),
-                    ("y", "i1"),
-                    ("sad", "u2"),
-                ],
-            ),
-        )
-
-        x_sum = sum(sum(filtered["x"].astype(int)))
-        y_sum = sum(sum(filtered["y"].astype(int)))
-
+        xy_sums = mvector_sum.sotv_fast(
+           motion_frame, self.threshold_small)
+        x_sum = 1.0 * xy_sums['x']
+        y_sum = 1.0 * xy_sums['y']
         x_sum = self.x_iir_filter.filter(x_sum)
         y_sum = self.y_iir_filter.filter(y_sum)
-
-        return math.sqrt(x_sum ** 2 + y_sum ** 2)
+        ret = math.sqrt(x_sum**2 + y_sum**2)
+        return ret
 
     def run(self, motion_frame: np.ndarray) -> bool:
         """Apply a threshold to the output of :func:`run_raw()`

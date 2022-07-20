@@ -33,26 +33,25 @@ from subprocess import CalledProcessError, call, check_call
 from time import sleep
 from time import time
 from enum import Enum
-from typing import Union
+from typing import Union, Tuple
 from numpy import round, linspace
 
 from DynAIkonTrap.camera import Frame, Camera
 from DynAIkonTrap.filtering import motion_queue
 from DynAIkonTrap.filtering.animal import AnimalFilter
 from DynAIkonTrap.filtering.motion import MotionFilter
+from DynAIkonTrap.filtering.event import EventProcessor
 from DynAIkonTrap.filtering.motion_queue import MotionLabelledQueue
 from DynAIkonTrap.filtering.motion_queue import MotionStatus
 from DynAIkonTrap.filtering.remember_from_disk import EventData, EventRememberer
 from DynAIkonTrap.logging import get_logger
-from DynAIkonTrap.settings import FilterSettings, RawImageFormat
+from DynAIkonTrap.settings import FilterSettings, SenderSettings
 
 logger = get_logger(__name__)
 
 
-
 class FilterMode(Enum):
     """A class to configure the mode the filter operates in"""
-
     BY_FRAME = 0
     BY_EVENT = 1
 
@@ -61,7 +60,7 @@ class Filter:
     """Wrapper for the complete image filtering pipeline"""
 
     def __init__(
-        self, read_from: Union[Camera, EventRememberer], settings: FilterSettings
+        self, read_from: Union[Camera, EventRememberer], settings: FilterSettings, sender_settings: SenderSettings=None
     ):
         """
         Args:
@@ -71,8 +70,10 @@ class Filter:
 
         self._input_queue = read_from
         self.framerate = read_from.framerate
-
-        self._animal_filter = AnimalFilter(settings=settings.animal)
+        if settings.animal.fastcat_cloud_detect and sender_settings is not None:
+            self._animal_filter = AnimalFilter(settings=settings.animal, sender_settings=sender_settings)
+        else: 
+            self._animal_filter = AnimalFilter(settings=settings.animal)
 
         if isinstance(read_from, Camera):
             self.mode = FilterMode.BY_FRAME
@@ -89,18 +90,18 @@ class Filter:
 
             self._usher = Process(
                 target=self._handle_input_frames, daemon=True)
+            logger.debug("Filter started, filtering with mode: BY_FRAME")
             self._usher.start()
 
         elif isinstance(read_from, EventRememberer):
             self.mode = FilterMode.BY_EVENT
-            self._event_fraction = settings.processing.detector_fraction
-            self._raw_image_format = read_from.raw_image_format
+            self._event_processor = EventProcessor(
+                self._animal_filter, settings.processing.detector_fraction)
             self._output_queue: QueueType[EventData] = Queue()
             self._usher = Process(
                 target=self._handle_input_events, daemon=True)
+            logger.debug("Filter started, filtering with mode: BY_EVENT")
             self._usher.start()
-
-        logger.debug("Filter started")
 
     def get(self) -> Union[EventData, Frame]:
         """Retrieve the next animal `Frame` or animal `EventData` from the filter pipeline's output.
@@ -147,12 +148,19 @@ class Filter:
         while True:
             try:
                 event = self._input_queue.get()
-                result = self._process_event(event)
-                # self._output_queue.put(event)
+                start_s = time()
+                result, nr_inf = self._event_processor._process_event(event)
+                end_s = time() - start_s
+                time_taken = (end_s/nr_inf) if nr_inf > 0 else 0
+                logger.debug("Event processed in {:.2f}secs, running {} inference(s). Avg execution time per inference: {:.2f}secs".format(
+                    end_s,
+                    nr_inf,
+                    time_taken
+                ))
                 if not result:
                     logger.info(
                         "No Animal detected, deleting event from disk...")
-                    self._delete_event(event)
+                    EventProcessor.delete_event(event)
                 else:
                     logger.info("Animal detected, save output video...")
                     self._output_queue.put(event)
@@ -160,72 +168,3 @@ class Filter:
             except Empty:
                 logger.error("Input events queue empty")
                 continue
-
-    def _process_event(self, event: EventData) -> bool:
-        """Processes a given :class:`~DynAIkonTrap.filtering.remember_from_disk.EventData` to determine if it contains an animal. This is achieved by running the saved raw image stream through the animal detector. Detection is performed in a spiral-out pattern, starting at the image in the middle of the event and moving out towards the edges while an animal has not been detected. When an animal detection occurs, this function returns True, this function returns False when the spiral is completed and no animals have been detected.
-
-        Additionally, if the human detection is enabled, this function will also search for a human in the event. This works exactly the same as the animal detection with the exception of detected human presence causing this function to return False.
-
-        A parameter to choose a spiral step size may be declared within :class:`~DynAIkonTrap.settings.ProcessingSettings`, detector_fraction. When set to 1.0, every event image is evaluated in the worst case. Fractional values indicate a number of frames to process per event. The special case, 0.0 evaluates the centre frame only.
-        Args:
-            event (EventData): Instance of :class:`~DynAIkonTrap.filtering.remember_from_disk.EventData` to filter for animal.
-
-        Returns:
-            bool: True if event contains an animal, False otherwise.
-        """
-        frames = list(event.raw_raster_frames)
-        middle_idx = len(frames) // 2
-        inference_data = []
-        human = False
-        animal = False
-        if self._event_fraction <= 0:
-            # run detector on middle frame only
-            frame = frames[middle_idx]
-            t_start = time()
-            is_animal, is_human = self._animal_filter.run(
-                frame, img_format=self._raw_image_format)
-            return is_animal and not is_human
-        else:
-            # get evenly spaced frames throughout the event
-            nr_elements = int(round(len(frames) * self._event_fraction))
-            indices = [
-                int(round(index)) for index in linspace(0, len(frames) - 1, nr_elements)
-            ]
-            lst_indx_frames_from_centre = [
-                (index, frames[index]) for index in indices]
-            # sort in ordering from middle frame
-            lst_indx_frames_from_centre.sort(
-                key=lambda x: abs(middle_idx - x[0]))
-            # process frames from middle, spiral out
-            for (_, frame) in lst_indx_frames_from_centre:
-                t_start = time()
-                is_animal, is_human = self._animal_filter.run(
-                    frame, img_format=self._raw_image_format
-                )
-                if is_human:
-                    return False
-                if is_animal:
-                    return True        
-        return False
-
-    def _delete_event(self, event: EventData):
-        """Deletes an event on disk.
-
-        Args:
-            event (EventData): Event to be deleted.
-        """
-
-        try:
-            # check directory is actually an event directory
-            name = basename(event.dir)
-            if name.startswith('event_'):
-                check_call(
-                    ["rm -r {}".format(event.dir)],
-                    shell=True,
-                )
-        except CalledProcessError as e:
-            logger.error(
-                "Problem deleting event with directory: {}. Code: {}".format(
-                    event.dir, e.returncode
-                )
-            )

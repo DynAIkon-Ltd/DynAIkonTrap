@@ -20,12 +20,11 @@ from DynAIkonTrap.settings import (
     OutputMode,
     OutputVideoCodec,
     PipelineVariant,
-    RawImageFormat,
     SenderSettings,
     Settings,
     FilterSettings,
     OutputFormat,
-    WriterSettings,
+    OutputSettings,
 )
 
 
@@ -85,25 +84,6 @@ settings.camera.framerate = setter("framerate", settings.camera.framerate)
 w = setter("Resolution width (ADVANCED)", settings.camera.resolution[0])
 h = setter("Resolution height (ADVANCED)", settings.camera.resolution[1])
 settings.camera.resolution = (w, h)
-settings.camera.bitrate_bps = setter(
-    "Encoding bitrate bits/s (ADVANCED)", settings.camera.bitrate_bps
-)
-if settings.pipeline.pipeline_variant == PipelineVariant.LOW_POWER.value:
-    settings.camera.raw_framerate_divisor = setter(
-        "Raw framerate divisor (ADVANCED)", settings.camera.raw_framerate_divisor
-    )
-    settings.camera.io_buffer_size_s = setter(
-        "Nr. seconds to buffer stream IO access (ADVANCED)",
-        settings.camera.io_buffer_size_s,
-    )
-    raw_fmt = input(
-        "Raw stream image format: RGBA, or RGB (ADVANCED) [RGBA]> ")
-    if raw_fmt == "RGB":
-        settings.camera.raw_stream_image_format = RawImageFormat.RGB.value
-    else:
-        settings.camera.raw_stream_image_format = RawImageFormat.RGBA.value
-else:
-    settings.camera.raw_stream_image_format = RawImageFormat.RGBA.value
 # Camera settings for later
 area_reality = setter("Visible animal area to trigger/m^2", 0.0064)
 subject_distance = setter("Expected distance of animal from sensor/m", 1.0)
@@ -121,9 +101,9 @@ settings.filter.motion.small_threshold = setter(
 )
 
 # Calculate SoTV threshold
-animal_dimension = (area_reality ** 0.5 * focal_len) / \
+animal_dimension = (area_reality**0.5 * focal_len) / \
     (pixel_ratio * subject_distance)
-animal_area_in_motion_vectors = animal_dimension ** 2 / 16 ** 2
+animal_area_in_motion_vectors = animal_dimension**2 / 16**2
 animal_pixel_speed = (animal_speed * 1 / settings.camera.framerate * focal_len) / (
     pixel_ratio * subject_distance
 )
@@ -148,26 +128,32 @@ settings.filter.motion.iir_attenuation = setter(
 )
 
 print("----Animal filtering")
+
 settings.filter.animal.animal_threshold = setter(
     "Animal confidence threshold (ADVANCED)", settings.filter.animal.animal_threshold
 )
-detect_humans = input(
-    "Would you like DynAIkonTrap to also attempt to filter out humans from detections? YES or NO [YES]> "
-)
-if detect_humans == "NO":
-    settings.filter.animal.detect_humans = False
+animal_fcc = input("Would you like to use FASTCAT-Cloud for animal detections? (requires an internet connection) (y/n) [n] > ")
+if animal_fcc == "y":
+    settings.filter.animal.fastcat_cloud_detect = True
 else:
-    settings.filter.animal.detect_humans = True
-    settings.filter.animal.human_threshold = setter(
-        "Human confidence threshold (ADVANCED)", settings.filter.animal.human_threshold
+    detect_humans = input(
+        "Would you like DynAIkonTrap to also attempt to filter out humans from detections? YES or NO [YES]> "
     )
-faster_detector = input(
-    "Would you like DynAIkonTrap to use a faster, but less accurate detector (YES) or slower and more accurate (NO)? YES or NO [YES]> "
-)
-if faster_detector == "NO":
-    settings.filter.animal.fast_animal_detect = False
-else:
-    settings.filter.animal.fast_animal_detect = True
+    if detect_humans == "NO":
+        settings.filter.animal.detect_humans = False
+    else:
+        settings.filter.animal.detect_humans = True
+        settings.filter.animal.human_threshold = setter(
+            "Human confidence threshold (ADVANCED)", settings.filter.animal.human_threshold
+        )
+    faster_detector = input(
+        "Would you like DynAIkonTrap to use a faster, but less accurate detector (YES) or slower and more accurate (NO)? YES or NO [YES]> "
+    )
+    if faster_detector == "NO":
+        settings.filter.animal.fast_animal_detect = False
+    else:
+        settings.filter.animal.fast_animal_detect = True
+        
 print("----Processing settings")
 if settings.pipeline.pipeline_variant == PipelineVariant.LEGACY.value:
     settings.filter.processing.smoothing_factor = forced_setter(
@@ -202,26 +188,31 @@ settings.sensor.obfuscation_distance_km = setter(
 
 print("\nOutput settings")
 print("---------------")
-mode = input("Output mode: save to disk, or server? (d/s) [d]> ")
+mode = input("Output mode: save to disk, or upload to server? (d/s) [d]> ")
 if mode == "s":
     settings.output = SenderSettings
     settings.output.output_mode = OutputMode.SEND.value
-    settings.output.server = setter("Server address", settings.output.server)
+    fcc = input("Would you like to upload your observations to FASTCAT-cloud? (y/n) [y]> ")
+    if fcc == "n":
+        settings.output.is_fcc = False
+        settings.output.server = input("Please input your own server address > ")
+        settings.output.POST   = input("Please input your own server POST endpoint > ")        
+    else:
+        settings.output.is_fcc = True
+        settings.output.server = setter("Current FASTCAT-cloud backend address", settings.output.server)
+        settings.output.POST = setter("Current FASTCAT-cloud API POST endpoint", settings.output.POST)
+        settings.output.userId = input("Please input your FASTCAT-Cloud User ID > ")
+        settings.output.apiKey = input("Please input your FASTCAT-Cloud API key > ")
 else:
-    settings.output = WriterSettings
+    settings.output = OutputSettings
     settings.output.output_mode = OutputMode.DISK.value
-    settings.output.path = setter("Output path", settings.output.path)
+settings.output.path = setter("Output path", settings.output.path)
 
 
 format = input("Output format video? (y/n) [y]> ")
 if format == "n":
-    if mode == "s":
-        settings.output.POST = "capture/"
     settings.output.output_format = OutputFormat.STILL.value
 else:
-
-    if mode == "s":
-        settings.output.POST = "capture_video/"
     settings.output.output_format = OutputFormat.VIDEO.value
     codec = input("Codec: H264, or PIM1 [H264]> ")
     if codec == "PIM1":
@@ -230,11 +221,20 @@ else:
         settings.output.output_codec = OutputVideoCodec.H264.value
 
 settings.output.device_id = setter("Device ID", settings.output.device_id)
+if settings.pipeline.pipeline_variant == PipelineVariant.LOW_POWER.value:
+    meta = input("Delete disk metadata after detections made? (y/n) [y]> ")
+    if meta == "n":
+        settings.output.delete_metadata = False
+    else: 
+        settings.output.delete_metadata = True
 
-print("\nLogging level")
+print("\nLogging settings")
 print("---------------")
 settings.logging.level = setter(
     "Level from `DEBUG`, `INFO`, `WARNING`, `ERROR`", settings.logging.level
+)
+settings.logging.path = setter(
+    "Logger output file, defaults to stdout", settings.logging.path
 )
 
 

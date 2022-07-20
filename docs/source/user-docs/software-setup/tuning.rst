@@ -16,15 +16,21 @@ Now that everything is installed the system needs to be tuned for your use-case.
 
 You will be asked some questions to help determine the best parameters for the system to use. These settings are saved in a ``settings.json`` file, which is loaded when you start the actual camera trap program. Below is relevant information for each question in the tuning script:
 
+
+.. admonition:: Pipeline
+   :class: note, dropdown
+   
+   This dictates the processing pipeline DynAikonTrap will use, information about each pipeline may be found in :doc:`../how-it-works`, for a low-powered HD resolution video camera trap, choose the LOW_POWER option.
+
 .. admonition:: Framerate
    :class: note, dropdown
 
-   Number of frames that are captured by the camera every second. Testing indicates this should not exceed 40 FPS on a Raspberry Pi 4B.
+   Number of frames that are captured by the camera every second. Testing indicates this should not exceed 20 FPS for HD resolutions. If you require a higher frame-rate than this, it is recomended to use the legacy pipeline and drop the resolution down considerably, ie to 640x480 (VGA).
 
 .. admonition:: Resolution
    :class: note, dropdown
 
-   Dimensions of the captured image. This is specified using width and height in the tuning script. Take a look at the relevant `PiCamera documentation <https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes>`_ for information on valid width and height combinations for your camera model. Also check that the chosen resolution supports video mode at the desired framerate. Note that certain dimensions limit the field of view of the camera.
+   Dimensions of the captured images and video. This is specified using width and height in the tuning script. Take a look at the relevant `PiCamera documentation <https://picamera.readthedocs.io/en/release-1.13/fov.html#sensor-modes>`_ for information on valid width and height combinations for your camera model. Also check that the chosen resolution supports video mode at the desired framerate. Note that certain dimensions limit the field of view of the camera.
 
 .. admonition:: Visible animal area to trigger
    :class: note, dropdown
@@ -76,10 +82,35 @@ You will be asked some questions to help determine the best parameters for the s
 
    Confidence value to be exceeded for the animal detector to declare a frame as containing an animal.
 
+.. admonition:: FASTCAT-Cloud animal detect
+   :class: note, dropdown
+
+   This option configures the camera trap to query our FASTCAT-Cloud API for deep neural network animal detection rather than running model inference on device. Our models available online are much larger and more accurate at detecting species and can be used so long as the device has a valid internet connection during deployment. 
+
+.. admonition:: Filter humans 
+   :class: note, dropdown
+
+   As well as filtering for animal detections, we also have a model available on-device which can distinguish humans from animals. If this option is selected, DynAIkonTrap will attempt to throw away any video/image detections which it deems as containing a human to protect individual privacy in deployed locations. 
+
+.. admonition:: Human confidence threshold
+   :class: note, dropdown
+
+   Confidence value to be exceeded for the human detector to declare a frame as containing an human.
+
 .. admonition:: Maximum motion sequence period
    :class: note, dropdown
 
    Maximum length for a single motion sequence, in seconds. A new motion sequence is started if the current one exceed this limit.
+
+.. admonition:: Motion context buffer length
+   :class: note, dropdown
+
+   This is a low-powered pipeline parameter. The number of seconds selects the amount of video for head and tail context to detections. For example, a produced video may have a number of recorded seconds before animal enters frame and some seconds of video after it has left. We call this context time.
+
+.. admonition:: Fraction of event to process with neural network. 
+   :class: note, dropdown
+
+   This is a low-powered pipeline parameter. This is the fraction of raw frames which are processed with a neural network in the worst case in our spiral inference scheme. Higher fractions will result in more required computation as a trade off for higher recall of animal events. It is reccomended to set this value to 0.0 for low-compute capable devices, such as Raspberry Pi Zero W and to 1.0 for more capable devices, such as Raspberry Pi 4B 
 
 .. admonition:: Sensor board port
    :class: note, dropdown
@@ -101,10 +132,15 @@ You will be asked some questions to help determine the best parameters for the s
 
    Choose between saving to disk (``d``) or sending data to a server (``s``) via HTTP requests. If picking the latter you will need to configure a server to use the simple API.
 
+.. admonition:: FASTCAT-Cloud upload
+   :class: note, dropdown
+
+   This option configures DynAIkonTrap to upload its observations to your FASTCAT-Cloud account. If no internet connection can be established, detections will be written to disk instead. 
+
 .. admonition:: Output path
    :class: note, dropdown
 
-   A location for all recordings to be saved to. Leaving this empty saves them in the DynAIkonTrap project directory.
+   A location for all recordings to be saved to. Leaving this empty saves them in the DynAIkonTrap project directory, by default, it's set to a folder called `output`.
 
 .. admonition:: Server address
    :class: note, dropdown
@@ -121,8 +157,17 @@ You will be asked some questions to help determine the best parameters for the s
 
    An identifier to use for the camera trap. This is not used other than in output meta-data. This could be used to uniquely identify camera traps if multiple of these are in use.
 
+.. admonition:: Delete metadata
+   :class: note, dropdown
+
+   In the low-powered pipeline, DynAIkonTrap buffers video to disk which is analysed with a background process. It may be desirable to keep these metadata for further processing/debugging. This option allows the user to disable deleting metadata. 
+
 .. admonition:: Logging level
    :class: note, dropdown
 
    Choose the minimum threshold for logging. Messages with a level below this will not be output. The recommended level is ``INFO`` as this provides informative, but not excessive, output.
 
+.. admonition:: Logger output file
+   :class: note, dropdown
+
+   This dictates the file DynAikonTrap will output log messages to. By default, this is set to `/dev/stdout`, which will cause log messages to appear at the terminal. If you wish to save a system log, add a file name of your choice. 

@@ -1,7 +1,58 @@
 # Change Log
-## [v1.2.2] - 2022-04-24
+## [v1.3.1] - 2022-07-12
+### Fixed
+- DynTrap crashes using new pipeline in Send mode - fixed
+    - WriterSettings object controled the `path` variable, this dictates where files are buffered on disk
+    - `path` is now made a property of the base-class `OutputSettings`, `WriterSettings` is removed. 
+    - We now have a base-class with required settings for send or disk modes, and an extension class, `SenderSettings` adds info for uploading detections to servers. 
+
+### Added 
+- New setttings fields are added to allow users to set
+    - upload to fastcat-cloud or to use thier own server
+    - add a userID and apiKey for fastcat-cloud uploads
+    - specify the FCC endpoints (in case these change in future, or we have multiple mirrors)
+- New sender modes in `comms.py`
+    - allow video and image detections to be uploaded to FCC 
+- Sender configuration testing in `comms.Output` function
+    - tests if the server, userId, api keys are configured appropriately, if this fails, the user is notified via the log and a `Writer` instance is used instead
+- Output methods in the `Sender` class now handle cases where the server is unavailable by saving to disk if the connection fails. 
+- Ability to register the users FASTCAT-Cloud details in `tuner.py`
+- Ability to post detections to FASTCAT-Cloud, made changes in `comms.py`, creates a log of 
+- Feature to delete metadata files after conversion to output formats, switched on by default. May be turned off in `tuner.py`
+- Ability to use FASTCAT-Cloud api to perform animal detection. 
+
+### Changed 
+- `Sender` now inherits from `Writer`
+- H264 to mp4 format conversion moved to `imdecode.py`
+- SenderSettings is created by default rather than OutputSettings. This allows FASTCAT-Cloud details to be simply passed to the animal filtering stages. Should be refactored in the future. 
+
+
+## [v1.3.0] - 2022-06-04
 ### Fixed
 - Increase `Serial` timeout to read full sensor line
+- Memory overflow for reading large motion events from disk, new event processor only loads frames as and when required from IO
+
+### Added - 2022-06-09
+- ability to output log to a set file or standard out
+- a much faster solution for SOTV of motion vectors. Can be seen in `motion.py` and `mvector_sum.pyx`, is written with Cython and tackles the biggest bottleneck of ndarray access time by accessing the memory directly using C. Around 50x faster than the original solution, produces the same results. 
+- facility to read and save raw format YUV files
+    - can now save YUV stream to `clip.dat` per event
+    - decoding of all saved image frames now performed within `imdecode.py`
+    - added YUV format to settings and tuner
+    - YUV format uses less IO bandwidth, RPi zero w can now run at 20fps
+
+### Changed - 2022-06-04
+- removed many settings from `tuner.py` 
+    - bitrate, removed from `tuner.py` and `settings.py` now set by default at 17000000, proven to work in testing on rpi0, rpi4
+    - raw-framerate-divisor, removed from `tuner.py`, still configurable via `settings.py` now set to 1 (ie not required)
+    - raw-pixel-format, removed from `tuner.py`, still configurable via `settings.py` now set to RGBA, stops PiCamera complaining
+    - buffer size, removed from `tuner.py`, still configurable via `settings.py` now set to 20 secs, tested and works on rpi0, rpi4
+- event processing now in its own file `DynAIkonTrap/filtering/event.py`
+    - makes `filter.py` more concise
+    - not built as a pipeline element (ie no input and output queues), perhaps to-do although seems superfluous...
+- `EventData` class no longer carries frame buffers for an entire event
+    - `remember_from_disk.py` no longer reads frame buffers, instead it scans the event file, making sure buffers exist and produces file pointers for the beginnning of each buffer, these are added to `EventData`
+    - `EventData` also contains fields for frame width, height and pixel format, seems neater to pass them around as `EventData` than configure each pipeline element with those settings
 
 ## [v1.2.1] - 2021-11-24
 

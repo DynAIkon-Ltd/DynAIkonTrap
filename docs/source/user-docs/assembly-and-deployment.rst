@@ -3,7 +3,7 @@ Assembly and Deployment
 
 You will need...
 ----------------
-* Raspberry Pi (model 4 is recommended, although other models may work)
+* Raspberry Pi (Any model should work, but for lowest power consumption, use an RPi Zero or Zero 2 W)
 * Micro SD card (and an adapter to flash the SD from your computer)
 * Power supply for the Raspberry Pi
 * Camera (tested with the Raspberry Pi Camera Module; you should use a camera that can connect to the Pi's CSI slot with a ribbon cable)
@@ -11,24 +11,32 @@ You will need...
 
 for a minimal camera trap setup.
 
+Check out our installation video below to see how you can build a basic DynAiKonTrap setup from scratch!
+
+.. raw:: html
+   
+   <center> <video controls width="640" height="480">
+  <source src="../_static/tutvid.webm" type="video/webm">
+   Your browser does not support the video tag.
+  </video> 
+  </center>
+   
 Deploying
 ---------
 
 The versatility of this platform means it can be deployed in many different situations. What follows is a general description of factors to consider when deploying the system.
-Power
 
-.. important::
-   
-   Whatever power solution you choose, make sure it is not limited to 1A, as the current draw may exceed this at times.
+Quite a major aspect of in-the-field deployment for the system is the power supply. 
 
-Quite a major aspect of in-the-field deployment for the system is the power supply. A Raspberry Pi may sound like a very lightweight system, but remember that it's set to run for 24 hours a day. As a simple napkin calculation consider that the full system draws between 0,7A and 1A; to keep things simple assume a current draw of 1A. As the device runs at 5V, that equates to a power consumption of 5W. Over 24 hours that is an energy consumption of 120Wh. For comparison boiling a kettle uses around 70Wh [`reference <https://doi.org/10.1016/j.apenergy.2016.03.038>`_], which means using the camera trap is equivalent to boiling the kettle 1,7 times a day.
+Whatever Raspberry Pi you choose may appear power-conservative, but remember that it's set to run for 24 hours a day. As a simple napkin calculation consider that the full system running on RPi 4B draws between 0,7A and 1A; to keep things simple assume a current draw of 1A. As the device runs at 5V, that equates to a power consumption of 5W. Over 24 hours that is an energy consumption of 120Wh. For comparison boiling a kettle uses around 70Wh [`reference <https://doi.org/10.1016/j.apenergy.2016.03.038>`_], which means using the camera trap is equivalent to boiling the kettle 1,7 times a day. Deploying to a lower-powered RPi, such as RPi Zero W can be expected to draw around half of this power consumption while running DynAikonTrap software - boiling a kettle around once a day. 
 
 In order of simplicity here are some suggestions for powering the system:
 
 #. Mains electricity
 #. Batteries e.g. a mobile phone power bank
 
-   * Ideally this should be able to output more than 1A to cater for any spikes in power consumption
+   * Ideally this should be able to output more than 1A to cater for any spikes in power consumption; in addition low-powered RPi such as the Zero W, make sure the battery is able to deliver a sustained minimum current of less than 200mA. Many power packs intended for charging mobile phones do not provide this.
+      * One neat solution for battery power is the Anker Powercore Essential [`see here <https://uk.anker.com/products/a1268>`_] line-up. These have a low-discharge mode suitable for powering any RPi device and are available at a range of capacities.
    * Remember the capacity (Ah) tells you how long the camera trap will stay alive for
 
 #. A standalone power supply, consisting of:
@@ -38,6 +46,7 @@ In order of simplicity here are some suggestions for powering the system:
    * MPPT charge controller
 
 The first two options are fairly simple to set up. The final option is a bit more involved and it is worth reading some guides on these kinds of systems before proceeding. A useful reference can be found `here <https://doi.org/10.1111/2041-210X.13456>`_.
+
 
 .. warning::
    
@@ -75,6 +84,12 @@ Here is an example case constructed from wood:
 In this case the camera has been fixed in place by four pins that have been partially hammered into the front panel from the inside. The Raspberry Pi and mobile phone power bank are placed in loosely. The outside is wrapped in duct tape to make the enclosure water resistant. A back panel can be screwed in place so it is easy to open and close the case and an extra strip of duct tape is used to cover the gaps left between back lid and the main case. All the other walls are assembled using glue and pins. There is a small hole in the front of the case for the camera to look out of. If you want to use built-in lighting you'll need to drill extra holes for this.
 
 The pictured case has external dimensions of 210x110x70mm. The wood is 7mm thick.
+
+For a higher-budget option, one example setup we have used to test out DynAikonTrap can also be seen below. We first build the camera trap within a protective plastic housing and further house this within a wooden bird-box to protect from harsh weather and allow the device to blend in with the natural environment. 
+
+.. raw:: html
+  
+   <center><img src="../_static/birdbox-camera.jpg" width=400 alt=" DynAIkonTrap built in a bird-box"></center>
 
 Lighting
 ^^^^^^^^

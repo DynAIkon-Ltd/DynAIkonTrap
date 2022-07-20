@@ -20,18 +20,18 @@ Events are loaded with into instances of :class:`~DynAIkonTrap.filtering.remembe
 
 The output is accessible via a queue. 
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from os import nice
 from multiprocessing import Array, Process, Queue
 from multiprocessing.queues import Queue as QueueType
 from pathlib import Path
-from struct import unpack
 from queue import Empty
 from time import time
 from typing import List
-from io import open
+from os import path
 
 from DynAIkonTrap.camera_to_disk import CameraToDisk, MotionRAMBuffer
+from DynAIkonTrap.imdecode import YUV_BYTE_PER_PIX
 from DynAIkonTrap.logging import get_logger
 
 logger = get_logger(__name__)
@@ -40,11 +40,13 @@ logger = get_logger(__name__)
 @dataclass
 class EventData:
     """A class for storing motion event data for further processing."""
-
-    motion_vector_frames: List[bytes]
-    raw_raster_frames: List[bytes]
-    dir: str
-    start_timestamp: float
+    raw_raster_file_indices: List[int] = field(default_factory=list)
+    raw_raster_path: str = ""
+    dir: str = ""
+    start_timestamp: float = 0.0
+    raw_x_dim: int = 0
+    raw_y_dim: int = 0
+    raw_bpp: int = 0
 
 
 class EventRememberer:
@@ -58,9 +60,7 @@ class EventRememberer:
         """
         self._output_queue: QueueType[EventData] = Queue(maxsize=1)
         self._input_queue = read_from
-        self._raw_dims = read_from.raw_frame_dims
-        self.raw_image_format = read_from.raw_image_format
-        self._raw_bpp = read_from.bits_per_pixel_raw
+        self.raw_dims = read_from.raw_frame_dims
         self.framerate = read_from.framerate
         width, height = read_from.resolution
 
@@ -93,41 +93,25 @@ class EventRememberer:
             EventData: populated instance of event data.
         """
         raw_path = Path(dir).joinpath("clip.dat")
-        vect_path = Path(dir).joinpath("clip_vect.dat")
-        raw_raster_frames = []
+        raw_raster_frame_indices = []
         try:
-            with open(raw_path, "rb") as file:
-                while True:
-                    buf = file.read1(
-                        self._raw_dims[0] * self._raw_dims[1] * self._raw_bpp
-                    )
-                    if not buf:
-                        break
-                    raw_raster_frames.append(buf)
-
-            motion_vector_frames = []
-            event_time = time()  # by default event time set to now
-
-            with open(vect_path, "rb") as file:
-                start = True
-                while True:
-                    buf = file.read(self._motion_element_size)
-                    if not buf:
-                        break
-                    if start:
-                        arr_timestamp = bytearray(buf)[0:8]  # index the timestamp
-                        event_time = unpack("<d", arr_timestamp)[0]
-                        start = False
-                    motion_vector_frames.append(buf)
-
-        except IOError as e:
-            logger.error("Problem opening or reading file: {}".format(e.filename))
-
+            file_size = path.getsize(raw_path)
+            file_indx = 0
+            while file_indx < file_size:
+                raw_raster_frame_indices.append(int(file_indx))
+                file_indx += (self.raw_dims[0] * self.raw_dims[1] * YUV_BYTE_PER_PIX)
+        except OSError as e:
+            logger.error(
+                "Problem opening or reading file: {} (IOError: {})".format(e.filename, e))
+        
         return EventData(
-            motion_vector_frames=motion_vector_frames,
-            raw_raster_frames=raw_raster_frames,
+            raw_raster_file_indices=raw_raster_frame_indices,
+            raw_raster_path=raw_path,
             dir=dir,
-            start_timestamp=event_time,
+            start_timestamp=time(),  # set event time set to now
+            raw_x_dim=self.raw_dims[0],
+            raw_y_dim=self.raw_dims[1],
+            raw_bpp=YUV_BYTE_PER_PIX,
         )
 
     def get(self) -> EventData:
