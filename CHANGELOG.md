@@ -16,9 +16,16 @@
 - Sender configuration testing in `comms.Output` function
     - tests if the server, userId, api keys are configured appropriately, if this fails, the user is notified via the log and a `Writer` instance is used instead
 - Output methods in the `Sender` class now handle cases where the server is unavailable by saving to disk if the connection fails. 
+- Ability to register the users FASTCAT-Cloud details in `tuner.py`
+- Ability to post detections to FASTCAT-Cloud, made changes in `comms.py`, creates a log of 
+- Feature to delete metadata files after conversion to output formats, switched on by default. May be turned off in `tuner.py`
+- Ability to use FASTCAT-Cloud api to perform animal detection. 
 
 ### Changed 
 - `Sender` now inherits from `Writer`
+- H264 to mp4 format conversion moved to `imdecode.py`
+- SenderSettings is created by default rather than OutputSettings. This allows FASTCAT-Cloud details to be simply passed to the animal filtering stages. Should be refactored in the future. 
+
 
 ## [v1.3.0] - 2022-06-04
 ### Fixed
