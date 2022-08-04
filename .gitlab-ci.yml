@@ -23,7 +23,7 @@ run:
   script:
       # Currently in `docs` directory (from `before_script` above)
     - make clean && make html
-    - rm -r /var/www/dynaikon.com-dynaikontrap-docs/*
+    - rm -rf /var/www/dynaikon.com-dynaikontrap-docs/*
     - cp -r build/html/* /var/www/dynaikon.com-dynaikontrap-docs/
   only:
     - tags
