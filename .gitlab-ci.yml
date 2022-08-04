@@ -9,6 +9,7 @@ cache:
     - venv/
 
 before_script:
+  - sudo apt install python3-dev
   - python -V
   - pip install virtualenv
   - virtualenv venv
