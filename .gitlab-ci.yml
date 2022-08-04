@@ -1,7 +1,9 @@
+# Version 3.7 is necessary for `numpy` to build correctly
 image: python:3.7
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  HERMES_ROOT: /var/www/dynaikon/dynaikon.com/dynaikontrap-docs
 
 cache:
   paths:
@@ -23,18 +25,16 @@ run:
   script:
       # Currently in `docs` directory (from `before_script` above)
     - make clean && make html
-    - rm -rfv /var/www/dynaikon/dynaikon.com/dynaikontrap-docs/* # -f flag removes error status for non existing files
-    - mkdir -p /var/www/dynaikon/dynaikon.com/dynaikontrap-docs # -p flag no error status if directory existing
-    - ls -l /var/www/dynaikon/dynaikon.com/dynaikontrap-docs
-    - rm -rfv /var/www/dynaikon/dynaikon.com/dynaikontrap-docs/*
-    - cp -rv build/html/* /var/www/dynaikon/dynaikon.com/dynaikontrap-docs
-    - cp -rv build/html/* "$CI_PROJECT_DIR/"
-      # Pipeline debugging
-    - tar -czvf "$CI_PROJECT_DIR/docs.tar.gz" build/html/*
-    - ls -l "$CI_PROJECT_DIR/"
-    - grep -rF 1.3.1 "$CI_PROJECT_DIR/"
+      # Delete current documentation
+      # -f flag removes error status for non existing files
+    - rm -rfv "$HERMES_ROOT/*"
+      # Copy new documentation
+    - cp -rv build/html/* "$HERMES_ROOT"
+    - date +"Built at %F-%H%M%S" > "$HERMES_ROOT/builddate"
+      # Create tarball at webroot
+    - tar -czvf "$HERMES_ROOT/DynAikonTrap-Docs.tar.gz" -C build/html .
+      # Create Downloadable Artifact
+    - tar -czvf "$CI_PROJECT_DIR/DynAikonTrap-Docs.tar.gz" -C build/html .
   artifacts:
     paths:
-      - "$CI_PROJECT_DIR/docs.tar.gz"
-  only:
-    - tags
+      - "$CI_PROJECT_DIR/DynAikonTrap-Docs.tar.gz"
