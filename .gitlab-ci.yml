@@ -23,8 +23,8 @@ run:
   script:
       # Currently in `docs` directory (from `before_script` above)
     - make clean && make html
-    - rm -rf /var/www/dynaikon/dynaikon.com/dynaikontrap-docs/* # -f flag removes error status for non existing files
+    - rm -rfv /var/www/dynaikon/dynaikon.com/dynaikontrap-docs/* # -f flag removes error status for non existing files
     - mkdir -p /var/www/dynaikon/dynaikon.com/dynaikontrap-docs # -p flag no error status if directory existing
-    - cp -r build/html/* /var/www/dynaikon/dynaikon.com/dynaikontrap-docs
+    - cp -rv build/html/* /var/www/dynaikon/dynaikon.com/dynaikontrap-docs
   only:
     - tags
