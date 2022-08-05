@@ -1,0 +1,3 @@
+[submodule "vid2frames"]
+	path = vid2frames
+	url = http://gitlab.dynaikon.com/dynaikontrap/vid2frames.git
