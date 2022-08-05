@@ -44,6 +44,7 @@ from DynAIkonTrap.comms import Output
 from DynAIkonTrap.sensor import SensorLogs
 from DynAIkonTrap.settings import PipelineVariant, SenderSettings, load_settings
 from DynAIkonTrap.logging import set_logger_config
+from vid2frames import dynaikontrap_video
 
 # Make Ctrl-C quit gracefully
 def handler(signal_num, stack_frame):

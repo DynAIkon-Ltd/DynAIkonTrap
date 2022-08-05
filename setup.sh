@@ -42,7 +42,7 @@ if [ $python_command == 0 ]; then
 fi
 
 ## Install dependencies
-sudo -p "[sudo] password to install dependencies> " apt install -y cmake python3-dev ffmpeg libaom0 libavcodec58 libavformat58 libavutil56 libcodec2-0.8.1 libilmbase23 libopenexr23 libswresample3 libswscale5 libx264-155 libx265-165
+sudo -p "[sudo] password to install dependencies> " apt install -y cmake libavformat-dev libavutil-dev python3-dev ffmpeg libaom0 libavcodec58 libavformat58 libavutil56 libcodec2-0.8.1 libilmbase23 libopenexr23 libswresample3 libswscale5 libx264-155 libx265-165
 
 if [ $? -ne 0 ]; then
     echo "There was an error installing dependencies (see above)"
@@ -110,6 +110,7 @@ sudo mv "$DIR/dynaikontrap.sh" /usr/local/bin/dynaikontrap
 
 echo "Building Vid2Frames library..." 
 
+cd "$DIR/vid2frames/" && ./build.sh
 
 if [ $? -eq 0 ]; then
     echo ""
