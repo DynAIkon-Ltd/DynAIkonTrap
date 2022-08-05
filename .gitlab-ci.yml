@@ -11,6 +11,7 @@ cache:
     - venv/
 
 before_script:
+  # https://docs.gitlab.com/ee/ci/caching/#cache-python-dependencies
   - python -V
   - pip install virtualenv
   - virtualenv venv
