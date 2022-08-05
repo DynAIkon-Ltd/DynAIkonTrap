@@ -28,10 +28,10 @@ run:
     - make clean && make html
       # Delete current documentation
       # -f flag removes error status for non existing files
-    - rm -rfv "$HERMES_ROOT/*"
+    - rm -rfv "$HERMES_ROOT"/*
       # Copy new documentation
     - cp -rv build/html/* "$HERMES_ROOT"
-    - date +"Version $(cat ../VERSION) built at %F-%H%M%S %Z from $CI_COMMIT_SHA" > "$HERMES_ROOT/buildinfo"
+    - date +"Version $(cat ../VERSION) built at %F-%H%M%S %Z from commit $CI_COMMIT_SHORT_SHA" > "$HERMES_ROOT/buildinfo"
       # Create tarball at webroot
     - tar -czvf "$HERMES_ROOT/DynAikonTrap-Docs.tar.gz" -C build/html .
       # Create Downloadable Artifact
