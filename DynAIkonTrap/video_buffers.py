@@ -390,8 +390,9 @@ class H264RAMBuffer(VideoRAMBuffer):
 class RawRAMBuffer(VideoRAMBuffer):
     """This class inherits from :class:`~DynAIkonTrap.camera_to_disk.VideoRAMBuffer` to specialise for raw format image frames."""
 
-    def __init__(self, context_length_s, camera: PiCamera, dim : Tuple[int, int],  *args, **kwargs) -> None:
+    def __init__(self, context_length_s, camera: PiCamera, dim : Tuple[np.uint16, np.uint16],  *args, **kwargs) -> None:
         self._context_length_s = context_length_s
+        self._hw = dim
         sz = int(dim[0] * dim[1] * YUV_BYTE_PER_PIX * BUFF_SZ_S * camera.framerate)
         super(RawRAMBuffer, self).__init__(camera, size=sz, *args, **kwargs)
 
@@ -417,8 +418,10 @@ class RawRAMBuffer(VideoRAMBuffer):
             )
             start_frame = lst_frames[context_index]
             self._inactive_stream.seek(start_frame.position)
-            return super().write_inactive_stream(filename)
+            
 
         else:
             self._inactive_stream.seek(0)
-            return super().write_inactive_stream(filename)
+        with open(filename, 'ab') as f:
+            f.write(np.array(self._hw, dtype=np.uint16))
+        return super().write_inactive_stream(filename)

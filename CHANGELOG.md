@@ -1,4 +1,20 @@
 # Change Log
+## [v1.4.0] - 2022-08-12
+### Fixed
+
+### Added 
+
+### Changed
+- Raw YUV file format is modified to include the size of a given frame at the start of each frame buffer:
+    - The file format now contains four bytes at the begginning of each frame representing two uint16 variables for the width and height of the frame. The size of the frame buffer can be easily calculated by reading these dimensions and doing some multiplication.
+    - Within `video_buffers.py` the `write_inactive_stream` method within `RawRAMBuffer` is modified to write these parameters to file before the remainder of the video buffer is written. 
+    - This change allows the size of each frame to be passed around with the file:
+        - YUV data files are now more portable, reading does not rely on metadata passed around DynAIkonTrap
+        - Metadata required for reading the files is cut down, less junk can be passed around in `EventData` class
+        - Frames within a YUV data file can now be of changing sizes and still fully compatible with DynTrap
+     
+
+
 ## [v1.3.1] - 2022-07-12
 ### Fixed
 - DynTrap crashes using new pipeline in Send mode - fixed
