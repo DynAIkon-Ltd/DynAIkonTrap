@@ -94,6 +94,14 @@ class decoder:
 
     @staticmethod
     def bgr_array_to_yuv_buf(bgr: np.ndarray) -> bytes:
+        """Used to convert bgr colour matrices into YUV420 format buffers compatible with the remainder of the LOW_POWERED pipeline
+
+        Args:
+            bgr (np.ndarray): Input BGR matrix
+
+        Returns:
+            bytes: Output YUV420 format buffer
+        """
         buf = np.array([bgr.shape[0], bgr.shape[1]], dtype=np.uint16).tobytes()
         return buf + cv2.cvtColor(bgr, cv2.COLOR_BGR2YUV_I420).tobytes()
 
@@ -136,10 +144,12 @@ class decoder:
 
     @staticmethod
     def h264_to_mp4(h264_file: str , video_framerate: int, suffix:str = ".mp4" ) -> str:
-        """This wraps H264 files in the mp4 container format, this is performed calling FFMPEG. Video framerate is also required 
+        """This wraps H264 files in the mp4 container format, this is performed calling FFMPEG. Video framerate is also required. 
+        
+        MP4 files may also be passed in place of the h264 input. 
 
         Args:
-            h264_file (str): The path to the h264 file to be converted 
+            h264_file (str): The path to the h264 (or mp4) file to be converted 
             video_framerate (int): The video framerate 
             suffix (str, optional): An optional video suffix to produce other file formats such as .avi. Defaults to ".mp4".
 

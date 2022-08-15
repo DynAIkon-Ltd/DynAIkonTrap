@@ -11,6 +11,10 @@
     - The `__init__` function now has an optional prameter, `read_from`. This can be used to pass an initialised `VideoStream`; when frames are read from the camera, they are in turn read from the `VideoStream` instance. s
 
 ### Changed
+- `DirectoryMaker` is made far simpler with the removal of the `get_event` function and simplification of `new_event`:
+  - Reliance on the `Path` library is removed, in favour of the simpler `os.path` tools. 
+  - `new_event` function attempts to create a new event directory. If one cannot be made, then a temporary location is given in the `/tmp` directory.
+   
 - Raw YUV file format is modified to include the size of a given frame at the start of each frame buffer:
     - The file format now contains four bytes at the begginning of each frame representing two uint16 variables for the width and height of the frame. The size of the frame buffer can be easily calculated by reading these dimensions and doing some multiplication.
     - Within `video_buffers.py` the `write_inactive_stream` method within `RawRAMBuffer` is modified to write these parameters to file before the remainder of the video buffer is written. 
