@@ -3,6 +3,8 @@
 ### Fixed
 
 ### Added 
+- `camera.py` now has the facility to read camera frames from an emulated input, this integrates the `Vid2Frames.VideoStream` class into the legacy pipeline.
+    - The `__init__` function now has an optional prameter, `read_from`. This can be used to pass an initialised `VideoStream`; when frames are read from the camera, they are in turn read from the `VideoStream` instance. s
 
 ### Changed
 - Raw YUV file format is modified to include the size of a given frame at the start of each frame buffer:

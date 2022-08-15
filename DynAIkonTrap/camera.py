@@ -37,6 +37,7 @@ except (OSError, ModuleNotFoundError):
 
 from DynAIkonTrap.settings import CameraSettings
 from DynAIkonTrap.logging import get_logger
+from vid2frames.Vid2Frames import VideoStream
 
 logger = get_logger(__name__)
 
@@ -87,27 +88,36 @@ class ImageReader:
 class Camera:
     """Acts as a wrapper class to provide a simple interface to a stream of camera frames. Each frame consists of motion vectors and a JPEG image. The frames are stored on an internal queue, ready to be read by any subsequent stage in the system."""
 
-    def __init__(self, settings: CameraSettings):
-        """Takes a :class:`~DynAIkonTrap.settings.CameraSettings` object to initialise and start the camera hardware."""
+    def __init__(self, settings: CameraSettings, read_from: VideoStream =None):
+        """Constructor for :class:`~DynAIkonTrap.Camera`. Can be used to instanciate a camera hardware instance from settings or frames may be fed in via the argument, read_from, this allows compatbility with the Vid2Frames library.
 
-        self.resolution = settings.resolution
-        self.framerate = settings.framerate
-        self._camera = PiCamera(resolution=self.resolution, framerate=self.framerate)
-        sleep(2)  # Camera warmup
+        Args:
+            settings (CameraSettings): Takes a :class:`~DynAIkonTrap.settings.CameraSettings` object to initialise and start the camera hardware.
+            read_from (VideoStream, optional): Provides capability to spoof the camera input with an emulator. An instance of the Vid2Frames class, VideoStream may be used to read frames from a video, for example. Defaults to None.
+        """
+        if read_from is None:
+            self.resolution = settings.resolution
+            self.framerate = settings.framerate
+            self._camera = PiCamera(resolution=self.resolution, framerate=self.framerate)
+            sleep(2)  # Camera warmup
 
-        self._output: QueueType[Frame] = Queue()
-        synchroniser = Synchroniser(self._output)
-        self._camera.start_recording(
-            "/dev/null",
-            format="h264",
-            motion_output=MovementAnalyser(self._camera, synchroniser),
-        )
-        self._camera.start_recording(
-            ImageReader(synchroniser),
-            format="mjpeg",
-            splitter_port=2,
-            bitrate=settings.bitrate_bps,
-        )
+            self._output: QueueType[Frame] = Queue()
+            synchroniser = Synchroniser(self._output)
+            self._camera.start_recording(
+                "/dev/null",
+                format="h264",
+                motion_output=MovementAnalyser(self._camera, synchroniser),
+            )
+            self._camera.start_recording(
+                ImageReader(synchroniser),
+                format="mjpeg",
+                splitter_port=2,
+                bitrate=settings.bitrate_bps,
+            )
+        else:
+            self.resolution = settings.resolution
+            self.framerate = settings.framerate
+            self._output = read_from
         logger.debug("Camera started")
 
     def get(self) -> Frame:
@@ -119,13 +129,16 @@ class Camera:
         Returns:
             Frame: A frame from the camera video stream
         """
-        try:
-            return self._output.get(1 / self.framerate)
+        if isinstance(self._output, Synchroniser):  
+            try:
+                return self._output.get(1 / self.framerate)
 
-        except Empty:
-            logger.error("No frames available from Camera")
-            self._no_frames = True
-            raise Empty
+            except Empty:
+                logger.error("No frames available from Camera")
+                self._no_frames = True
+                raise Empty
+        elif isinstance(self._output, VideoStream):
+            return self._output.get()
 
     def empty(self) -> bool:
         """Indicates if the queue of buffered frames is empty
