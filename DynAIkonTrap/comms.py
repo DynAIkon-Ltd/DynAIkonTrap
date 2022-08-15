@@ -23,7 +23,6 @@ from fileinput import filename
 from queue import Queue
 import json
 from multiprocessing import Process, Queue
-from collections import deque
 from typing import Dict, IO, Tuple, List, Union
 from tempfile import NamedTemporaryFile
 from io import StringIO
@@ -32,9 +31,8 @@ from pathlib import Path
 from os import listdir, nice, makedirs
 from os.path import join, splitext, exists
 from json import dump, dumps
-from subprocess import CalledProcessError, call, check_call
 from shutil import move
-from unittest import TextTestRunner
+from glob import glob
 
 from requests import RequestException, post, get, head
 from requests.exceptions import HTTPError, ConnectionError
@@ -302,7 +300,9 @@ class AbstractOutput(metaclass=ABCMeta):
         while True:
             try:
                 event = self._animal_queue.get()
-                filename = decoder.h264_to_mp4(join(event.dir, 'clip.h264'), self.framerate, self._video_suffix)
+                globbed = glob(join(event.dir, 'clip.h264')) + glob(join(event.dir, 'clip.mp4'))
+                encoded_video_file = globbed[0]
+                filename = decoder.h264_to_mp4(encoded_video_file, self.framerate, self._video_suffix)
                 caption = caption_generator.generate_sensor_json(
                     [event.start_timestamp]
                 )
@@ -326,7 +326,9 @@ class AbstractOutput(metaclass=ABCMeta):
                 log = self._sensor_logs.get(event.start_timestamp)
                 if log is None:
                    logger.warning("No sensor readings for event captured at time: {}".format(datetime.fromtimestamp(event.start_timestamp)))
-                images = decoder.h264_to_jpeg_frames(join(event.dir, 'clip.h264'))
+                globbed = glob(join(event.dir, 'clip.h264')) + glob(join(event.dir, 'clip.mp4'))
+                encoded_video_file = globbed[0]
+                images = decoder.h264_to_jpeg_frames(encoded_video_file)
                 self.output_group_of_stills(
                         images=images, time=event.start_timestamp, sensor_log=log
                     )

@@ -6,6 +6,7 @@
 - The `h264_to_mp4` method within `imdecode.py` is updated to use the `-r` argument when calling `ffmpeg`. This is in the place of the `-framerate` flag which is depreciated. 
 
 ### Added 
+- Within `comms.py`, the functions `_read_events_to_image` and `_read_events_to_video` are modified to work with `.mp4` files as well as `.h264`. This is a basic change implemented using glob. Allows for easier integration with `Vid2Frames`
 - `imdecode.py` now contains an additional function, `bgr_array_to_yuv_buf` which can generate a YUV420 buffer in an equivalent format to that produced by the camera hardware. This allows image frames to be translated into YUV buffers. Frame data from the legacy pipeline may now be linked up with the LOW_POWERED pipeline.
 - `camera.py` now has the facility to read camera frames from an emulated input, this integrates the `Vid2Frames.VideoStream` class into the legacy pipeline.
     - The `__init__` function now has an optional prameter, `read_from`. This can be used to pass an initialised `VideoStream`; when frames are read from the camera, they are in turn read from the `VideoStream` instance. s
@@ -14,7 +15,7 @@
 - `DirectoryMaker` is made far simpler with the removal of the `get_event` function and simplification of `new_event`:
   - Reliance on the `Path` library is removed, in favour of the simpler `os.path` tools. 
   - `new_event` function attempts to create a new event directory. If one cannot be made, then a temporary location is given in the `/tmp` directory.
-   
+
 - Raw YUV file format is modified to include the size of a given frame at the start of each frame buffer:
     - The file format now contains four bytes at the begginning of each frame representing two uint16 variables for the width and height of the frame. The size of the frame buffer can be easily calculated by reading these dimensions and doing some multiplication.
     - Within `video_buffers.py` the `write_inactive_stream` method within `RawRAMBuffer` is modified to write these parameters to file before the remainder of the video buffer is written. 
