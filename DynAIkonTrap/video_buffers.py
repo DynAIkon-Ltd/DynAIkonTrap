@@ -422,6 +422,9 @@ class RawRAMBuffer(VideoRAMBuffer):
 
         else:
             self._inactive_stream.seek(0)
+
+        # write frame dimensions to file before the inactive stream is written
         with open(filename, 'ab') as f:
             f.write(np.array(self._hw, dtype=np.uint16))
+            
         return super().write_inactive_stream(filename)

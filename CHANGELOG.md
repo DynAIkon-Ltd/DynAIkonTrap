@@ -1,8 +1,12 @@
 # Change Log
 ## [v1.4.0] - 2022-08-12
 ### Fixed
+- The YUV file format modification is a breaking change to the `yuv_buf_to_bgr_array` within `imdecode.py` 
+    - This function is modified to read the frame dimensions from file and decode the remainder of the YUV buffer
+- The `h264_to_mp4` method within `imdecode.py` is updated to use the `-r` argument when calling `ffmpeg`. This is in the place of the `-framerate` flag which is depreciated. 
 
 ### Added 
+- `imdecode.py` now contains an additional function, `bgr_array_to_yuv_buf` which can generate a YUV420 buffer in an equivalent format to that produced by the camera hardware. This allows image frames to be translated into YUV buffers. Frame data from the legacy pipeline may now be linked up with the LOW_POWERED pipeline.
 - `camera.py` now has the facility to read camera frames from an emulated input, this integrates the `Vid2Frames.VideoStream` class into the legacy pipeline.
     - The `__init__` function now has an optional prameter, `read_from`. This can be used to pass an initialised `VideoStream`; when frames are read from the camera, they are in turn read from the `VideoStream` instance. s
 
