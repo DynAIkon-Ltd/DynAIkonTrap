@@ -6,12 +6,15 @@
 - The `h264_to_mp4` method within `imdecode.py` is updated to use the `-r` argument when calling `ffmpeg`. This is in the place of the `-framerate` flag which is depreciated. 
 
 ### Added 
+- Within `__main__.py` a CLI is written to allow the passing of filenames, appropriate argument parsing is included to ensure a `.mp4` file is passed and that file exists. If no file is passed, the Vid2Frames library is not imported, thus DynAIkonTrap can function as normal if vid2frames is not installed. 
 - Within `comms.py`, the functions `_read_events_to_image` and `_read_events_to_video` are modified to work with `.mp4` files as well as `.h264`. This is a basic change implemented using glob. Allows for easier integration with `Vid2Frames`
 - `imdecode.py` now contains an additional function, `bgr_array_to_yuv_buf` which can generate a YUV420 buffer in an equivalent format to that produced by the camera hardware. This allows image frames to be translated into YUV buffers. Frame data from the legacy pipeline may now be linked up with the LOW_POWERED pipeline.
 - `camera.py` now has the facility to read camera frames from an emulated input, this integrates the `Vid2Frames.VideoStream` class into the legacy pipeline.
     - The `__init__` function now has an optional prameter, `read_from`. This can be used to pass an initialised `VideoStream`; when frames are read from the camera, they are in turn read from the `VideoStream` instance. s
 
 ### Changed
+- `EventProcessor` and `EventRememberer` logic is modified to read frames from disk without passing imformation about frame size and shape via thier pipeline predecessor. Frames are read from disk based on a file offset for each frame only. These offsets are computed in the `EventRememberer` and sorted and accessed in the `EventProcessor`
+
 - `DirectoryMaker` is made far simpler with the removal of the `get_event` function and simplification of `new_event`:
   - Reliance on the `Path` library is removed, in favour of the simpler `os.path` tools. 
   - `new_event` function attempts to create a new event directory. If one cannot be made, then a temporary location is given in the `/tmp` directory.
