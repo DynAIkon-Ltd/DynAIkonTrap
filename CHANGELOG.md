@@ -1,6 +1,8 @@
 # Change Log
 ## [v1.4.0] - 2022-08-12
 ### Fixed
+- Removed output codec selection fom `settings.py`. The ability to select between codecs was thought to be justified by different codecs available on different devices. Instead, selecting the fourcc encoder `mp4v` works on all devices which support h264 encoding. No need for this setting.
+- Output stage bug fixed in `comms.py` for moving temporary file to output directory
 - The YUV file format modification is a breaking change to the `yuv_buf_to_bgr_array` within `imdecode.py` 
     - This function is modified to read the frame dimensions from file and decode the remainder of the YUV buffer
 - The `h264_to_mp4` method within `imdecode.py` is updated to use the `-r` argument when calling `ffmpeg`. This is in the place of the `-framerate` flag which is depreciated. 

@@ -18,7 +18,6 @@ from types import MappingProxyType
 
 from DynAIkonTrap.settings import (
     OutputMode,
-    OutputVideoCodec,
     PipelineVariant,
     SenderSettings,
     Settings,
@@ -214,11 +213,6 @@ if format == "n":
     settings.output.output_format = OutputFormat.STILL.value
 else:
     settings.output.output_format = OutputFormat.VIDEO.value
-    codec = input("Codec: H264, or PIM1 [H264]> ")
-    if codec == "PIM1":
-        settings.output.output_codec = OutputVideoCodec.PIM1.value
-    else:
-        settings.output.output_codec = OutputVideoCodec.H264.value
 
 settings.output.device_id = setter("Device ID", settings.output.device_id)
 if settings.pipeline.pipeline_variant == PipelineVariant.LOW_POWER.value:

@@ -92,7 +92,7 @@ class Camera:
     """Acts as a wrapper class to provide a simple interface to a stream of camera frames. Each frame consists of motion vectors and a JPEG image. The frames are stored on an internal queue, ready to be read by any subsequent stage in the system."""
 
     def __init__(self, settings: CameraSettings, read_from: "VideoStream" =None):
-        """Constructor for :class:`~DynAIkonTrap.Camera`. Can be used to instanciate a camera hardware instance from settings or frames may be fed in via the argument, read_from, this allows compatbility with the Vid2Frames library.
+        """Constructor for :class:`~DynAIkonTrap.Camera`. Can be used to instanciate a camera hardware instance from settings or frames may be fed in via the argument read_from, this allows compatbility with the Vid2Frames library.
 
         Args:
             settings (CameraSettings): Takes a :class:`~DynAIkonTrap.settings.CameraSettings` object to initialise and start the camera hardware.
