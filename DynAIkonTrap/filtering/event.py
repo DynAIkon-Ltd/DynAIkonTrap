@@ -57,7 +57,7 @@ class EventProcessor:
         """
         #from the event, get the list of file offsets for each frame
         frame_file_offsets = list(event.raw_raster_file_indices)
-        logger.debug("Processing event with {} raw image frames.".format(
+        logger.info("Processing event with {} raw image frames.".format(
             len(frame_file_offsets)))
         inf_count = 0
         if len(frame_file_offsets) > 0:
@@ -130,7 +130,7 @@ class EventProcessor:
                     ["rm -r {}".format(event.dir)],
                     shell=True,
                 )
-                logger.debug("Deleted event with directory {}".format(event.dir))
+                logger.info("Deleted event with directory {}".format(event.dir))
         except CalledProcessError as e:
             logger.error(
                 "Problem deleting event with directory: {}. (CalledProcessError) : {}".format(

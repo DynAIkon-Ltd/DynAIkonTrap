@@ -82,7 +82,7 @@ print("You can halt execution with <Ctrl>+C anytime\n")
 settings = load_settings()
 
 # set the logger output file
-set_logger_config(settings.logging.path)
+set_logger_config(settings.logging.path, settings.logging.level)
 
 print(
     """

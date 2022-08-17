@@ -152,7 +152,7 @@ class Filter:
                 result, nr_inf = self._event_processor._process_event(event)
                 end_s = time() - start_s
                 time_taken = (end_s/nr_inf) if nr_inf > 0 else 0
-                logger.debug("Event processed in {:.2f}secs, running {} inference(s). Avg execution time per inference: {:.2f}secs".format(
+                logger.info("Event processed in {:.2f}secs, running {} inference(s). Avg execution time per inference: {:.2f}secs".format(
                     end_s,
                     nr_inf,
                     time_taken

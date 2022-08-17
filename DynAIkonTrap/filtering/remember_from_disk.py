@@ -80,16 +80,18 @@ class EventSynthesisor:
             str: Directory for the synthesised event, containing `clip.mp4` and `clip.dat`
         """
         event_dir = self._dir_maker.new_event()
+        frame = self._input_queue.get() #block until frame is available
+        logger.info("Parsing `{}` into an event. Saving to {}; this may take a few seconds.".format(self._video_path, event_dir))
         encoded_path = event_dir + '/clip.mp4'
         copy_file(self._video_path, encoded_path)
         raw_path =  event_dir + '/clip.dat'
         while True:
             try:
-                frame = self._input_queue.get()
                 bgr = decoder.jpg_buf_to_bgr_array(frame.image)
                 yuv_buf = decoder.bgr_array_to_yuv_buf(bgr)
                 with open(raw_path, 'ab') as f:
                     f.write(yuv_buf)
+                frame = self._input_queue.get()
             except Empty:
                 break
         return event_dir
