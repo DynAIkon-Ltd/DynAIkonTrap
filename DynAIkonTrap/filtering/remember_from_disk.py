@@ -104,7 +104,7 @@ class EventRememberer:
         Args:
             read_from (CameraToDisk): The :class:`~DynAIkonTrap.camera_to_disk.CameraToDisk` object creating event directories on disk.
         """
-        self._output_queue: QueueType[EventData] = Queue(maxsize=1)
+        self._output_queue: QueueType[EventData] = Queue(maxsize=20)
         self._input_queue = read_from
         self.framerate = read_from.framerate
 

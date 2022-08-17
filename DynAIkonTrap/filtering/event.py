@@ -21,11 +21,10 @@ Events are loaded from disk before frames are processed to keep memory usage at 
 The main method, () returns
 
 """
-
 from typing import Tuple
 from numpy import round, linspace
-from os.path import basename
-from subprocess import CalledProcessError, call, check_call
+from os.path import basename, join
+from subprocess import CalledProcessError, check_call
 
 
 from DynAIkonTrap.filtering.animal import AnimalFilter
@@ -56,66 +55,63 @@ class EventProcessor:
             bool: True if event contains an animal, False otherwise.
             int: number of inferences run on this event to reach conclusion.
         """
-
-        frame_indices = list(event.raw_raster_file_indices)
+        #from the event, get the list of file offsets for each frame
+        frame_file_offsets = list(event.raw_raster_file_indices)
         logger.debug("Processing event with {} raw image frames.".format(
-            len(frame_indices)))
-        middle_idx = len(frame_indices) // 2
-        inference_data = []
-        human = False
-        animal = False
+            len(frame_file_offsets)))
         inf_count = 0
-        if self._event_fraction <= 0:
-            # run detector on middle frame only
-            frame_idx = frame_indices[middle_idx]
-            frame = self._get_frame_from_index(
-                event, frame_idx)
-            is_animal, is_human = self._animal_filter.run(
-                frame
-            )
-            inf_count += 1
-            return (is_animal and not is_human, inf_count)
-        else:
-            # get evenly spaced frames throughout the event
-            nr_elements = int(round(len(frame_indices) * self._event_fraction))
-            indices = [
-                int(round(index)) for index in linspace(0, len(frame_indices) - 1, nr_elements)
-            ]
-            lst_indx_frames_from_centre = [
-                (index, frame_indices[index]) for index in indices]
-            # sort in ordering from middle frame
-            lst_indx_frames_from_centre.sort(
-                key=lambda x: abs(middle_idx - x[0]))
-            # process frames from middle, spiral out
-            for (index, frame_index) in lst_indx_frames_from_centre:
+        if len(frame_file_offsets) > 0:
+            #get index of the middle frame in file offsets array
+            middle_idx_file_offsets = len(frame_file_offsets) // 2
+            if self._event_fraction <= 0:
+                # run detector on middle frame only
                 frame = self._get_frame_from_index(
-                    event, frame_index)
+                    event, middle_idx_file_offsets)
                 is_animal, is_human = self._animal_filter.run(
                     frame
                 )
                 inf_count += 1
-                if is_human:
-                    return False, inf_count
-                if is_animal:
-                    return True, inf_count
+                return (is_animal and not is_human, inf_count)
+            else:
+                # get evenly spaced indices for frame offsets throughout the event
+                nr_elements = int(round(len(frame_file_offsets) * self._event_fraction))
+                indices = [
+                    int(round(index)) for index in linspace(0, len(frame_file_offsets) - 1, nr_elements)
+                ]
+                # order in "spiral out" from the center frame 
+                indices.sort(key=lambda x: abs(middle_idx_file_offsets - x))
+                # process frames, starting from the middle
+                for index in indices:
+                    frame = self._get_frame_from_index(
+                        event, index)
+                    is_animal, is_human = self._animal_filter.run(
+                        frame
+                    )
+                    inf_count += 1
+                    if is_human:
+                        return False, inf_count
+                    if is_animal:
+                        return True, inf_count
         return False, inf_count
 
-    def _get_frame_from_index(self, event: EventData, frame_idx: int) -> bytes:
+    def _get_frame_from_index(self, event: EventData, frame_offset_indx: int) -> bytes:
         """Extracts the frame from disk for a given event and frame index in file, returns that frame as a byte buffer
 
         Args:
             event (EventData): given event to extract the frame from 
-            frame_idx (int): the index of that frame in the event file on disk
+            frame_offset_indx (int): the index required to find the frames file offset in the event.raw_raster_file_indices
 
         Returns:
             bytes: a buffer of bytes of the frame at the given index 
         """
         buf = 0
-        with open(event.raw_raster_path, "rb") as file:
-            file.seek(frame_idx)
-            buf = file.read1(
-                int(event.raw_x_dim * event.raw_y_dim * event.raw_bpp)
-            )
+        raw_raster_path = join(event.dir, 'clip.dat')
+        read_size_b = -1
+        if frame_offset_indx + 1 < len(event.raw_raster_file_indices):
+            read_size_b =  event.raw_raster_file_indices[frame_offset_indx + 1] - event.raw_raster_file_indices[frame_offset_indx]
+        with open(raw_raster_path, "rb") as file:
+            file.seek(event.raw_raster_file_indices[frame_offset_indx])
+            buf = file.read(read_size_b)            
         return buf
 
     @staticmethod
