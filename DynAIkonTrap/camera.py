@@ -37,7 +37,10 @@ except (OSError, ModuleNotFoundError):
 
 from DynAIkonTrap.settings import CameraSettings
 from DynAIkonTrap.logging import get_logger
-from vid2frames.Vid2Frames import VideoStream
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from vid2frames.Vid2Frames import VideoStream
 
 logger = get_logger(__name__)
 
@@ -88,7 +91,7 @@ class ImageReader:
 class Camera:
     """Acts as a wrapper class to provide a simple interface to a stream of camera frames. Each frame consists of motion vectors and a JPEG image. The frames are stored on an internal queue, ready to be read by any subsequent stage in the system."""
 
-    def __init__(self, settings: CameraSettings, read_from: VideoStream =None):
+    def __init__(self, settings: CameraSettings, read_from: "VideoStream" =None):
         """Constructor for :class:`~DynAIkonTrap.Camera`. Can be used to instanciate a camera hardware instance from settings or frames may be fed in via the argument, read_from, this allows compatbility with the Vid2Frames library.
 
         Args:
@@ -129,16 +132,12 @@ class Camera:
         Returns:
             Frame: A frame from the camera video stream
         """
-        if isinstance(self._output, Synchroniser):  
-            try:
-                return self._output.get(1 / self.framerate)
-
-            except Empty:
-                logger.error("No frames available from Camera")
-                self._no_frames = True
-                raise Empty
-        elif isinstance(self._output, VideoStream):
+        try:
             return self._output.get()
+        except Empty:
+            logger.error("No frames available from Camera")
+            self._no_frames = True
+            raise Empty
 
     def empty(self) -> bool:
         """Indicates if the queue of buffered frames is empty
