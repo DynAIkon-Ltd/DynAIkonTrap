@@ -30,7 +30,7 @@ from multiprocessing import Array, Process, Queue
 from multiprocessing.queues import Queue as QueueType
 from pathlib import Path
 from queue import Empty
-from time import time
+from time import sleep, time
 from typing import List, Union
 from os import path
 import numpy as np
@@ -68,6 +68,7 @@ class EventSynthesisor:
         self._output_queue: QueueType[EventData]
         self._dir_maker = DirectoryMaker('output/vid2frames')
         self._video_path: str = video_path
+        self._finished = False
     
     def get(self) -> str:
         """Produces an event directory from the given VideoStream used for initialisation. 
@@ -80,8 +81,10 @@ class EventSynthesisor:
             str: Directory for the synthesised event, containing `clip.mp4` and `clip.dat`
         """
         event_dir = self._dir_maker.new_event()
-        frame = self._input_queue.get() #block until frame is available
+        while self._input_queue.empty():
+            sleep(0.2) # hang event creator while no frames available
         logger.info("Parsing `{}` into an event. Saving to {}; this may take a few seconds.".format(self._video_path, event_dir))
+        frame = self._input_queue.get() #block until frame is available
         encoded_path = event_dir + '/clip.mp4'
         copy_file(self._video_path, encoded_path)
         raw_path =  event_dir + '/clip.dat'
@@ -94,6 +97,7 @@ class EventSynthesisor:
                 frame = self._input_queue.get()
             except Empty:
                 break
+        logger.info("Parsed `{}`. Initiate further processing...".format(self._video_path))
         return event_dir
             
 
