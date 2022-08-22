@@ -141,3 +141,24 @@ FASTCAT-Cloud
 
 DynAIkonTrap integrates with DynAIkon's web API, FASTCAT-Cloud. This may be used to upload detections automatically to your account through our API endpoints. You can configure the camera trap to do this with your account details following instructions on the :doc:`tuning` page. 
 
+Video Input
+---------------
+
+DynAIkonTrap may also be run on a static input as video processing software. This allows pre-caught camera trap observation videos to be filtered using our AI video pipeline. 
+
+To use this special mode, video files currently require some pre-processing using a program called `ffmpeg`. This is installed on your system after running `setup.sh`.
+
+To pre-process a video file for parsing with DynAIkonTrap, use the command shown:
+
+   .. code:: sh
+
+      ffmpeg -i input.mp4 -c:v mpeg4 -q:v 1 -an prepared-input.mp4
+
+The resultant file, `prepared-input.mp4`, is suitable for processing with DynAIkonTrap as shown:
+
+   .. code:: sh
+
+      dynaikontrap --filename prepared-input.mp4
+
+This will run the camera trap on the video input, watch the output log to see if animals are detected! When the video is processed, exit the program with `CTRL+C`.
+

@@ -9,6 +9,7 @@
 - The `h264_to_mp4` method within `imdecode.py` is updated to use the `-r` argument when calling `ffmpeg`. This is in the place of the `-framerate` flag which is depreciated. 
 
 ### Added 
+- Docs explaining how to run the camera trap on a simulated video input in `running.rst`. 
 - Some logging messages added in `remember_from_disk.py`, changed verbosity of log messages in `filtering.py` and `event.py`
 - Within `__main__.py` a CLI is written to allow the passing of filenames, appropriate argument parsing is included to ensure a `.mp4` file is passed and that file exists. If no file is passed, the Vid2Frames library is not imported, thus DynAIkonTrap can function as normal if vid2frames is not installed. 
 - Within `comms.py`, the functions `_read_events_to_image` and `_read_events_to_video` are modified to work with `.mp4` files as well as `.h264`. This is a basic change implemented using glob. Allows for easier integration with `Vid2Frames`
