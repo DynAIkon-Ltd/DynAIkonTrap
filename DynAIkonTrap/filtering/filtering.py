@@ -124,6 +124,8 @@ class Filter:
 
             try:
                 frame = self._input_queue.get()
+                if frame == None: 
+                    raise Empty
             except Empty:
                 # An unexpected event; finish processing motion so far
                 self._motion_labelled_queue.end_motion_sequence()
