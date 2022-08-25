@@ -40,4 +40,4 @@ These instructions will help you get up and running quickly so you can try out D
 
 .. admonition:: First Boot
    
-  The first time DynAIkonTrap is booted on a given device may have a short delay at the beginning as DynAIkonTrap is reliant on a just-in-time (JIT) compile for some features. This will only take a minates, thanks for your patience. 
+  The first time DynAIkonTrap is booted on a given device may have a short delay at the beginning as DynAIkonTrap is reliant on a just-in-time (JIT) compile for some features. This will only take a minutes, thanks for your patience. 

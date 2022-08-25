@@ -23,6 +23,8 @@ before_script:
   - pip install -r requirements.txt && pip install -r ../requirements.txt
 
 run:
+  only:
+    - master
   script:
       # Currently in `docs` directory (from `before_script` above)
     - make clean && make html

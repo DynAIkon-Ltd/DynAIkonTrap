@@ -31,6 +31,7 @@ YUV_BYTE_PER_PIX = 1.5
 logger = get_logger(__name__)
 
 class decoder:
+
     """A class containing static methods to decode image formats YUV and JPEG, depends on numpy and opencv (cv2) python packages. YUV formats are assumed to be YUV420, with 1.5 bytes per pixel, as described here: https://en.wikipedia.org/wiki/YUV#Y.E2.80.B2UV420p_.28and_Y.E2.80.B2V12_or_YV12.29_to_RGB888_conversion
 
     Included methods convert a given byte array into numpy ndarrays of pixel values. 
@@ -45,18 +46,19 @@ class decoder:
         Returns:
             np.ndarray: an ndarray with size (width, height, 3) where each element is a pixel, pixel format is BGR, one byte per colour
         """
-        sz = int(sqrt(len(buf) / YUV_BYTE_PER_PIX))
-        fheight = fwidth = sz
-        Y_end = int(fheight * fwidth)
+        wh = np.frombuffer(buf[0:4], dtype=np.uint16)           
+        fheight, fwidth = int(wh[0]), int(wh[1])
+        Y_start = 4
+        Y_end = Y_start + int(fheight * fwidth) 
         U_end = Y_end + int((fheight//2) * (fwidth//2))
         #get Y values, first 2/3rds
-        Y = np.frombuffer(buf[0:Y_end], dtype=np.uint8).reshape((fheight, fwidth))
+        Y = np.frombuffer(buf[Y_start:Y_end], dtype=np.uint8).reshape((fheight, fwidth))
         #get U values, next 1/6th
         U = np.frombuffer(buf[Y_end:U_end], dtype=np.uint8).reshape((fheight//2, fwidth//2)).repeat(2, axis=0).repeat(2, axis=1)
         #get V values, final 1/6th
         V = np.frombuffer(buf[U_end:], dtype=np.uint8).reshape((fheight//2, fwidth//2)).repeat(2, axis=0).repeat(2, axis=1)
         #stack to form YUV array
-        YUV = np.dstack((Y, U, V))[:fwidth, :fheight, :].astype(np.float)
+        YUV = np.dstack((Y, U, V))[:fheight, :fwidth, :].astype(np.float)
         YUV[:, :, 0]  = YUV[:, :, 0]  - 16   # Offset Y by 16
         YUV[:, :, 1:] = YUV[:, :, 1:] - 128  # Offset UV by 128
         # YUV conversion matrix from ITU-R BT.601 version (SDTV)
@@ -90,7 +92,18 @@ class decoder:
             logger.error("YUV -> png conversion error: {}".format(e))
         return ret
 
+    @staticmethod
+    def bgr_array_to_yuv_buf(bgr: np.ndarray) -> bytes:
+        """Used to convert bgr colour matrices into YUV420 format buffers compatible with the remainder of the LOW_POWERED pipeline
 
+        Args:
+            bgr (np.ndarray): Input BGR matrix
+
+        Returns:
+            bytes: Output YUV420 format buffer
+        """
+        buf = np.array([bgr.shape[0], bgr.shape[1]], dtype=np.uint16).tobytes()
+        return buf + cv2.cvtColor(bgr, cv2.COLOR_BGR2YUV_I420).tobytes()
 
     @staticmethod
     def jpg_buf_to_bgr_array(buf : bytes) -> np.ndarray:
@@ -131,10 +144,12 @@ class decoder:
 
     @staticmethod
     def h264_to_mp4(h264_file: str , video_framerate: int, suffix:str = ".mp4" ) -> str:
-        """This wraps H264 files in the mp4 container format, this is performed calling FFMPEG. Video framerate is also required 
+        """This wraps H264 files in the mp4 container format, this is performed calling FFMPEG. Video framerate is also required. 
+        
+        MP4 files may also be passed in place of the h264 input. 
 
         Args:
-            h264_file (str): The path to the h264 file to be converted 
+            h264_file (str): The path to the h264 (or mp4) file to be converted 
             video_framerate (int): The video framerate 
             suffix (str, optional): An optional video suffix to produce other file formats such as .avi. Defaults to ".mp4".
 
@@ -146,7 +161,7 @@ class decoder:
         try:
             check_call(
                 [
-                    "nice -n 5 ffmpeg -hide_banner -loglevel error -framerate {} -probesize 42M -i {} -c copy {} -y".format(
+                    "nice -n 5 ffmpeg -hide_banner -loglevel error -r {} -probesize 42M -i {} -c copy {} -y".format(
                      video_framerate, h264_file, file.name
                     )
                 ],

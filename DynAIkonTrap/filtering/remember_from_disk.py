@@ -20,19 +20,28 @@ Events are loaded with into instances of :class:`~DynAIkonTrap.filtering.remembe
 
 The output is accessible via a queue. 
 """
+from ctypes import Union
 from dataclasses import dataclass, field
+from distutils.file_util import copy_file
 from os import nice
+from os.path import join
+from shutil import copyfile
 from multiprocessing import Array, Process, Queue
 from multiprocessing.queues import Queue as QueueType
 from pathlib import Path
 from queue import Empty
-from time import time
-from typing import List
+from time import sleep, time
+from typing import List, Union
 from os import path
+import numpy as np
 
-from DynAIkonTrap.camera_to_disk import CameraToDisk, MotionRAMBuffer
-from DynAIkonTrap.imdecode import YUV_BYTE_PER_PIX
+from DynAIkonTrap.camera_to_disk import CameraToDisk, MotionRAMBuffer, DirectoryMaker
+from DynAIkonTrap.imdecode import YUV_BYTE_PER_PIX, decoder
 from DynAIkonTrap.logging import get_logger
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from vid2frames.Vid2Frames import VideoStream
 
 logger = get_logger(__name__)
 
@@ -41,33 +50,69 @@ logger = get_logger(__name__)
 class EventData:
     """A class for storing motion event data for further processing."""
     raw_raster_file_indices: List[int] = field(default_factory=list)
-    raw_raster_path: str = ""
     dir: str = ""
     start_timestamp: float = 0.0
-    raw_x_dim: int = 0
-    raw_y_dim: int = 0
-    raw_bpp: int = 0
 
+class EventSynthesisor:
+    """This object reads events from a VideoStream and creates synthetic EventData packages. Produces event directories upon calling of the contained get() method."""
+    def __init__(self, read_from: "VideoStream", video_path: str):
+        """Initialise an event Sythesisor from a Vid2Frames.VideoStream. 
+
+        Args:
+            read_from (VideoStream): The VideoStream to read each frame from. This is used to capture the raw image frames in YUV format
+            video_path (str): The video file from which the VideoStream is generated from. Used to copy an encoded video to the event directory
+        """
+        self._input_queue: "VideoStream" = read_from
+        self.raw_dims = (0,0)
+        self.framerate = read_from.framerate
+        self._output_queue: QueueType[EventData]
+        self._dir_maker = DirectoryMaker('output/vid2frames')
+        self._video_path: str = video_path
+        self._finished = False
+    
+    def get(self) -> str:
+        """Produces an event directory from the given VideoStream used for initialisation. 
+        
+        YUV format image frames are interpreted and read from each image frame and saved to `clip.dat`
+
+        An encoded video file is copied to the output directory and named `clip.mp4`
+
+        Returns:
+            str: Directory for the synthesised event, containing `clip.mp4` and `clip.dat`
+        """
+        event_dir = self._dir_maker.new_event()
+        while self._input_queue.empty():
+            sleep(0.2) # hang event creator while no frames available
+        logger.info("Parsing `{}` into an event. Saving to {}; this may take a few seconds.".format(self._video_path, event_dir))
+        frame = self._input_queue.get() #block until frame is available
+        encoded_path = event_dir + '/clip.mp4'
+        copy_file(self._video_path, encoded_path)
+        raw_path =  event_dir + '/clip.dat'
+        while True:
+            try:
+                bgr = decoder.jpg_buf_to_bgr_array(frame.image)
+                yuv_buf = decoder.bgr_array_to_yuv_buf(bgr)
+                with open(raw_path, 'ab') as f:
+                    f.write(yuv_buf)
+                frame = self._input_queue.get()
+            except Empty:
+                break
+        logger.info("Parsed `{}`. Initiate further processing...".format(self._video_path))
+        return event_dir
+            
 
 class EventRememberer:
     """This object reads new event directories from an instance of :class:`~DynAIkonTrap.camera_to_disk.CameraToDisk`. Outputs a Queue of EventData objects for further processing."""
 
-    def __init__(self, read_from: CameraToDisk):
+    def __init__(self, read_from: Union[CameraToDisk, EventSynthesisor]):
         """Initialises EventRememberer. Starts events processing thread.
 
         Args:
             read_from (CameraToDisk): The :class:`~DynAIkonTrap.camera_to_disk.CameraToDisk` object creating event directories on disk.
         """
-        self._output_queue: QueueType[EventData] = Queue(maxsize=1)
+        self._output_queue: QueueType[EventData] = Queue(maxsize=20)
         self._input_queue = read_from
-        self.raw_dims = read_from.raw_frame_dims
         self.framerate = read_from.framerate
-        width, height = read_from.resolution
-
-        self._rows, self._cols = MotionRAMBuffer.calc_rows_cols(width, height)
-        self._motion_element_size = MotionRAMBuffer.calc_motion_element_size(
-            self._rows, self._cols
-        )
 
         self._usher = Process(target=self.proc_events, daemon=True)
         self._usher.start()
@@ -92,26 +137,24 @@ class EventRememberer:
         Returns:
             EventData: populated instance of event data.
         """
-        raw_path = Path(dir).joinpath("clip.dat")
+        raw_path = join(dir, "clip.dat")
         raw_raster_frame_indices = []
         try:
-            file_size = path.getsize(raw_path)
-            file_indx = 0
-            while file_indx < file_size:
-                raw_raster_frame_indices.append(int(file_indx))
-                file_indx += (self.raw_dims[0] * self.raw_dims[1] * YUV_BYTE_PER_PIX)
-        except OSError as e:
+            with open(raw_path, 'rb') as f:
+                b = f.read(4)
+                while(b != b''):
+                    raw_raster_frame_indices.append(f.tell() - 4)
+                    frame_height, frame_width = tuple(np.frombuffer(b, dtype=np.uint16))
+                    f.read(int(int(frame_width) * int(frame_height) * YUV_BYTE_PER_PIX))
+                    b = f.read(4)
+        except IOError as e:
             logger.error(
-                "Problem opening or reading file: {} (IOError: {})".format(e.filename, e))
+                "Problem opening or reading file: {} (IOError: {})".format(raw_path, e))
         
         return EventData(
             raw_raster_file_indices=raw_raster_frame_indices,
-            raw_raster_path=raw_path,
             dir=dir,
-            start_timestamp=time(),  # set event time set to now
-            raw_x_dim=self.raw_dims[0],
-            raw_y_dim=self.raw_dims[1],
-            raw_bpp=YUV_BYTE_PER_PIX,
+            start_timestamp=time()
         )
 
     def get(self) -> EventData:

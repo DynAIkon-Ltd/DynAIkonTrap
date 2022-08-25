@@ -71,7 +71,6 @@ The JSON file should be structured as follows (of course the values can be chang
         "path": "output",
         "output_mode": 0,
         "output_format": 0,
-        "output_codec": 0,
         "device_id": 0
     },
     "logging": {
@@ -167,21 +166,12 @@ class OutputMode(Enum):
     DISK = 0
     SEND = 1
 
-
-class OutputVideoCodec(Enum):
-    """System output video codec"""
-
-    H264 = 0
-    PIM1 = 1
-
-
 @dataclass
 class OutputSettings:
     """Base-class of settings for outputting to disk or server uploads"""
     device_id: Any = 0
     output_format: OutputFormat = OutputFormat.VIDEO
     output_mode: OutputMode = OutputMode.DISK
-    output_codec: OutputVideoCodec = OutputVideoCodec.H264
     path: str = "output"
     delete_metadata: bool = 1
 
@@ -274,10 +264,7 @@ def load_settings() -> Settings:
                         output_format=OutputFormat(
                             settings_json["output"]["output_format"]
                         ),
-                        output_mode=output_mode,
-                        output_codec=OutputVideoCodec(
-                            settings_json["output"]["output_codec"]
-                        ),
+                        output_mode=output_mode
                     )
                 else:  # Default to writing to disk
                     output = SenderSettings(
@@ -286,9 +273,6 @@ def load_settings() -> Settings:
                             settings_json["output"]["output_format"]
                         ),
                         output_mode=output_mode,
-                        output_codec=OutputVideoCodec(
-                            settings_json["output"]["output_codec"]
-                        ),
                         path=settings_json["output"]["path"],
                     )
 

@@ -29,13 +29,13 @@ from os import getenv
 from stat import filemode
 
 
-def set_logger_config(output_file="/dev/stdout"):
+def set_logger_config(output_file="/dev/stdout", level="DEBUG"):
     """Sets up the logger configuration, can pass a file path describing where the logger prints to. Default is /dev/stdout.
 
     Args:
         output_file (str, optional): Output file path where the logger prints to. Defaults to '/dev/stdout'.
     """
-    logging_level = getenv("logging", "DEBUG")
+    logging_level = level
     mode = (
         "w" if output_file == "/dev/stdout" else "a"
     )  # cannot write in append mode to /dev/stdout

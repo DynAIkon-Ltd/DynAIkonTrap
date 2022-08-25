@@ -23,7 +23,6 @@ from fileinput import filename
 from queue import Queue
 import json
 from multiprocessing import Process, Queue
-from collections import deque
 from typing import Dict, IO, Tuple, List, Union
 from tempfile import NamedTemporaryFile
 from io import StringIO
@@ -32,9 +31,8 @@ from pathlib import Path
 from os import listdir, nice, makedirs
 from os.path import join, splitext, exists
 from json import dump, dumps
-from subprocess import CalledProcessError, call, check_call
 from shutil import move
-from unittest import TextTestRunner
+from glob import glob
 
 from requests import RequestException, post, get, head
 from requests.exceptions import HTTPError, ConnectionError
@@ -48,7 +46,6 @@ from DynAIkonTrap.imdecode import decoder
 from DynAIkonTrap.sensor import SensorLog, SensorLogs, Reading
 from DynAIkonTrap.logging import get_logger
 from DynAIkonTrap.settings import (
-    OutputVideoCodec,
     OutputMode,
     SenderSettings,
     OutputFormat,
@@ -207,18 +204,8 @@ class AbstractOutput(metaclass=ABCMeta):
         self._animal_queue = read_from[0]
         self._sensor_logs = read_from[1]
         self.framerate = self._animal_queue.framerate
-        self._video_codec = settings.output_codec.name
         self._delete_metadata = settings.delete_metadata
-        if settings.output_codec == OutputVideoCodec.H264:
-            self._video_suffix = ".mp4"
-        elif settings.output_codec == OutputVideoCodec.PIM1:
-            self._video_suffix = ".avi"
-        else:
-            logger.error(
-                "Invalid video codec (codec: {}); cannot form output suffix".format(
-                    settings.output_codec.name
-                )
-            )
+        self._video_suffix = ".mp4"
 
         if settings.output_format == OutputFormat.VIDEO:
             if self._animal_queue.mode == FilterMode.BY_FRAME:
@@ -272,7 +259,6 @@ class AbstractOutput(metaclass=ABCMeta):
                     frame_timestamps)
                 self.output_video(
                     video=file, time=start_time, caption=captions)
-                file.close()
                 continue
 
             decoded_image = cv2.imdecode(
@@ -284,11 +270,10 @@ class AbstractOutput(metaclass=ABCMeta):
                 start_time = frame.timestamp
                 frame_timestamps = []
 
-                file = NamedTemporaryFile(suffix=self._video_suffix)
-
+                file = NamedTemporaryFile(suffix=self._video_suffix, delete=False)
                 writer = cv2.VideoWriter(
                     file.name,
-                    cv2.VideoWriter_fourcc(*self._video_codec),
+                    cv2.VideoWriter_fourcc(*'mp4v'),
                     self.framerate,
                     (decoded_image.shape[1], decoded_image.shape[0]),
                 )
@@ -302,7 +287,9 @@ class AbstractOutput(metaclass=ABCMeta):
         while True:
             try:
                 event = self._animal_queue.get()
-                filename = decoder.h264_to_mp4(join(event.dir, 'clip.h264'), self.framerate, self._video_suffix)
+                globbed = glob(join(event.dir, 'clip.h264')) + glob(join(event.dir, 'clip.mp4'))
+                encoded_video_file = globbed[0]
+                filename = decoder.h264_to_mp4(encoded_video_file, self.framerate, self._video_suffix)
                 caption = caption_generator.generate_sensor_json(
                     [event.start_timestamp]
                 )
@@ -310,7 +297,6 @@ class AbstractOutput(metaclass=ABCMeta):
                     self.output_video(
                         video=file, time=event.start_timestamp, caption=caption
                     )
-                    file.close()
                 if self._delete_metadata:
                     EventProcessor.delete_event(event)
 
@@ -326,7 +312,9 @@ class AbstractOutput(metaclass=ABCMeta):
                 log = self._sensor_logs.get(event.start_timestamp)
                 if log is None:
                    logger.warning("No sensor readings for event captured at time: {}".format(datetime.fromtimestamp(event.start_timestamp)))
-                images = decoder.h264_to_jpeg_frames(join(event.dir, 'clip.h264'))
+                globbed = glob(join(event.dir, 'clip.h264')) + glob(join(event.dir, 'clip.mp4'))
+                encoded_video_file = globbed[0]
+                images = decoder.h264_to_jpeg_frames(encoded_video_file)
                 self.output_group_of_stills(
                         images=images, time=event.start_timestamp, sensor_log=log
                     )
@@ -363,7 +351,7 @@ class AbstractOutput(metaclass=ABCMeta):
         """Output a video with its meta-data. The sensor data is provided via the video captions (``caption``).
 
         Args:
-            video (IO[bytes]): MP4 video (codec: H264 - MPEG-4 AVC (part 10))
+            video (IO[bytes]): MP4 video 
             caption (StringIO): Caption of sensor readings as produced by :func:`VideoCaption.generate_sensor_json()`
             time (float): UNIX timestamp when the image was captured
         """
@@ -452,8 +440,8 @@ class Writer(AbstractOutput):
             str: File path (excluding extension) for the caption file and/or saved video
         """
         name = self._unique_name(time)
+        video.close()
         move(video.name, name + self._video_suffix)
-
         if caption is not None:
             with open(name + ".json", "w") as f:
                 f.write(caption.getvalue())

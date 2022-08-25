@@ -42,7 +42,7 @@ if [ $python_command == 0 ]; then
 fi
 
 ## Install dependencies
-sudo -p "[sudo] password to install dependencies> " apt install -y python3-dev ffmpeg libaom0 libavcodec58 libavformat58 libavutil56 libcodec2-0.8.1 libilmbase23 libopenexr23 libswresample3 libswscale5 libx264-155 libx265-165
+sudo -p "[sudo] password to install dependencies> " apt install -y cmake libavformat-dev libavutil-dev python3-dev ffmpeg libaom0 libavcodec58 libavformat58 libavutil56 libcodec2-0.8.1 libilmbase23 libopenexr23 libswresample3 libswscale5 libx264-155 libx265-165
 
 if [ $? -ne 0 ]; then
     echo "There was an error installing dependencies (see above)"
@@ -107,6 +107,29 @@ chmod +x "$DIR/dynaikontrap.sh"
 
 ## Place the script in /usr/local/bin/ so it be called from everywhere
 sudo mv "$DIR/dynaikontrap.sh" /usr/local/bin/dynaikontrap
+
+echo "Building Vid2Frames library..." 
+
+wget https://gitlab.dynaikon.com/dynaikontrap/vid2frames/-/archive/master/vid2frames-master.tar.gz -O vid2frames.tar.gz
+
+if [ $? -ne 0 ]
+then
+  echo "Could not download Vid2Frames from git repository."
+  echo "Warning: Vid2Frames not installed."
+else
+  echo "Unzip and install Vid2Frames..."
+  mkdir -p vid2frames &&
+  tar -xzvf vid2frames.tar.gz --strip-components=1 -C vid2frames &&
+  cd vid2frames &&
+  bash "$DIR/vid2frames/build.sh"
+  if [ $? -ne 0 ]
+  then
+    echo "Warning: could not install the Vid2Frames Library, please consult documentation available at https://gitlab.dynaikon.com/dynaikontrap/vid2frames/-/blob/master/README.md"
+  else 
+    echo "Vid2Frames installed successfully"
+    rm "$DIR/vid2frames.tar.gz"
+  fi
+fi
 
 if [ $? -eq 0 ]; then
     echo ""

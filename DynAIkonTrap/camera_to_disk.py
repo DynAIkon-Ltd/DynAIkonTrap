@@ -21,8 +21,9 @@ Motion detection is performed within :class:`MotionRAMBuffer` by filtering each 
 An output queue of emptied buffer directories is accessible via the output of :class:`CameraToDisk`. 
 """
 from queue import Empty
-from pathlib import Path
+from os import path, makedirs
 from math import ceil
+from tempfile import TemporaryDirectory, TemporaryFile
 from time import time
 import psutil
 from multiprocessing import Queue
@@ -53,36 +54,31 @@ logger = get_logger(__name__)
 class DirectoryMaker:
     """Creates new directories for storing motion events."""
 
-    def __init__(self, base_dir: Path):
-        """Takes a base Path object and initialises a directory factory for motion events.
+    def __init__(self, base_dir: str):
+        """Takes a base directory and initialises a DirectoryMaker for motion events.
 
         Args:
-            base_dir (Path): base directory for storing motion event folders.
+            base_dir (str): base directory for storing motion events.
         """
         self._base_dir = base_dir
         self._event_counter = 0
 
-    def get_event(self) -> Tuple[Path, str]:
-        """Searches for a new directory path for motion event until an unoccupied one is found
+    def new_event(self) -> str:
+        """Gives the string name for a new directory on disk. If a new directory cannot be made in the conventional way (by appending to a counter), then a directory in the `/tmp` location is created and returned instead."""
 
+        new_dir = path.join(self._base_dir, "event_" + str(self._event_counter))
+        while path.exists(new_dir):
+            self._event_counter += 1
+            new_dir = path.join(self._base_dir, "event_" + str(self._event_counter))
+        try: 
+            makedirs(new_dir)
+            self._event_counter += 1
+            return new_dir
+        except OSError as e:
+            t = TemporaryDirectory()
+            logger.error("Cannot create directory: {}, OSError: {}. Using the temporary directory: {} instead".format(new_dir, e, t))
+            return t
 
-        Returns:
-            Tuple[Path, str]: Event directory
-        """
-
-        ret_path, ret_str = self.new_event()
-        while ret_path.exists():
-            ret_path, ret_str = self.new_event()
-        ret_path.mkdir(parents=True, exist_ok=True)
-        return (ret_path, ret_str)
-
-    def new_event(self) -> Tuple[Path, str]:
-        """Gives string name and directory path for a new motion event on disk"""
-
-        ret_str = "event_" + str(self._event_counter)
-        self._event_counter += 1
-        ret_path = self._base_dir.joinpath(ret_str)
-        return (ret_path, ret_str)
 
 
 class CameraToDisk:
@@ -147,7 +143,7 @@ class CameraToDisk:
         )
 
         self._directory_maker: DirectoryMaker = DirectoryMaker(
-            Path(writer_settings.path)
+            writer_settings.path
         )
         self._record_proc = Thread(
             target=self.record, name="camera recording process", daemon=True
@@ -161,7 +157,7 @@ class CameraToDisk:
         """
         p = psutil.Process()
         p.ionice(psutil.IOPRIO_CLASS_BE, 0)
-        current_path = self._directory_maker.get_event()[0]
+        current_path = self._directory_maker.new_event()
         event_io_latencies = []
         self._camera.start_recording(
             self._h264_buffer,
@@ -227,7 +223,7 @@ class CameraToDisk:
                             (sum(event_io_latencies)/len(event_io_latencies))
                         )
                     )
-                    current_path = self._directory_maker.get_event()[0]
+                    current_path = self._directory_maker.new_event()
                     event_io_latencies = []
 
         finally:
@@ -241,7 +237,7 @@ class CameraToDisk:
             logger.error("No events available from Camera")
             raise Empty
 
-    def empty_all_buffers(self, current_path: Path, start: bool):
+    def empty_all_buffers(self, current_path: str, start: bool):
         """Switches and empties all three buffers. Switching is performed near-simultaneously. Writing may take longer.
 
         Args:
@@ -254,11 +250,11 @@ class CameraToDisk:
         self._motion_buffer.switch_stream()
 
         self._h264_buffer.write_inactive_stream(
-            filename=current_path.joinpath("clip.h264"), is_start=start
+            filename=path.join(current_path, "clip.h264"), is_start=start
         )
         self._raw_buffer.write_inactive_stream(
-            filename=current_path.joinpath("clip.dat"), is_start=start
+            filename=path.join(current_path, "clip.dat"), is_start=start
         )
         self._motion_buffer.write_inactive_stream(
-            filename=current_path.joinpath("clip_vect.dat"), is_start=start
+            filename=path.join(current_path, "clip_vect.dat"), is_start=start
         )
