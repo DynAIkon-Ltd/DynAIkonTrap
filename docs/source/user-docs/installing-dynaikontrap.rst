@@ -1,5 +1,5 @@
-Installation
-============
+Installing DynAikonTrap
+=======================
 
 .. tip::
    

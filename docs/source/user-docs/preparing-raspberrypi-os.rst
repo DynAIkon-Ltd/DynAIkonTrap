@@ -1,5 +1,5 @@
-Flashing the SD Card
-====================
+Preparing Raspberry Pi OS
+=========================
 
 We will now "flash" the SD card. This is the process of installing the operating system.
 

@@ -7,15 +7,14 @@ User Documentation
 
    user-docs/quick-start
 
-   user-docs/flashing.rst
-
-   user-docs/manual-installation.rst
-
-   user-docs/running.rst
+   user-docs/preparing-raspberrypi-os.rst
+   user-docs/preparing-raspberrypi-camera.rst
+   user-docs/installing-dynaikontrap.rst
+   user-docs/running-dynaikontrap.rst
+   user-docs/tuning.rst
 
    user-docs/assembly-and-deployment.rst
    user-docs/software-setup.rst
-   user-docs/tuning.rst
 
    user-docs/how-it-works
    user-docs/assembly-and-deployment
