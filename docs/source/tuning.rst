@@ -1,22 +1,22 @@
-Tuning
-======
+Tuning the Trap
+===============
 
-Now that everything is installed, the system needs to be tuned for your use-case. You can investigate tuning options and configure outputs using our ``dyntrap-config`` program. 
+Now that everything is installed, the system needs to be tuned for your use-case. You can investigate tuning options and configure outputs using our ``dyntrap-config`` program.
 
 To run ``dyntrap-config`` simply type:
 
 .. code:: sh
-   
+
    dyntrap-config
 
-This will bring up a graphical window which you can navigate via the terminal, use the arrow keys and keyboard to change the settings for DynAIkonTrap. 
+This will bring up a graphical window which you can navigate via the terminal, use the arrow keys and keyboard to change the settings for DynAIkonTrap.
 
 Using ``dyntrap-config``, you can check out all the parameters for the system to use. These settings are saved in a ``settings.json`` file, which is loaded when you start the actual camera trap program. Below is relevant information for settings parameters:
 
 
 .. admonition:: Pipeline
    :class: note, dropdown
-   
+
    This dictates the processing pipeline DynAikonTrap will use, information about each pipeline may be found in :doc:`../how-it-works`, for a low-powered HD resolution video camera trap, choose the LOW_POWER option.
 
 .. admonition:: Framerate
@@ -82,12 +82,12 @@ Using ``dyntrap-config``, you can check out all the parameters for the system to
 .. admonition:: FASTCAT-Cloud animal detect
    :class: note, dropdown
 
-   This option configures the camera trap to query our FASTCAT-Cloud API for deep neural network animal detection rather than running model inference on device. Our models available online are much larger and more accurate at detecting species and can be used so long as the device has a valid internet connection during deployment. 
+   This option configures the camera trap to query our FASTCAT-Cloud API for deep neural network animal detection rather than running model inference on device. Our models available online are much larger and more accurate at detecting species and can be used so long as the device has a valid internet connection during deployment.
 
-.. admonition:: Filter humans 
+.. admonition:: Filter humans
    :class: note, dropdown
 
-   As well as filtering for animal detections, we also have a model available on-device which can distinguish humans from animals. If this option is selected, DynAIkonTrap will attempt to throw away any video/image detections which it deems as containing a human to protect individual privacy in deployed locations. 
+   As well as filtering for animal detections, we also have a model available on-device which can distinguish humans from animals. If this option is selected, DynAIkonTrap will attempt to throw away any video/image detections which it deems as containing a human to protect individual privacy in deployed locations.
 
 .. admonition:: Human confidence threshold
    :class: note, dropdown
@@ -104,10 +104,10 @@ Using ``dyntrap-config``, you can check out all the parameters for the system to
 
    This is a low-powered pipeline parameter. The number of seconds selects the amount of video for head and tail context to detections. For example, a produced video may have a number of recorded seconds before animal enters frame and some seconds of video after it has left. We call this context time.
 
-.. admonition:: Fraction of event to process with neural network. 
+.. admonition:: Fraction of event to process with neural network.
    :class: note, dropdown
 
-   This is a low-powered pipeline parameter. This is the fraction of raw frames which are processed with a neural network in the worst case in our spiral inference scheme. Higher fractions will result in more required computation as a trade off for higher recall of animal events. It is reccomended to set this value to 0.0 for low-compute capable devices, such as Raspberry Pi Zero W and to 1.0 for more capable devices, such as Raspberry Pi 4B 
+   This is a low-powered pipeline parameter. This is the fraction of raw frames which are processed with a neural network in the worst case in our spiral inference scheme. Higher fractions will result in more required computation as a trade off for higher recall of animal events. It is reccomended to set this value to 0.0 for low-compute capable devices, such as Raspberry Pi Zero W and to 1.0 for more capable devices, such as Raspberry Pi 4B
 
 .. admonition:: Sensor board port
    :class: note, dropdown
@@ -132,7 +132,7 @@ Using ``dyntrap-config``, you can check out all the parameters for the system to
 .. admonition:: FASTCAT-Cloud upload
    :class: note, dropdown
 
-   This option configures DynAIkonTrap to upload its observations to your FASTCAT-Cloud account. If no internet connection can be established, detections will be written to disk instead. 
+   This option configures DynAIkonTrap to upload its observations to your FASTCAT-Cloud account. If no internet connection can be established, detections will be written to disk instead.
 
 .. admonition:: Output path
    :class: note, dropdown
@@ -157,7 +157,7 @@ Using ``dyntrap-config``, you can check out all the parameters for the system to
 .. admonition:: Delete metadata
    :class: note, dropdown
 
-   In the low-powered pipeline, DynAIkonTrap buffers video to disk which is analysed with a background process. It may be desirable to keep these metadata for further processing/debugging. This option allows the user to disable deleting metadata. 
+   In the low-powered pipeline, DynAIkonTrap buffers video to disk which is analysed with a background process. It may be desirable to keep these metadata for further processing/debugging. This option allows the user to disable deleting metadata.
 
 .. admonition:: Logging level
    :class: note, dropdown
@@ -167,18 +167,18 @@ Using ``dyntrap-config``, you can check out all the parameters for the system to
 .. admonition:: Logger output file
    :class: note, dropdown
 
-   This dictates the file DynAikonTrap will output log messages to. By default, this is set to `/dev/stdout`, which will cause log messages to appear at the terminal. If you wish to save a system log, add a file name of your choice. 
+   This dictates the file DynAikonTrap will output log messages to. By default, this is set to `/dev/stdout`, which will cause log messages to appear at the terminal. If you wish to save a system log, add a file name of your choice.
 
 
-You may also configure these settings via our legacy `tuner.py` script, although it is a bit less user friendly! 
+You may also configure these settings via our legacy `tuner.py` script, although it is a bit less user friendly!
 
 .. code:: sh
 
    # Go into the dynaikontrap code directory
    cd dynaikontrap
-   
+
    # Activates the virtual environment
    source ./venv/bin/activate
-   
+
    # Start the tuner
    python tuner.py

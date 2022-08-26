@@ -1,5 +1,5 @@
-Running
-=======
+Running the Trap
+================
 
 .. seealso::
 

@@ -1,7 +1,11 @@
 .. toctree::
    :hidden:
 
-  about.rst
+  preparing-the-raspberry-pi.rst
+  installing-dynaikontrap.rst
+  running-dynaikontrap.rst
+  tuning.rst
+  deploying-dynaikontrap.rst
   user-docs/
   dev-docs/
 

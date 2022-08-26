@@ -16,7 +16,7 @@ Check out our installation video below to see how you can build a basic DynAiKon
 .. raw:: html
    
    <center> <video controls width="640" height="480">
-  <source src="../_static/tutvid.webm" type="video/webm">
+  <source src="_static/tutvid.webm" type="video/webm">
    Your browser does not support the video tag.
   </video> 
   </center>
@@ -73,10 +73,10 @@ If you wish to place your camera trap outdoors it might be worth putting it in s
 
 Here is an example case constructed from wood:
 
-.. image:: ../_static/wood_case_inside.jpg
+.. image:: _static/wood_case_inside.jpg
    :width: 400
    :alt: Inside of case
-.. image:: ../_static/wood_case_front.jpg
+.. image:: _static/wood_case_front.jpg
    :width: 400
    :alt: Front of case
 
@@ -89,7 +89,7 @@ For a higher-budget option, one example setup we have used to test out DynAikonT
 
 .. raw:: html
   
-   <center><img src="../_static/birdbox-camera.jpg" width=400 alt=" DynAIkonTrap built in a bird-box"></center>
+   <center><img src="_static/birdbox-camera.jpg" width=400 alt=" DynAIkonTrap built in a bird-box"></center>
 
 Lighting
 ^^^^^^^^

@@ -7,8 +7,6 @@ User Documentation
 
    user-docs/quick-start
 
-   user-docs/preparing-raspberrypi-os.rst
-   user-docs/preparing-raspberrypi-camera.rst
    user-docs/installing-dynaikontrap.rst
    user-docs/running-dynaikontrap.rst
    user-docs/tuning.rst
@@ -17,7 +15,7 @@ User Documentation
    user-docs/software-setup.rst
 
    user-docs/how-it-works
-   user-docs/assembly-and-deployment
+   user-docs/deploying-dynaikontrap.rst
 
 .. admonition:: Feedback
    :class: hint

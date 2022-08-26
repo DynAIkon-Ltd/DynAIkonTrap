@@ -1,5 +1,8 @@
-Preparing Raspberry Pi OS
-=========================
+Preparing the Raspberry Pi
+==========================
+
+Installing Raspberry Pi OS
+--------------------------
 
 We will now "flash" the SD card. This is the process of installing the operating system.
 
@@ -46,3 +49,28 @@ If you would like to connect to your RPi remotely via Wi-Fi, there is one more s
    Finally close and save the file and eject the SD card. Before ejecting make sure you've clicked "eject" in your file browser.
 
 Congratulations! You now have everything set up and ready to go. Head over to the :doc:`manual-installation` page for the next steps.
+
+Preparing Raspberry Pi Camera
+-----------------------------
+
+.. admonition:: Wi-Fi and SSH Setup
+   :class: hint
+
+   This assumes that you already have an up-and-running Raspberry Pi that you
+   can log in to. Please refer to that section first. @rrueger Add link.
+
+
+Installing the Camera Hardware
+______________________________
+
+
+Installing the Camera Software
+______________________________
+
+
+Testing that the Camera works
+_____________________________
+
+
+Setting the focus of the Camera
+_______________________________
