@@ -3,9 +3,10 @@ Understanding the Pipelines
 
 .. toctree::
   :hidden:
-  :glob:
+  :maxdepth: 1
 
-  pipelines/*
+  pipelines/legacy.rst
+  pipelines/low-powered.rst
 
 DynAIkonTrap has two main modes (pipelines) of operation. One pipeline is suited
 to low-powered Raspberry Pi devices. The other has been designed in an earlier
