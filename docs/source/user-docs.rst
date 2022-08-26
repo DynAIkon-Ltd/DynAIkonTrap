@@ -6,9 +6,19 @@ User Documentation
    :glob:
 
    user-docs/quick-start
-   user-docs/software-setup
-   user-docs/assembly-and-deployment
+
+   user-docs/flashing.rst
+
+   user-docs/manual-installation.rst
+
+   user-docs/running.rst
+
+   user-docs/assembly-and-deployment.rst
+   user-docs/software-setup.rst
+   user-docs/tuning.rst
+
    user-docs/how-it-works
+   user-docs/assembly-and-deployment
 
 .. admonition:: Feedback
    :class: hint
