@@ -1,10 +1,12 @@
 .. toctree::
    :hidden:
-   :glob:
 
-   [!_]*
-   _changelog
-   Project GitLab <https://gitlab.dynaikon.com/dynaikontrap/dynaikontrap>
+  about.rst
+  user-docs/
+  dev-docs/
+
+  changelog.rst
+  Project GitLab <https://gitlab.dynaikon.com/dynaikontrap/dynaikontrap>
 
 Welcome to DynAIkonTrap!
 ========================
