@@ -79,7 +79,7 @@ html_theme_options = {
         'color-brand-content': '#c02020',
     },
 }
-html_additional_pages = {'index': 'landing-page.html'}
+# html_additional_pages = {'index': 'landing-page.html'}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
