@@ -1,5 +1,11 @@
-How it Works
-============
+Understanding the Pipelines
+===========================
+
+.. toctree::
+  :hidden:
+  :glob:
+
+  pipelines/*
 
 DynAIkonTrap has two main modes (pipelines) of operation. One pipeline is suited to low-powered Raspberry Pi devices. The other has been designed in an earlier iteration of the software for operation on RPi 4B. We refer to these as “Legacy” and “Low-powered” pipelines.
 
@@ -8,9 +14,8 @@ Pipelines
 
 You can read about how each of the pipelines operate below:
 
-#. :doc:`how-it-works/legacy`
-#. :doc:`how-it-works/low-powered`
-
+#. :doc:`pipelines/legacy`
+#. :doc:`pipelines/low-powered`
 
 Closing Remarks
 ---------------
