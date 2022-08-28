@@ -1,29 +1,5 @@
 Assembly and Deployment
-=======================
 
-You will need...
-----------------
-* Raspberry Pi (Any model should work, but for lowest power consumption, use an
-  RPi Zero or Zero 2 W)
-* Micro SD card (and an adapter to flash the SD from your computer)
-* Power supply for the Raspberry Pi
-* Camera (tested with the Raspberry Pi Camera Module; you should use a camera
-  that can connect to the Pi's CSI slot with a ribbon cable)
-* Ethernet cable, if you won't use Wi-Fi
-
-for a minimal camera trap setup.
-
-Check out our installation video below to see how you can build a basic
-DynAiKonTrap setup from scratch!
-
-.. raw:: html
-
-  <center>
-    <video controls width="640" height="480">
-      <source src="_static/tutvid.webm" type="video/webm">
-      Your browser does not support the video tag.
-    </video>
-  </center>
 
 Deploying
 ---------
