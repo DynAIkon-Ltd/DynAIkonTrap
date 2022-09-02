@@ -388,7 +388,7 @@ class Writer(AbstractOutput):
 
         return join(self._path, name)
 
-    def output_still(self, image: bytes, time: float, sensor_log: SensorLog):
+    def output_still(self, image: bytes, time: float, sensor_log: SensorLog=None):
 
         name = self._unique_name(time)
 
