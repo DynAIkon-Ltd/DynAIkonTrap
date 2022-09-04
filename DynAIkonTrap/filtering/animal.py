@@ -281,9 +281,15 @@ class AnimalFilter:
         """
         start_time = time.time()
         animal_confidence, human_confidence = self.run_raw(image, is_jpeg)
+        animal_confidence_rounded = round(animal_confidence,  2)
+        human_confidence_rounded = round(human_confidence, 2)
+        animal_confidence_display = "<" if animal_confidence < animal_confidence_rounded  else ">="
+        animal_confidence_display += str(animal_confidence_rounded)
+        human_confidence_display = "<" if human_confidence < human_confidence_rounded else ">="
+        human_confidence_display += str(human_confidence_rounded)
         logger.debug(
-            "Deep network inference run. Propagation latency: {:.2f}secs. Animal Confidence :{:.2f}%. Human Confidence :{:.2f}%.".format(
-                time.time() - start_time, animal_confidence, human_confidence
+            "Deep network inference run. Propagation latency: {:.2f}secs. Animal Confidence :{}%. Human Confidence :{}%.".format(
+                time.time() - start_time, animal_confidence_display, human_confidence_display
             )
         )
         return (
