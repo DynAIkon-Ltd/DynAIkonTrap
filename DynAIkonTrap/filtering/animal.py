@@ -287,7 +287,7 @@ class AnimalFilter:
         animal_confidence_display += str(animal_confidence_rounded)
         human_confidence_display = "<" if human_confidence < human_confidence_rounded else ">="
         human_confidence_display += str(human_confidence_rounded)
-        logger.debug(
+        logger.info(
             "Deep network inference run. Propagation latency: {:.2f}secs. Animal Confidence :{}%. Human Confidence :{}%.".format(
                 time.time() - start_time, animal_confidence_display, human_confidence_display
             )

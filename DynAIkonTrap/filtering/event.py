@@ -25,6 +25,7 @@ from typing import Tuple
 from numpy import round, linspace
 from os.path import basename, join
 from subprocess import CalledProcessError, check_call
+from datetime import datetime
 
 
 from DynAIkonTrap.filtering.animal import AnimalFilter
@@ -71,6 +72,8 @@ class EventProcessor:
                     frame
                 )
                 inf_count += 1
+                if is_human:
+                    self.notify_human(event.timestamp)
                 return (is_animal and not is_human, inf_count)
             else:
                 # get evenly spaced indices for frame offsets throughout the event
@@ -89,6 +92,7 @@ class EventProcessor:
                     )
                     inf_count += 1
                     if is_human:
+                        self.notify_human(event.start_timestamp)
                         return False, inf_count
                     if is_animal:
                         return True, inf_count
@@ -113,6 +117,12 @@ class EventProcessor:
             file.seek(event.raw_raster_file_indices[frame_offset_indx])
             buf = file.read(read_size_b)            
         return buf
+
+
+    @staticmethod 
+    def notify_human(timestamp):
+        logger.info("Human Detected! Time: {}. Exit animal search to defend privacy.".format(
+        datetime.fromtimestamp(timestamp).strftime('%a-%Y-%m-%d-%H-%M-%S')))
 
     @staticmethod
     def delete_event(event: EventData):
