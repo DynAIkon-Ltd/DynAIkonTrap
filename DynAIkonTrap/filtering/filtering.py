@@ -134,7 +134,6 @@ class Filter:
 
             motion_score = self._motion_filter.run_raw(frame.motion)
             motion_detected = motion_score >= self._motion_threshold
-
             if motion_detected:
                 self._motion_labelled_queue.put(
                     frame, motion_score, MotionStatus.MOTION
@@ -164,7 +163,7 @@ class Filter:
                         "No Animal detected, deleting event from disk...")
                     EventProcessor.delete_event(event)
                 else:
-                    logger.info("Animal detected, save output video...")
+                    logger.info("Animal detected, save output...")
                     self._output_queue.put(event)
 
             except Empty:

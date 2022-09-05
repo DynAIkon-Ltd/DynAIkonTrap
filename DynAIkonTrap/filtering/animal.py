@@ -79,7 +79,7 @@ class AnimalFilter:
         self.detect_humans = settings.detect_humans
         self.fast_animal_detect = settings.fast_animal_detect
         self.use_fcc = settings.fastcat_cloud_detect
-    
+        self.yuv_dims = (0,0)
 
         if settings.detect_humans or settings.fast_animal_detect:
             self.input_size = NetworkInputSizes.SSDLITE_MOBILENET_V2
@@ -215,7 +215,7 @@ class AnimalFilter:
             if is_jpeg:
                 decoded_image = decoder.jpg_buf_to_bgr_array(image)
             else: 
-                decoded_image = decoder.yuv_buf_to_bgr_array(image)
+                decoded_image = decoder.yuv_buf_to_bgr_array(image, self.yuv_dims)
             decoded_image = cv2.resize(decoded_image, (self.input_size))
             animal_confidence = 0.0
             human_confidence = 0.0

@@ -31,7 +31,7 @@ from multiprocessing.queues import Queue as QueueType
 from pathlib import Path
 from queue import Empty
 from time import sleep, time
-from typing import List, Union
+from typing import List, Tuple, Union
 from os import path
 import numpy as np
 
@@ -52,6 +52,7 @@ class EventData:
     raw_raster_file_indices: List[int] = field(default_factory=list)
     dir: str = ""
     start_timestamp: float = 0.0
+    dims: Tuple[int, int] = (0,0)
 
 class EventSynthesisor:
     """This object reads events from a VideoStream and creates synthetic EventData packages. Produces event directories upon calling of the contained get() method."""
@@ -85,16 +86,21 @@ class EventSynthesisor:
             sleep(0.2) # hang event creator while no frames available
         logger.info("Parsing `{}` into an event. Saving to {}; this may take a few seconds.".format(self._video_path, event_dir))
         frame = self._input_queue.get() #block until frame is available
+        raw_path =  event_dir + '/clip.dat'
+
+        bgr = decoder.jpg_buf_to_bgr_array(frame.image)     
+        dimbuf = np.array([bgr.shape[0], bgr.shape[1]], dtype=np.uint16).tobytes()
+        with open(raw_path, 'ab') as f: f.write(dimbuf)
+
         encoded_path = event_dir + '/clip.mp4'
         copy_file(self._video_path, encoded_path)
-        raw_path =  event_dir + '/clip.dat'
         while True:
             try:
-                bgr = decoder.jpg_buf_to_bgr_array(frame.image)
                 yuv_buf = decoder.bgr_array_to_yuv_buf(bgr)
                 with open(raw_path, 'ab') as f:
                     f.write(yuv_buf)
                 frame = self._input_queue.get()
+                bgr = decoder.jpg_buf_to_bgr_array(frame.image)
             except Empty:
                 break
         logger.info("Parsed `{}`. Initiate further processing...".format(self._video_path))
@@ -139,14 +145,17 @@ class EventRememberer:
         """
         raw_path = join(dir, "clip.dat")
         raw_raster_frame_indices = []
+        frame_height, frame_width = (0,0)
         try:
             with open(raw_path, 'rb') as f:
                 b = f.read(4)
-                while(b != b''):
-                    raw_raster_frame_indices.append(f.tell() - 4)
-                    frame_height, frame_width = tuple(np.frombuffer(b, dtype=np.uint16))
-                    f.read(int(int(frame_width) * int(frame_height) * YUV_BYTE_PER_PIX))
-                    b = f.read(4)
+                frame_height, frame_width = tuple(np.frombuffer(b, dtype=np.uint16))
+                while(True):
+                    b = f.read(int(int(frame_width) * int(frame_height) * YUV_BYTE_PER_PIX))
+                    if not b:
+                        break
+                    raw_raster_frame_indices.append(f.tell() - len(b))
+
         except IOError as e:
             logger.error(
                 "Problem opening or reading file: {} (IOError: {})".format(raw_path, e))
@@ -154,6 +163,7 @@ class EventRememberer:
         return EventData(
             raw_raster_file_indices=raw_raster_frame_indices,
             dir=dir,
+            dims=(int(frame_width), int(frame_height)),
             start_timestamp=time()
         )
 

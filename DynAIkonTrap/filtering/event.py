@@ -61,6 +61,7 @@ class EventProcessor:
         logger.info("Processing event with {} raw image frames.".format(
             len(frame_file_offsets)))
         inf_count = 0
+        self._animal_filter.yuv_dims = event.dims
         if len(frame_file_offsets) > 0:
             #get index of the middle frame in file offsets array
             middle_idx_file_offsets = len(frame_file_offsets) // 2

@@ -18,7 +18,7 @@ from distutils.log import error
 from genericpath import exists
 from subprocess import CalledProcessError, check_call
 from tempfile import NamedTemporaryFile
-from typing import List
+from typing import List, Tuple
 import cv2
 import numpy as np
 from math import sqrt
@@ -37,7 +37,7 @@ class decoder:
     Included methods convert a given byte array into numpy ndarrays of pixel values. 
     """
     @staticmethod
-    def yuv_buf_to_bgr_array(buf : bytes) -> np.ndarray:
+    def yuv_buf_to_bgr_array(buf : bytes, dims: Tuple[int, int]) -> np.ndarray:
         """converts a given byte buffer in YUV420 format into an ndarray of pixel values in BGR format. Code inspired from Picamera example, availble: https://picamera.readthedocs.io/en/release-1.13/recipes2.html#unencoded-image-capture-yuv-format
 
         Args:
@@ -46,9 +46,8 @@ class decoder:
         Returns:
             np.ndarray: an ndarray with size (width, height, 3) where each element is a pixel, pixel format is BGR, one byte per colour
         """
-        wh = np.frombuffer(buf[0:4], dtype=np.uint16)           
-        fheight, fwidth = int(wh[0]), int(wh[1])
-        Y_start = 4
+        fwidth, fheight = dims
+        Y_start = 0
         Y_end = Y_start + int(fheight * fwidth) 
         U_end = Y_end + int((fheight//2) * (fwidth//2))
         #get Y values, first 2/3rds
@@ -102,8 +101,8 @@ class decoder:
         Returns:
             bytes: Output YUV420 format buffer
         """
-        buf = np.array([bgr.shape[0], bgr.shape[1]], dtype=np.uint16).tobytes()
-        return buf + cv2.cvtColor(bgr, cv2.COLOR_BGR2YUV_I420).tobytes()
+        
+        return cv2.cvtColor(bgr, cv2.COLOR_BGR2YUV_I420).tobytes()
 
     @staticmethod
     def jpg_buf_to_bgr_array(buf : bytes) -> np.ndarray:
