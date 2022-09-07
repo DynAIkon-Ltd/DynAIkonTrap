@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 VERSION=$(cat VERSION)
 TITLE=$"DynAIkonTrap v$VERSION configuration tool"
 BACKTILE=$"DynAIkon Ltd. 2022"
@@ -32,13 +32,13 @@ calc_wt_size() {
   fi
   WT_MENU_HEIGHT=$(($WT_HEIGHT-7))
 }
-calc_wt_size
+
 
 do_about() {
   whiptail --msgbox "\
 Welcome to the DynAIkonTrap configuration tool. \n\n\
  - Use this to tune the system, configure settings and manage outputs. \n\n\
- - Navigate through the menus using the keyboard arrows (← ↑ ↓ →) \n\n\
+ - Navigate through the menus using the keyboard arrows ( ← ↑ ↓ → ) \n\n\
  - Select items with the ENTER key \n\n\
  - Enter values with the keyboard when prompted\n\n\n\
 \
@@ -46,9 +46,6 @@ Note: Options marked \"ADVANCED\" are not reccomended to change as they may brea
 " $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
   return 0
 }
-do_about
-
-SETTINGS=$(cat DynAIkonTrap/settings.json)
 
 do_pipeline_menu(){
    FUN=$(whiptail --title "Pipeline Options" --menu "" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --cancel-button Back --ok-button Select \
@@ -168,7 +165,7 @@ do_motion_menu_movement(){
       func_get_setting "settings.filter.motion.animal_speed"
       current_speed=$setting_value
       selected_speed=$(whiptail --inputbox "Enter the speed of the animal moving past the camera (m/s): \n\n - This is an estimate of how fast the animal to detect will be moving through the camera field-of-view. Measured in meters-per-second (m/s)." \
-        20 70 -- "$current_distance" 3>&1 1>&2 2>&3)
+        20 70 -- "$current_speed" 3>&1 1>&2 2>&3)
       if [ $? -eq 0 ]; then
         func_set_setting "settings.filter.motion.animal_speed" "$selected_speed"
       fi
@@ -568,6 +565,23 @@ do_fastcat_cloud(){
       esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
   fi
 }
+
+do_make_settings(){
+  python3 -c "from DynAIkonTrap.settings import load_settings, save_settings; s = load_settings(); save_settings(s)" > /dev/null 2>&1
+}
+
+do_restore(){
+  whiptail --title "Restore Defauts" --yesno "Would you like to restore the default settings? (erase changes)" 8 78 --no-button "NO" --yes-button "YES"
+  if [ $? -eq 0 ]; then
+    rm "DynAIkonTrap/settings.json"
+  fi
+  do_make_settings
+}
+
+# START
+do_make_settings
+calc_wt_size
+do_about
 #
 # Interactive use loop
 #
@@ -582,6 +596,7 @@ if [ "$INTERACTIVE" = True ]; then
         "5 Output Options    " "Configure output settings" \
         "6 Logging Options   " "Configure logging settings" \
         "7 FASTCAT-Cloud     " "Configure FASTCAT-Cloud options"\
+        "8 Restore Defaults  " "Restore default settings" \
         3>&1 1>&2 2>&3)
     RET=$?
     if [ $RET -eq 1 ]; then
@@ -595,6 +610,7 @@ if [ "$INTERACTIVE" = True ]; then
          5\ *) do_output_menu ;;
          6\ *) do_logging_menu ;;
          7\ *) do_fastcat_cloud ;;
+         8\ *) do_restore ;;
          *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
        esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
     else
