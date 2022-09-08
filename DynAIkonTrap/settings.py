@@ -334,7 +334,8 @@ def load_settings() -> Settings:
                         output_format=OutputFormat(
                             settings_json["output"]["output_format"]
                         ).value,
-                        output_mode=output_mode.value
+                        output_mode=output_mode.value,
+                        delete_metadata=settings_json["output"]["delete_metadata"]
                     )
                 else:  # Default to writing to disk
                     output = SenderSettings(
@@ -344,6 +345,7 @@ def load_settings() -> Settings:
                         ).value,
                         output_mode=output_mode.value,
                         path=settings_json["output"]["path"],
+                        delete_metadata=settings_json["output"]["delete_metadata"]
                     )
 
                 return Settings(
