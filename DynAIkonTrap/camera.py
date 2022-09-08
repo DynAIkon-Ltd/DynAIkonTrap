@@ -115,7 +115,6 @@ class Camera:
                 ImageReader(synchroniser),
                 format="mjpeg",
                 splitter_port=2,
-                bitrate=settings.bitrate_bps,
             )
         else:
             self.resolution = settings.resolution
