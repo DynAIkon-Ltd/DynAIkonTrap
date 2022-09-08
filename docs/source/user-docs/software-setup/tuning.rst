@@ -1,9 +1,9 @@
 Tuning
 ======
 
-Now that everything is installed, the system needs to be tuned for your use-case. You can investigate tuning options and configure outputs using our `dyntrap-config` program. 
+Now that everything is installed, the system needs to be tuned for your use-case. You can investigate tuning options and configure outputs using our ``dyntrap-config`` program. 
 
-To run `dyntrap-config` simply type:
+To run ``dyntrap-config`` simply type:
 
 .. code:: sh
    
@@ -11,7 +11,7 @@ To run `dyntrap-config` simply type:
 
 This will bring up a graphical window which you can navigate via the terminal, use the arrow keys and keyboard to change the settings for DynAIkonTrap. 
 
-Using `dyntrap-config`, you can check out all the parameters for the system to use. These settings are saved in a ``settings.json`` file, which is loaded when you start the actual camera trap program. Below is relevant information for settings parameters:
+Using ``dyntrap-config``, you can check out all the parameters for the system to use. These settings are saved in a ``settings.json`` file, which is loaded when you start the actual camera trap program. Below is relevant information for settings parameters:
 
 
 .. admonition:: Pipeline
