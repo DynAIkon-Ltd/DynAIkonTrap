@@ -254,6 +254,7 @@ def set_setting(setting: str, value: str):
     try:
         exec(setting + " = " + value)
     except SyntaxError as e:
+        print(e)
         return
     if "motion" in setting:
         #special case, motion filter values must be re-configured 
@@ -266,7 +267,6 @@ def get_setting(setting: str) -> str:
     try:
         exec("global temp; temp = " + setting)
         value = temp
-
     except SyntaxError as e:
         pass
     return value
@@ -321,33 +321,6 @@ def load_settings() -> Settings:
                         )
                     )
                     return Settings()
-
-                output_mode = OutputMode(
-                    settings_json["output"]["output_mode"])
-                if output_mode == OutputMode.SEND.value:
-                    output = SenderSettings(
-                        server=settings_json["output"]["server"],
-                        POST=settings_json["output"]["POST"],
-                        device_id=settings_json["output"]["device_id"],
-                        userId=settings_json["output"]["userId"],
-                        apiKey=settings_json["output"]["apiKey"],
-                        output_format=OutputFormat(
-                            settings_json["output"]["output_format"]
-                        ).value,
-                        output_mode=output_mode.value,
-                        delete_metadata=settings_json["output"]["delete_metadata"]
-                    )
-                else:  # Default to writing to disk
-                    output = SenderSettings(
-                        device_id=settings_json["output"]["device_id"],
-                        output_format=OutputFormat(
-                            settings_json["output"]["output_format"]
-                        ).value,
-                        output_mode=output_mode.value,
-                        path=settings_json["output"]["path"],
-                        delete_metadata=settings_json["output"]["delete_metadata"]
-                    )
-
                 return Settings(
                     PipelineSettings(**settings_json["pipeline"]),
                     CameraSettings(**settings_json["camera"]),
@@ -360,7 +333,7 @@ def load_settings() -> Settings:
                             **settings_json["filter"]["processing"]),
                     ),
                     SensorSettings(**settings_json["sensor"]),
-                    output,
+                    SenderSettings(**settings_json["output"]),
                     LoggerSettings(**settings_json["logging"]),
                     version = _version_number()
                 )
