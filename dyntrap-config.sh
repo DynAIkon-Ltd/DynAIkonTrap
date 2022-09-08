@@ -520,7 +520,6 @@ do_fastcat_cloud(){
     "FC3 SERVER      ($ADVANCED)  " "Configure the server address" \
     "FC4 POST        ($ADVANCED)  " "Configure the API POST endpoint" \
   3>&1 1>&2 2>&3)
-  echo "doing fastcat-cloud..."
   RET=$?
     if [ $RET -eq 1 ]; then
       return 0
@@ -562,7 +561,7 @@ do_fastcat_cloud(){
         func_set_setting "settings.output.POST" \'"$selected_post"\'
       fi 
       ;;
-       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
+      *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
       esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
   fi
 }
