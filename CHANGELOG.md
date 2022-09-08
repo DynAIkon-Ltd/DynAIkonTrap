@@ -1,6 +1,9 @@
 # Change Log
 ## [v1.4.5] - 2022-09-12
 ### Fixed 
+- Added dims argument to `imdecode.yuv_to_png_temp_file`, updated `animal.py` 
+- Updated settings loader to assign value to `delete_metadata`
+- syntax error in comms.py self.server -> self._server
 - YUV decoding error for dyntrap camera mode see commit: 517b716fe0606824461b1e7a8d22e7980f85f61f
 - Legacy mode camera crash, cannot find bitrate - fixed. See commit: 490d425d2e6bfe6ee316c24d33c277137de604ef
 

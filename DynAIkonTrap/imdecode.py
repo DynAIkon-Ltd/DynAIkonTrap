@@ -72,7 +72,7 @@ class decoder:
         return BGR
 
     @staticmethod 
-    def yuv_to_png_temp_file(buf : bytes) -> str:
+    def yuv_to_png_temp_file(buf : bytes, dims) -> str:
         """converts a given buffer in YUV420 format into a temporary png file stored on disk 
 
         Args:
@@ -81,7 +81,7 @@ class decoder:
         Returns:
             str: path to png file on disk, returns empty string if no file could be created
         """
-        img_array_bgr = decoder.yuv_buf_to_bgr_array(buf)
+        img_array_bgr = decoder.yuv_buf_to_bgr_array(buf, dims)
         image_file = NamedTemporaryFile(suffix='.png', delete=False)
         ret = ""
         try:

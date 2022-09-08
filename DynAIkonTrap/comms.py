@@ -480,7 +480,7 @@ class Sender(Writer):
             if self._is_fcc:
                 result = get(self._server + "/status")
             else: 
-                result = head(self.server)
+                result = head(self._server)
                 result.raise_for_status()
             return result.status_code == 200
             
