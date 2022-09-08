@@ -207,7 +207,7 @@ class AbstractOutput(metaclass=ABCMeta):
         self._delete_metadata = settings.delete_metadata
         self._video_suffix = ".mp4"
 
-        if settings.output_format == OutputFormat.VIDEO:
+        if settings.output_format == OutputFormat.VIDEO.value:
             if self._animal_queue.mode == FilterMode.BY_FRAME:
                 self._reader = Process(
                     target=self._read_frames_to_video, daemon=True)
@@ -215,7 +215,7 @@ class AbstractOutput(metaclass=ABCMeta):
                 self._reader = Process(
                     target=self._read_events_to_video, daemon=True)
 
-        elif settings.output_format == OutputFormat.STILL:
+        elif settings.output_format == OutputFormat.STILL.value:
             if self._animal_queue.mode == FilterMode.BY_FRAME:
                 self._reader = Process(
                     target=self._read_frames_to_image, daemon=True)
@@ -480,7 +480,7 @@ class Sender(Writer):
             if self._is_fcc:
                 result = get(self._server + "/status")
             else: 
-                result = head(self.server)
+                result = head(self._server)
                 result.raise_for_status()
             return result.status_code == 200
             
@@ -637,7 +637,7 @@ def Output(
     settings: OutputSettings, read_from: Tuple[Filter, SensorLogs]
 ) -> Union[Sender, Writer]:
     """Generator function to provide an implementation of the :class:`~AbstractOutput` based on the :class:`~DynAIkonTrap.settings.OutputMode` of the ``settings`` argument. If the output mode is SEND, this function performs some error checking/handling before configuring a :class:`~DynAIkonTrap.comms.Sender` instance"""
-    if settings.output_mode == OutputMode.SEND:
+    if settings.output_mode == OutputMode.SEND.value:
         # check a few things before we configure the sender...
         sender_config_failure = False
         try:

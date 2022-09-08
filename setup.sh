@@ -108,6 +108,12 @@ chmod +x "$DIR/dynaikontrap.sh"
 ## Place the script in /usr/local/bin/ so it be called from everywhere
 sudo mv "$DIR/dynaikontrap.sh" /usr/local/bin/dynaikontrap
 
+## Do the same for dyntrap-config, add a change directory line on the second line
+sed -i "2s@^@cd "$DIR" \n@" $DIR/dyntrap-config.sh
+chmod +x "$DIR/dyntrap-config.sh"
+#copy to /usr/local/bin
+sudo cp "$DIR/dyntrap-config.sh" /usr/local/bin/dyntrap-config
+
 echo "Building Vid2Frames library..." 
 
 wget https://gitlab.dynaikon.com/dynaikontrap/vid2frames/-/archive/master/vid2frames-master.tar.gz -O vid2frames.tar.gz

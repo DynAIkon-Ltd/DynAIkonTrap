@@ -81,8 +81,10 @@ The JSON file should be structured as follows (of course the values can be chang
 }
 ```
 """
-from json import load, JSONDecodeError
+from os import path, environ
+from json import dump, load, JSONDecodeError
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Tuple, Any, Union
 from enum import Enum
 
@@ -112,12 +114,33 @@ class CameraSettings:
 @dataclass
 class MotionFilterSettings:
     """Settings for a :class:`~DynAIkonTrap.filtering.motion.MotionFilter`"""
-
+    area_reality: float = 0.0064
+    subject_distance: float = 1.0
+    animal_speed: float = 1.0 
+    focal_len: float = 3.6e-3
+    pixel_size: float = 1.4e-6
+    num_pixels: int = 2592
     small_threshold: int = 10
     sotv_threshold: float = 5400.0
     iir_cutoff_hz: float = 1.25
     iir_order: int = 3
     iir_attenuation: int = 35
+    
+    def update(self, camera_settings:CameraSettings):
+        pixel_ratio =  self.pixel_size * self.num_pixels / camera_settings.resolution[0]
+        animal_dimension = (self.area_reality**0.5 * self.focal_len) / \
+        (pixel_ratio * self.subject_distance)
+        animal_area_in_motion_vectors = animal_dimension**2 / 16**2
+        animal_pixel_speed = (self.animal_speed * 1 / camera_settings.framerate * self.focal_len) / (
+        pixel_ratio * self.subject_distance)
+        
+        #set sotv threshold
+        self.sotv_threshold = animal_pixel_speed * animal_area_in_motion_vectors
+        #set iir_cutoff_hz
+        animal_frames = camera_settings.resolution[0] / animal_pixel_speed
+        self.iir_cutoff_hz = camera_settings.framerate / animal_frames
+
+
 
 
 @dataclass
@@ -140,6 +163,7 @@ class ProcessingSettings:
     detector_fraction: float = 1.0
 
 
+
 @dataclass
 class SensorSettings:
     """Settings for a :class:`~DynAIkonTrap.sensor.SensorLogs`
@@ -152,14 +176,14 @@ class SensorSettings:
     interval_s: float = 30.0
     obfuscation_distance_km: float = 2
 
-
+@dataclass
 class OutputFormat(Enum):
     """System output format"""
 
     VIDEO = 0
     STILL = 1
 
-
+@dataclass
 class OutputMode(Enum):
     """System output mode"""
 
@@ -170,8 +194,8 @@ class OutputMode(Enum):
 class OutputSettings:
     """Base-class of settings for outputting to disk or server uploads"""
     device_id: Any = 0
-    output_format: OutputFormat = OutputFormat.VIDEO
-    output_mode: OutputMode = OutputMode.DISK
+    output_format: OutputFormat = OutputFormat.VIDEO.value
+    output_mode: OutputMode = OutputMode.DISK.value
     path: str = "output"
     delete_metadata: bool = 1
 
@@ -179,8 +203,8 @@ class OutputSettings:
 @dataclass
 class SenderSettings(OutputSettings):
     """Settings for a :class:`~DynAIkonTrap.comms.Sender`"""
-    is_fcc: bool = 1
-    server: str = "https://backend.fastcat-cloud.org"
+    is_fcc: bool = 0
+    server: str = "https://service.fastcat-cloud.org"
     POST: str = "/api/v2/predictions/demo"
     userId : str = ""
     apiKey : str = ""
@@ -198,11 +222,14 @@ class FilterSettings:
 @dataclass
 class LoggerSettings:
     """Settings for logging"""
-
     level: str = "INFO"  # Literal['DEBUG', 'INFO', 'WARNING', 'ERROR']
     # `Literal` is not supported in Python from RPi packages, hence no proper type hint
     path: str = "/dev/stdout"  # Default log path is stdout
 
+def _version_number() -> str:
+    with open("VERSION", "r") as f:
+        version = f.readline().strip()
+    return version
 
 @dataclass
 class Settings:
@@ -214,12 +241,55 @@ class Settings:
     sensor: SensorSettings = SensorSettings()
     output: Union[SenderSettings, OutputSettings] = SenderSettings()
     logging: LoggerSettings = LoggerSettings()
-
+    version: str = _version_number()
 
 def _version_number() -> str:
-    with open("VERSION", "r") as f:
+    version_path = path.abspath(path.join(__file__, "../../VERSION"))
+    with open(version_path, "r") as f:
         version = f.readline().strip()
     return version
+    
+def set_setting(setting: str, value: str):
+    settings = load_settings()
+    try:
+        exec(setting + " = " + value)
+    except SyntaxError as e:
+        print(e)
+        return
+    if "motion" in setting:
+        #special case, motion filter values must be re-configured 
+        settings.filter.motion.update(settings.camera)
+    save_settings(settings)
+
+def get_setting(setting: str) -> str:
+    settings = load_settings()
+    value = 0
+    try:
+        exec("global temp; temp = " + setting)
+        value = temp
+    except SyntaxError as e:
+        pass
+    return value
+
+def save_settings(settings):
+    with open("DynAIkonTrap/settings.json", "w") as f:
+        dump(settings, f, default=serialise)
+    
+def serialise(obj):
+    if isinstance(obj, Settings):
+        return {k: serialise(v) for k, v in obj.__dict__.items()}
+    elif isinstance(obj, FilterSettings):
+        return {k: serialise(v) for k, v in obj.__dict__.items()}
+    elif isinstance(obj, Enum):
+        return {obj.value}
+
+    if isinstance(obj, MappingProxyType):
+        return {k: v for k, v in obj.items() if not k.startswith("__")}
+
+    elif isinstance(obj, str):
+        return obj
+
+    return obj.__dict__
 
 
 def load_settings() -> Settings:
@@ -251,31 +321,6 @@ def load_settings() -> Settings:
                         )
                     )
                     return Settings()
-
-                output_mode = OutputMode(
-                    settings_json["output"]["output_mode"])
-                if output_mode == OutputMode.SEND:
-                    output = SenderSettings(
-                        server=settings_json["output"]["server"],
-                        POST=settings_json["output"]["POST"],
-                        device_id=settings_json["output"]["device_id"],
-                        userId=settings_json["output"]["userId"],
-                        apiKey=settings_json["output"]["apiKey"],
-                        output_format=OutputFormat(
-                            settings_json["output"]["output_format"]
-                        ),
-                        output_mode=output_mode
-                    )
-                else:  # Default to writing to disk
-                    output = SenderSettings(
-                        device_id=settings_json["output"]["device_id"],
-                        output_format=OutputFormat(
-                            settings_json["output"]["output_format"]
-                        ),
-                        output_mode=output_mode,
-                        path=settings_json["output"]["path"],
-                    )
-
                 return Settings(
                     PipelineSettings(**settings_json["pipeline"]),
                     CameraSettings(**settings_json["camera"]),
@@ -288,8 +333,9 @@ def load_settings() -> Settings:
                             **settings_json["filter"]["processing"]),
                     ),
                     SensorSettings(**settings_json["sensor"]),
-                    output,
+                    SenderSettings(**settings_json["output"]),
                     LoggerSettings(**settings_json["logging"]),
+                    version = _version_number()
                 )
 
             except KeyError as e:

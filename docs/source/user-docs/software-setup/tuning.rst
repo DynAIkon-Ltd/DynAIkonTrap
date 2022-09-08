@@ -1,20 +1,17 @@
 Tuning
 ======
 
-Now that everything is installed the system needs to be tuned for your use-case. This can be done by running the tuner:
+Now that everything is installed, the system needs to be tuned for your use-case. You can investigate tuning options and configure outputs using our ``dyntrap-config`` program. 
+
+To run ``dyntrap-config`` simply type:
 
 .. code:: sh
-
-   # Go into the dynaikontrap code directory
-   cd dynaikontrap
    
-   # Activates the virtual environment
-   source ./venv/bin/activate
-   
-   # Start the tuner
-   python tuner.py
+   dyntrap-config
 
-You will be asked some questions to help determine the best parameters for the system to use. These settings are saved in a ``settings.json`` file, which is loaded when you start the actual camera trap program. Below is relevant information for each question in the tuning script:
+This will bring up a graphical window which you can navigate via the terminal, use the arrow keys and keyboard to change the settings for DynAIkonTrap. 
+
+Using ``dyntrap-config``, you can check out all the parameters for the system to use. These settings are saved in a ``settings.json`` file, which is loaded when you start the actual camera trap program. Below is relevant information for settings parameters:
 
 
 .. admonition:: Pipeline
@@ -171,3 +168,17 @@ You will be asked some questions to help determine the best parameters for the s
    :class: note, dropdown
 
    This dictates the file DynAikonTrap will output log messages to. By default, this is set to `/dev/stdout`, which will cause log messages to appear at the terminal. If you wish to save a system log, add a file name of your choice. 
+
+
+You may also configure these settings via our legacy `tuner.py` script, although it is a bit less user friendly! 
+
+.. code:: sh
+
+   # Go into the dynaikontrap code directory
+   cd dynaikontrap
+   
+   # Activates the virtual environment
+   source ./venv/bin/activate
+   
+   # Start the tuner
+   python tuner.py

@@ -136,7 +136,7 @@ class AnimalFilter:
                 logger.error('Error saving frame for FASTCAT-Cloud upload: {}'.format(e))
                 return 0.0
         else: 
-            image_file = decoder.yuv_to_png_temp_file(image)
+            image_file = decoder.yuv_to_png_temp_file(image, self.yuv_dims)
         requestId=""
         try:
             with open(image_file, 'rb') as f:

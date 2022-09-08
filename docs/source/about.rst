@@ -8,10 +8,13 @@ If you have questions about the DynAIkonTrap, please send them to cameratrap@dyn
 
 If you'd like to provide some feedback, please use `this form <https://cloud.dynaikon.com/apps/forms/wA7EbqAPsFjTmanL>`_.
 
+
 Citing
 ------
 
-We are in the process of releasing a paper about DynAIkonTrap, please check back later to see if this section has been updated. We ask that you cite our paper if you make use of this project in your research or work.
+We have a published paper where you can read about some of the inner workings of the system and reasoning behind our design. Check it out `here. <https://doi.org/10.1016/j.ecoinf.2022.101657>`_
+
+If you would like to cite the DynAIkonTrap project, please cite our paper using the link above. 
 
 License
 -------

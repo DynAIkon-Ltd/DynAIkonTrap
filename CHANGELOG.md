@@ -1,4 +1,24 @@
 # Change Log
+## [v1.4.5] - 2022-09-12
+### Fixed 
+- Removed output switching in `settings.py` `load_settings()` function
+- Added dims argument to `imdecode.yuv_to_png_temp_file`, updated `animal.py` 
+- Updated settings loader to assign value to `delete_metadata`
+- syntax error in comms.py self.server -> self._server
+- YUV decoding error for dyntrap camera mode see commit: 517b716fe0606824461b1e7a8d22e7980f85f61f
+- Legacy mode camera crash, cannot find bitrate - fixed. See commit: 490d425d2e6bfe6ee316c24d33c277137de604ef
+
+### Added 
+- Added details in `tuning.rst` to run the tuner. Future expansion required for a user guide for the tuner.
+- methods to `settings.py` which allow settings to be loaded, modified and queried via a bash interface and anywhere in the program
+- update method to motion settings
+    - important motion parameters are now no longer computed in `tuner.py`, instead they are computed within the MotionSettings class itself via an `update` method. This has been nessessary to make these settings portable and also makes the computation of motion parameters part of the dynaikontrap package.
+- more fields to motion settings, making it more portable 
+- a bash whipper TUI to configure settings: `dyntrap-config.sh`
+    - this replaces the need to call `tuner.py` to configure setttings and provides a more user-friendly method to setup the camera trap parameters. 
+    - this is also callable from anywhere on the system using the command `dyntrap-config` after `setup.sh` has been run
+### Changed 
+- The YUV format was: dim,dim,imagedata,dim,dim,imagedata it is now a single pair of dimensions at the start of the file, all image data in the stream is assumed to be of the same size.
 ## [v1.4.0] - 2022-08-12
 ### Fixed
 - Logger now sets the level appropriately
