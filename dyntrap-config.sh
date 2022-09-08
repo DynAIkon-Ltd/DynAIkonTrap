@@ -394,7 +394,7 @@ do_sensor_menu(){
         selected_baud=$(whiptail  --inputbox "Enter baud rate for the sensor serial connection: "\
           20 70 -- "$current_baud" 3>&1 1>&2 2>&3)
         if [ $? -eq 0 ]; then
-          func_set_setting "settings.sensor.baud" $selected_baud
+          func_set_setting "settings.sensor.baud" "$selected_baud"
         fi 
         ;;
         S3\ *)
@@ -437,9 +437,9 @@ do_output_menu(){
       func_get_setting "settings.output.path" 
       current_path=$setting_value
       selected_path=$(whiptail --inputbox "Choose the directory where DynAIkonTrap dumps its detections."\
-        20 70 -- "$(pwd)/$current_path" 3>&1 1>&2 2>&3)
+        20 70 -- "$current_path" 3>&1 1>&2 2>&3)
       if [ $? -eq 0 ]; then
-        func_set_setting "settings.output.path" \'$selected_path\'
+        func_set_setting "settings.output.path" \'"$selected_path"\'
       fi 
       ;;
       O2\ *)
@@ -464,7 +464,7 @@ do_output_menu(){
       selected_device_id=$(whiptail --inputbox "Enter a device ID number for this system"\
         20 70 -- "$current_device_id" 3>&1 1>&2 2>&3)
       if [ $? -eq 0 ]; then
-        func_set_setting "settings.output.device_id" \'$selected_device_id\'
+        func_set_setting "settings.output.device_id" "$selected_device_id"
       fi 
       ;;
       O5\ *)
@@ -506,7 +506,7 @@ do_logging_menu(){
       selected_log_path=$(whiptail --inputbox "Change to a file path for DynAIkonTrap to log to a file. \n\n - Default: /dev/stdout logs to the terminal window"\
         20 70 -- "$current_log_path" 3>&1 1>&2 2>&3)
       if [ $? -eq 0 ]; then
-        func_set_setting "settings.logging.path" \'$selected_log_path\'
+        func_set_setting "settings.logging.path" \'"$selected_log_path"\'
       fi     ;;
     *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
     esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
@@ -520,6 +520,7 @@ do_fastcat_cloud(){
     "FC3 SERVER      ($ADVANCED)  " "Configure the server address" \
     "FC4 POST        ($ADVANCED)  " "Configure the API POST endpoint" \
   3>&1 1>&2 2>&3)
+  echo "doing fastcat-cloud..."
   RET=$?
     if [ $RET -eq 1 ]; then
       return 0
@@ -531,7 +532,7 @@ do_fastcat_cloud(){
       selected_user_id=$(whiptail --inputbox "Enter your FASTCAT-Cloud User ID \n\n - Can be found on your account page at: https://service.fastcat-cloud.org/account \n\n - TIP: Use CTRL+SHIFT+V to paste from your clipboard."\
         20 70 -- "$current_user_id" 3>&1 1>&2 2>&3)
       if [ $? -eq 0 ]; then
-        func_set_setting "settings.output.userId" \'$selected_user_id\'
+        func_set_setting "settings.output.userId" \'"$selected_user_id"\'
       fi 
       ;;
       FC2\ *)
@@ -540,7 +541,7 @@ do_fastcat_cloud(){
       selected_api_key=$(whiptail --inputbox "Enter your FASTCAT-Cloud API Key \n\n - You can create a new API key at: https://service.fastcat-cloud.org/account - TIP: Use CTRL+SHIFT+V to paste from your clipboard."\
         20 70 -- "$current_api_key" 3>&1 1>&2 2>&3)
       if [ $? -eq 0 ]; then
-        func_set_setting "settings.output.apiKey" \'$selected_api_key\'
+        func_set_setting "settings.output.apiKey" \'"$selected_api_key"\'
       fi 
       ;;
       FC3\ *)
@@ -549,7 +550,7 @@ do_fastcat_cloud(){
       selected_server=$(whiptail --title $ADVANCED --inputbox "Enter the FASTCAT-Cloud Server Address \n\n - Nominally: https://service.fastcat-cloud.org "\
         20 70 -- "$current_server" 3>&1 1>&2 2>&3)
       if [ $? -eq 0 ]; then
-        func_set_setting "settings.output.server" \'$selected_server\'
+        func_set_setting "settings.output.server" \'"$selected_server"\'
       fi 
       ;;
       FC4\ *)
@@ -558,7 +559,7 @@ do_fastcat_cloud(){
       selected_post=$(whiptail --title $ADVANCED --inputbox "Enter the FASTCAT-Cloud API observation post endpoint \n\n - Nominally: /api/v2/predictions/demo "\
         20 70 -- "$current_post" 3>&1 1>&2 2>&3)
       if [ $? -eq 0 ]; then
-        func_set_setting "settings.output.POST" \'$selected_post\'
+        func_set_setting "settings.output.POST" \'"$selected_post"\'
       fi 
       ;;
        *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
