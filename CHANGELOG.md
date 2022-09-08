@@ -1,6 +1,7 @@
 # Change Log
 ## [v1.4.5] - 2022-09-12
 ### Fixed 
+- Removed output switching in `settings.py` `load_settings()` function
 - Added dims argument to `imdecode.yuv_to_png_temp_file`, updated `animal.py` 
 - Updated settings loader to assign value to `delete_metadata`
 - syntax error in comms.py self.server -> self._server
@@ -8,6 +9,7 @@
 - Legacy mode camera crash, cannot find bitrate - fixed. See commit: 490d425d2e6bfe6ee316c24d33c277137de604ef
 
 ### Added 
+- Added details in `tuning.rst` to run the tuner. Future expansion required for a user guide for the tuner.
 - methods to `settings.py` which allow settings to be loaded, modified and queried via a bash interface and anywhere in the program
 - update method to motion settings
     - important motion parameters are now no longer computed in `tuner.py`, instead they are computed within the MotionSettings class itself via an `update` method. This has been nessessary to make these settings portable and also makes the computation of motion parameters part of the dynaikontrap package.
