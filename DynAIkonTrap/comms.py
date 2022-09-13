@@ -500,7 +500,9 @@ class Sender(Writer):
         healthy = self.check_health()
         send_failure = False
         if healthy:
-            image_filename = image.name
+            image_filename = NamedTemporaryFile(suffix='.jpg').name
+            with open(image_filename, 'wb') as f:
+                f.write(image)
             files_arr = [('image', (image_filename, image, 'image/jpeg'))]
             logger.info("Sending detection (image) to server with url: {}".format(self._url))
             try:

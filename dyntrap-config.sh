@@ -546,7 +546,7 @@ do_fastcat_cloud(){
       FC3\ *)
       func_get_setting "settings.output.server" 
       current_server=$setting_value
-      selected_server=$(whiptail --title $ADVANCED --inputbox "Enter the FASTCAT-Cloud Server Address \n\n - Nominally: https://service.fastcat-cloud.org "\
+      selected_server=$(whiptail --title $ADVANCED --inputbox "Enter the FASTCAT-Cloud Server Address \n\n - Nominally: https://backend.fastcat-cloud.org "\
         20 70 -- "$current_server" 3>&1 1>&2 2>&3)
       if [ $? -eq 0 ]; then
         func_set_setting "settings.output.server" \'"$selected_server"\'
