@@ -418,13 +418,13 @@ class RawRAMBuffer(VideoRAMBuffer):
             )
             start_frame = lst_frames[context_index]
             self._inactive_stream.seek(start_frame.position)
+            # write frame dimensions to file before the inactive stream is written
+            with open(filename, 'ab') as f:
+                f.write(np.array([self._hw[0], self._hw[1]], dtype=np.uint16).tobytes())
             
 
         else:
             self._inactive_stream.seek(0)
 
-        # write frame dimensions to file before the inactive stream is written
-        with open(filename, 'ab') as f:
-            f.write(np.array([self._hw[0], self._hw[1]], dtype=np.uint16).tobytes())
             
         return super().write_inactive_stream(filename)
