@@ -16,6 +16,8 @@ We have a published paper where you can read about some of the inner workings of
 
 If you would like to cite the DynAIkonTrap project, please cite our paper using the link above. 
 
+We have also produced two longer-form reports on the DynAIkonTrap system design and evolution. These are authored by Miklas Riechmann and Ross Gardiner. See `Miklas' report <https://gitlab.dynaikon.com/c4c/ai-in-camera-traps/-/blob/master/docs/reports/final_report/main.pdf>`_ and `Ross' report <https://gitlab.dynaikon.com/rossg/2190583_Gardiner_ENG5041P_Final_Year_Report/-/blob/main/2190583_Gardiner_ENG5041P_Final_Report_21-22.pdf>`_
+
 License
 -------
 
