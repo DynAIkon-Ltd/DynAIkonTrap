@@ -21,7 +21,7 @@ We hope that this reads like a very simple and easy to follow usage guide. If an
 You will need ...
 -----------------
 
-* Raspberry Pi (model 4 is recommended, although other models may work)
+* Raspberry Pi 
 * Micro SD card (and an adapter to flash the SD from your computer)
 * Power supply for the Raspberry Pi
 * Camera
