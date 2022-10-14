@@ -32,7 +32,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 DEFAULT_OUTPUT_FILE = 'index.html'
-DEFAULT_STYLE_SHEET = os.path.abspath("assets/_static/style.css")
+CSS_DIR = os.path.abspath("assets/bootstrap-3.3.5/css")
 FOV_PAGE = 'html/fov.html'
 
 
@@ -41,7 +41,7 @@ def make_fov_page():
     try:
         with open(fov_path, 'w') as fov_file:
             fov_file.write(
-                f"""{make_head()}
+                f"""{make_head(Path(fov_path).parent)}
                 <body> 
                 <div class="d-flex justify-content-center">
                 <img src="camera-fov.jpg" class="img-responsive" alt="Responsive image">
@@ -56,25 +56,25 @@ def make_fov_page():
         print('cannot create file %s %s' % (fov_path, e))
         return
 
-def make_head():
+def make_head(dir):
+    style_path = os.path.relpath(CSS_DIR, dir)
     return f"""
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" />
+        <link rel="stylesheet" href="{style_path}/bootstrap.min.css" />
+        <link rel="stylesheet" href="{style_path}/bootstrap-theme.min.css" />
     </head>
     """
 
 def make_main_page(top_dir, output_log):
-    style_path = os.path.relpath(DEFAULT_STYLE_SHEET, Path.cwd())
     index_path = Path(Path.cwd(), DEFAULT_OUTPUT_FILE)
     try:
         with open(index_path, 'w') as index_file:
             index_file.write(f"""<!DOCTYPE html>
             <html>
-            {make_head()}
+            {make_head(Path.cwd())}
             <body>
             <div class="container-fluid">
             <h1>DynAikonTrap Web viewer</h1>
@@ -100,7 +100,6 @@ def process_dir(top_dir):
 
     index_path = Path(path_top_dir, DEFAULT_OUTPUT_FILE)
 
-    style_path = os.path.relpath(DEFAULT_STYLE_SHEET, path_top_dir)
     try:
         index_file = open(index_path, 'w')
     except Exception as e:
@@ -109,7 +108,7 @@ def process_dir(top_dir):
 
     index_file.write(f"""<!DOCTYPE html>
 <html>
-{make_head()}
+{make_head(top_dir)}
 <body>
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" height="0" width="0" style="position: absolute;">
     <defs>
