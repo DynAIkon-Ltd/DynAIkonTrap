@@ -24,9 +24,10 @@ Example usage:
    
    logger.error('A dreadful thing is happening')
 """
-from logging import Logger, basicConfig, getLogger
+from logging import Logger, basicConfig, getLogger, StreamHandler, Formatter
 from os import getenv
 from stat import filemode
+from sys import stdout
 
 
 def set_logger_config(output_file="/dev/stdout", level="DEBUG"):
@@ -36,15 +37,20 @@ def set_logger_config(output_file="/dev/stdout", level="DEBUG"):
         output_file (str, optional): Output file path where the logger prints to. Defaults to '/dev/stdout'.
     """
     logging_level = level
-    mode = (
-        "w" if output_file == "/dev/stdout" else "a"
-    )  # cannot write in append mode to /dev/stdout
+    fmt = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     basicConfig(
         filename=output_file,
-        filemode=mode,
+        filemode='a',
         level=logging_level,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        format=fmt,
     )
+    #get the logger with properties just specified
+    root = getLogger()
+    #make a new handler to add log to stdout as well as the file
+    handler = StreamHandler(stdout)
+    handler.setFormatter(Formatter(fmt))
+    root.addHandler(handler)
+
 
 
 def get_logger(name: str) -> Logger:
