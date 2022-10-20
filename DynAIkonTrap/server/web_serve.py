@@ -3,11 +3,15 @@ import socketserver
 from threading import Thread
 from functools import partial
 from tempfile import NamedTemporaryFile
+import shutil
+import socket
+
 from DynAIkonTrap.server import html_generator
 from DynAIkonTrap.settings import LoggerSettings, OutputSettings
 from DynAIkonTrap.camera_to_disk import CameraToDisk
-import shutil
-import socket
+from DynAIkonTrap.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -63,10 +67,15 @@ class ObservationServer:
         html_generator.make_shell_page(self.get_ip(), self._shell_port)
 
     def run(self):
-        with socketserver.TCPServer(("", self._website_port), self._handler) as httpd:
-            print("Server started at localhost:" + str(self._website_port))
-            httpd.serve_forever()
-        
+        try:
+            socketserver.TCPServer.allow_reuse_address = True
+            with socketserver.TCPServer(("", self._website_port), self._handler) as httpd:
+                logger.info("Server started on port: {}".format(str(self._website_port)))
+                httpd.serve_forever()
+        except OSError as e:
+            logger.error("Observation server start failed: {}".format(e))
+            logger.info("Continuing without observation server.")
+
     def get_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
