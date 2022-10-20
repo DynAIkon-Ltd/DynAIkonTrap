@@ -94,7 +94,8 @@ Logging to: {}
 
 if args.filename is None:
     if settings.pipeline.pipeline_variant == PipelineVariant.LEGACY.value:
-        source = Camera(settings=settings.camera)
+        camera = Camera(settings=settings.camera)
+        source = camera
     else:
         camera = CameraToDisk(
             camera_settings=settings.camera,
@@ -102,7 +103,7 @@ if args.filename is None:
             filter_settings=settings.filter,
         )
         source = EventRememberer(read_from=camera)
-        server = ObservationServer(settings.output, settings.logging, camera)
+    server = ObservationServer(settings.output, settings.logging, camera)
 
 else:
     filename = args.filename[0]
