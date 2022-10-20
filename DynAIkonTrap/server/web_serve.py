@@ -3,11 +3,9 @@ import socketserver
 from threading import Thread
 from functools import partial
 from tempfile import NamedTemporaryFile
-from time import sleep
 from DynAIkonTrap.server import html_generator
 from DynAIkonTrap.settings import LoggerSettings, OutputSettings
 from DynAIkonTrap.camera_to_disk import CameraToDisk
-from argparse import ArgumentParser
 import shutil
 import socket
 
@@ -41,7 +39,8 @@ class ObservationServer:
     def __init__(self, output_settings : OutputSettings, logger_settings: LoggerSettings, read_image_from: CameraToDisk):
         self._observation_dir = output_settings.path
         self._log_path = logger_settings.path
-        self._port = 9999
+        self._website_port = 9999
+        self._shell_port = 4200
         self.createHomePage()
         self.createFOVPage()
         self.createObservationsHTML()
@@ -61,11 +60,11 @@ class ObservationServer:
         html_generator.process_dir(self._observation_dir)
     
     def createShellPage(self):
-        html_generator.make_shell_page(self.get_ip(), 4200)
+        html_generator.make_shell_page(self.get_ip(), self._shell_port)
 
     def run(self):
-        with socketserver.TCPServer(("", self._port), self._handler) as httpd:
-            print("Server started at localhost:" + str(self._port))
+        with socketserver.TCPServer(("", self._website_port), self._handler) as httpd:
+            print("Server started at localhost:" + str(self._website_port))
             httpd.serve_forever()
         
     def get_ip(self):
