@@ -9,6 +9,7 @@ from DynAIkonTrap.settings import LoggerSettings, OutputSettings
 from DynAIkonTrap.camera_to_disk import CameraToDisk
 from argparse import ArgumentParser
 import shutil
+import socket
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -24,8 +25,6 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'image/jpeg')
             self.end_headers()
-            #for now, load a basic jpg
-            print("taking still...")
             tmp = NamedTemporaryFile(suffix='.jpg')
             self.cameraCallback.capture_still(tmp.name)
             shutil.copyfileobj(tmp, self.wfile)
@@ -46,13 +45,11 @@ class ObservationServer:
         self.createHomePage()
         self.createFOVPage()
         self.createObservationsHTML()
-        self._camera = read_image_from
+        self.createShellPage()
         self._handler = partial(Handler, read_image_from)
         self._usher = Thread(target=self.run, daemon=True)
         self._usher.start()
 
-    def cameraCaptureCallback(self):
-        self._camera.capture_still('test.jpg')
 
     def createFOVPage(self):
         html_generator.make_fov_page()
@@ -62,12 +59,27 @@ class ObservationServer:
 
     def createObservationsHTML(self):
         html_generator.process_dir(self._observation_dir)
+    
+    def createShellPage(self):
+        html_generator.make_shell_page(self.get_ip(), 4200)
 
     def run(self):
         with socketserver.TCPServer(("", self._port), self._handler) as httpd:
             print("Server started at localhost:" + str(self._port))
             httpd.serve_forever()
         
+    def get_ip(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # doesn't even have to be reachable
+            s.connect(('10.255.255.255', 1))
+            IP = s.getsockname()[0]
+        except:
+            IP = '127.0.0.1'
+        finally:
+            s.close()
+        return IP
+
 
 
 

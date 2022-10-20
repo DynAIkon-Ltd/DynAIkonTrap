@@ -25,6 +25,7 @@ logger = get_logger(__name__)
 MAIN_PAGE = 'index.html'
 FOV_PAGE = 'html/fov.html'
 CSS_DIR = 'assets/bootstrap-3.3.5/css'
+SHELL_PAGE = 'html/shell.html'
 
 SVG_IMAGES = {
     #go back svg image, instructions from: https://icons.getbootstrap.com/icons/arrow-return-left/
@@ -62,6 +63,27 @@ def make_fov_page():
         logger.error('Cannot write file {}: {}'.format(fov_path, e))
         return
 
+def make_shell_page(ip_addr, port):
+    shell_path = path.join(getcwd(), SHELL_PAGE)
+    try:
+        with open(shell_path, 'w') as fov_file:
+            fov_file.write(
+                f"""{make_head(path.dirname(shell_path))}
+                <body> 
+                <div class="d-flex justify-content-center">
+                <iframe src="https://{ip_addr}:{port}/" style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;">
+                    Your browser doesn't support iframes
+                </iframe>
+                </div>
+                </body>
+                """ 
+            )
+    except OSError as e:
+        logger.error('Cannot write file {}: {}'.format(shell_path, e))
+        return
+
+
+
 def make_head(dir) -> str:
     """ Creates and returns the header html for served pages, includes bootstrap styling. """
     style_path = path.relpath(CSS_DIR, dir)
@@ -90,8 +112,9 @@ def make_main_page(top_dir, output_log):
             <br/>
             <a href="{output_log}" class="btn btn-primary btn-block" role="button">View the System Log</a>
             <br/>
-            <a href="html/fov.html" class="btn btn-primary btn-block" role="button">Check the Camera FOV</a>
+            <a href="{FOV_PAGE}" class="btn btn-primary btn-block" role="button">Check the Camera FOV</a>
             <br/>
+            <a href="{SHELL_PAGE}" class="btn btn-primary btn-block" role="button">Access the shell</a>
             </div>
             </body>
             """
@@ -260,3 +283,4 @@ def pretty_size(bytes, units=UNITS_MAPPING):
         else:
             suffix = multiple
     return str(amount) + suffix
+
