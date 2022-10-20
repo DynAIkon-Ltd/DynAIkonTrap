@@ -228,6 +228,7 @@ class CameraToDisk:
 
         finally:
             self._camera.stop_recording()
+            self._camera.close()
 
     def get(self) -> str:
         try:

@@ -126,5 +126,5 @@ Output(settings=settings.output, read_from=(filters, sensor_logs))
 
 
 while True:
-    sleep(5)
+    sleep(0.2)
     pass

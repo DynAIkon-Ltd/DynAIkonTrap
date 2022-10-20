@@ -158,3 +158,4 @@ class Camera:
 
     def close(self):
         self._camera.stop_recording()
+        self._camera.close()
