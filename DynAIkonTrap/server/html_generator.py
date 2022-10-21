@@ -109,13 +109,13 @@ def make_main_page(top_dir, output_log):
             <body>
             <div class="container-fluid">
             <h1>DynAikonTrap Web Viewer</h1>
+            <a href="{FOV_PAGE}" class="btn btn-primary btn-block" role="button">Check the Camera FOV</a>
+            </br>
             <a href="{top_dir}" class="btn btn-primary btn-block" role="button">Check Observations</a>
             <br/>
             <a href="{output_log}" class="btn btn-primary btn-block" role="button">View the System Log</a>
             <br/>
-            <a href="{FOV_PAGE}" class="btn btn-primary btn-block" role="button">Check the Camera FOV</a>
-            <br/>
-            <a href="{SHELL_PAGE}" class="btn btn-primary btn-block" role="button">Access the shell</a>
+            <a href="{SHELL_PAGE}" class="btn btn-primary btn-block" role="button">Access the Shell</a>
             </div>
             </body>
             """
