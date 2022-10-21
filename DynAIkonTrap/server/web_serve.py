@@ -51,7 +51,7 @@ class ObservationServer:
         self.createObservationsHTML()
         self.createShellPage()
         self._handler = partial(Handler, read_image_from)
-        self._shellinabox_handler = ServiceHandler(shell_str=f"shellinaboxd -t -p {self._shell_port}")
+        self._shellinabox_handler = ServiceHandler(shell_str=f"sudo shellinaboxd -p {self._shell_port} -t")
         self._usher = Thread(target=self.run, daemon=True)
         self._usher.start()
 
