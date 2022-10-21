@@ -6,16 +6,23 @@ from tempfile import NamedTemporaryFile
 import shutil
 import socket
 import subprocess
+from typing import Union
 
 from DynAIkonTrap.server import html_generator
 from DynAIkonTrap.settings import LoggerSettings, OutputSettings
 from DynAIkonTrap.camera_to_disk import CameraToDisk
+from DynAIkonTrap.camera import Camera
 from DynAIkonTrap.logging import get_logger
 
 logger = get_logger(__name__)
 
+WEBSITE_PORT = 9999
+SHELL_PORT = 4200
+
 
 class Handler(SimpleHTTPRequestHandler):
+    """A handler class which inherits from `http.server.SimpleHTTPRequestHandler`. The method, `do_GET()` is overwritten to intercept GET requests for `camera-fov.jpg`.
+    """
 
     def __init__(self, callback, *args, **kwargs):
         self.cameraCallback = callback
@@ -33,19 +40,21 @@ class Handler(SimpleHTTPRequestHandler):
             shutil.copyfileobj(tmp, self.wfile)
         return super().do_GET()
 
-class ModifiedHTTPServer(HTTPServer):
-    def __init__(self, read_image_from: CameraToDisk, *args, **kwargs):
-        self._camera = read_image_from
-        super().__init__(*args, **kwargs)
-
-
 class ObservationServer:
+    """The observation server handles HTML generation, running the HTTP server and starting the Shellinabox daemon. """
+    
+    def __init__(self, output_settings : OutputSettings, logger_settings: LoggerSettings, read_image_from: Union[Camera, CameraToDisk]):
+        """Initialises ObservationServer.
 
-    def __init__(self, output_settings : OutputSettings, logger_settings: LoggerSettings, read_image_from: CameraToDisk):
+        Args:
+            output_settings (OutputSettings): Needs output_settings to determine the output directory to serve
+            logger_settings (LoggerSettings):  Needs logger_settings to determine the log file to serve
+            read_image_from (Union[Camera, CameraToDisk]): Needs an object to read images from for FOV refresh
+        """
         self._observation_dir = output_settings.path
         self._log_path = logger_settings.path
-        self._website_port = 9999
-        self._shell_port = 4200
+        self._website_port = WEBSITE_PORT
+        self._shell_port = SHELL_PORT
         self.createHomePage()
         self.createFOVPage()
         self.createObservationsHTML()
@@ -57,18 +66,23 @@ class ObservationServer:
 
 
     def createFOVPage(self):
+        """Calls html_generator to make the FOV page."""
         html_generator.make_fov_page()
 
     def createHomePage(self):
+        """Calls the html_generator to make the main page."""
         html_generator.make_main_page(self._observation_dir, self._log_path)
 
     def createObservationsHTML(self):
+        """Calls the html_generator to make the observations html."""
         html_generator.process_dir(self._observation_dir)
     
     def createShellPage(self):
+        """Calls the html_generator to make the shell page."""
         html_generator.make_shell_page(self.get_ip(), self._shell_port)
 
     def run(self):
+        """Runs the server if the OS allows it, otherwise, error message is written to the log."""
         try:
             socketserver.TCPServer.allow_reuse_address = True
             with socketserver.TCPServer(("", self._website_port), self._handler) as httpd:
@@ -79,6 +93,7 @@ class ObservationServer:
             logger.info("Continuing without observation server.")
 
     def get_ip(self):
+        """Simple method to get the IP address of this device. See: https://stackoverflow.com/questions/166506/finding-local-ip-addresses-using-pythons-stdlib"""
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             # doesn't even have to be reachable
@@ -91,6 +106,7 @@ class ObservationServer:
         return IP
 
 class ServiceHandler:
+    """A class to handle running a service daemon on a separate thread using subprocess.call. Constructor takes a string, the command to be executed to start the daemon."""
 
     def __init__(self, shell_str: str):
         self._shell_str = shell_str
