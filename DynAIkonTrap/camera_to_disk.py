@@ -20,6 +20,7 @@ Motion detection is performed within :class:`MotionRAMBuffer` by filtering each 
 
 An output queue of emptied buffer directories is accessible via the output of :class:`CameraToDisk`. 
 """
+from asyncio import WriteTransport
 from queue import Empty
 from os import path, makedirs
 from math import ceil
@@ -141,9 +142,10 @@ class CameraToDisk:
             filter_settings.motion,
             filter_settings.processing.context_length_s,
         )
-
+        # if user wishes not to save observation metadata, put it in /var/tmp - deleted every 30 days
+        buffer_dir = '/var/tmp' if writer_settings.delete_metadata else writer_settings.path
         self._directory_maker: DirectoryMaker = DirectoryMaker(
-            writer_settings.path
+            buffer_dir
         )
         self._record_proc = Thread(
             target=self.record, name="camera recording process", daemon=True
