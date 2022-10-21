@@ -5,6 +5,7 @@ from functools import partial
 from tempfile import NamedTemporaryFile
 import shutil
 import socket
+import subprocess
 
 from DynAIkonTrap.server import html_generator
 from DynAIkonTrap.settings import LoggerSettings, OutputSettings
@@ -50,6 +51,7 @@ class ObservationServer:
         self.createObservationsHTML()
         self.createShellPage()
         self._handler = partial(Handler, read_image_from)
+        self._shellinabox_handler = ServiceHandler(shell_str=f"shellinaboxd -t -p {self._shell_port}")
         self._usher = Thread(target=self.run, daemon=True)
         self._usher.start()
 
@@ -88,6 +90,13 @@ class ObservationServer:
             s.close()
         return IP
 
+class ServiceHandler:
 
+    def __init__(self, shell_str: str):
+        self._shell_str = shell_str
+        self._service_manager = Thread(target=self.run_service, daemon=True)
+        self._service_manager.start()
 
+    def run_service(self):
+        subprocess.call(self._shell_str, shell=True)
 
