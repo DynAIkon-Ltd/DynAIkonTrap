@@ -64,6 +64,7 @@ def make_fov_page():
         return
 
 def make_shell_page(ip_addr, port):
+    """ Creates HTML for the page to view the shellinabox terminal. Makes use of an IFrame and a basic href to the port running shellinabox. May not work for some browsers."""
     shell_path = path.join(getcwd(), SHELL_PAGE)
     try:
         with open(shell_path, 'w') as fov_file:
@@ -216,8 +217,8 @@ def process_dir(path_top_dir):
                 last_modified_iso = last_modified.isoformat()
                 last_modified_human_readable = last_modified.strftime("%c")
 
-        except Exception as e:
-            print('ERROR accessing file name:', e, entry)
+        except OSError as e:
+            logger.error('ERROR accessing file name: {}. {}'.format(entry, e))
             continue
 
         entry_name = path.basename(entry)
