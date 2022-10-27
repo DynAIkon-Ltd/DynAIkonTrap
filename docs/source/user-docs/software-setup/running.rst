@@ -81,7 +81,7 @@ You can now leave :program:`screen` without stopping the camera trap code by hit
 Checking progress
 ^^^^^^^^^^^^^^^^^
 
-You can check progress easily using our DynAikonTrap web-viewer! This is a server hosted on the deployed device. For more information on how to use the web-viewer, check out our :doc:`Web-viewer Page <flashing>`.
+You can check progress easily using our DynAikonTrap web-viewer! This is a server hosted on the deployed device. For more information on how to use the web-viewer, check out our :doc:`Web-viewer page <web-viewer>`.
 
 Another easy way to check on the system is by starting an ``ssh`` session to the RPi. You can then reattach to the ``screen`` session using:
 

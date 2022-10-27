@@ -9,6 +9,7 @@ Software Setup
    software-setup/manual-installation
    software-setup/running
    software-setup/tuning
+   software-setup/web-viewer
 
 
 These instructions assume you have very little, if any, experience using Raspberry Pis. You may be familiar with some of the topics covered in this setup guide, but it may be worth having a read through everything in case there is something you have not come across before, or something project-specific.
