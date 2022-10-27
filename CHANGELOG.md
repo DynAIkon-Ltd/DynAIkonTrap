@@ -1,4 +1,20 @@
 # Change Log
+## [v1.5.0] - 2022-10-21
+
+### Added
+- Web server to aid with user experience and setup.
+- Features
+    - Home page with scalable graphics for mobile and desktop machines
+    - Dedicated page to check camera FOV and video feed
+    - Nested HTML to browse and serve observations
+    - Page to view and serve the system log
+    - Page to access the terminal via shellinabox
+- Files
+    - `DynAIkonTrap.server.web_serve.py` handles management of the http server and shellinabox daemon
+    - `DynAIkonTrap.server.html_generator.py` handles generation of the html pages 
+    - `html/` directory created to house some html
+    - `assets/` directory contains downloaded style sheets for bootstrap, thus styling can be used offline
+
 ## [v1.4.5] - 2022-09-12
 ### Fixed 
 - Removed output switching in `settings.py` `load_settings()` function

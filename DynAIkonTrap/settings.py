@@ -224,7 +224,7 @@ class LoggerSettings:
     """Settings for logging"""
     level: str = "INFO"  # Literal['DEBUG', 'INFO', 'WARNING', 'ERROR']
     # `Literal` is not supported in Python from RPi packages, hence no proper type hint
-    path: str = "/dev/stdout"  # Default log path is stdout
+    path: str = "log.txt" 
 
 def _version_number() -> str:
     with open("VERSION", "r") as f:

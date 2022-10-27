@@ -59,7 +59,7 @@ from DynAIkonTrap.comms import Output
 from DynAIkonTrap.sensor import SensorLogs
 from DynAIkonTrap.settings import PipelineVariant, SenderSettings, load_settings
 from DynAIkonTrap.logging import set_logger_config
-
+from DynAIkonTrap.server.web_serve import ObservationServer
 # Make Ctrl-C quit gracefully
 def handler(signal_num, stack_frame):
     exit(0)
@@ -94,7 +94,8 @@ Logging to: {}
 
 if args.filename is None:
     if settings.pipeline.pipeline_variant == PipelineVariant.LEGACY.value:
-        source = Camera(settings=settings.camera)
+        camera = Camera(settings=settings.camera)
+        source = camera
     else:
         camera = CameraToDisk(
             camera_settings=settings.camera,
@@ -102,6 +103,8 @@ if args.filename is None:
             filter_settings=settings.filter,
         )
         source = EventRememberer(read_from=camera)
+    server = ObservationServer(settings.output, settings.logging, camera)
+
 else:
     filename = args.filename[0]
     if filename.endswith('.mp4'):
@@ -124,5 +127,5 @@ Output(settings=settings.output, read_from=(filters, sensor_logs))
 
 
 while True:
-    sleep(0.5)
+    sleep(0.2)
     pass

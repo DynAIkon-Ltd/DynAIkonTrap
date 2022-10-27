@@ -20,6 +20,7 @@ Motion detection is performed within :class:`MotionRAMBuffer` by filtering each 
 
 An output queue of emptied buffer directories is accessible via the output of :class:`CameraToDisk`. 
 """
+from asyncio import WriteTransport
 from queue import Empty
 from os import path, makedirs
 from math import ceil
@@ -141,9 +142,10 @@ class CameraToDisk:
             filter_settings.motion,
             filter_settings.processing.context_length_s,
         )
-
+        # if user wishes not to save observation metadata, put it in /var/tmp - deleted every 30 days
+        buffer_dir = '/var/tmp' if writer_settings.delete_metadata else writer_settings.path
         self._directory_maker: DirectoryMaker = DirectoryMaker(
-            writer_settings.path
+            buffer_dir
         )
         self._record_proc = Thread(
             target=self.record, name="camera recording process", daemon=True
@@ -228,6 +230,7 @@ class CameraToDisk:
 
         finally:
             self._camera.stop_recording()
+            self._camera.close()
 
     def get(self) -> str:
         try:
@@ -236,6 +239,16 @@ class CameraToDisk:
         except Empty:
             logger.error("No events available from Camera")
             raise Empty
+
+    def capture_still(self, filename: str, fmt='image/jpeg',):
+        """Captures a still image on the video port, can be called while the camera is recording.
+        Insipred by picamera example: https://picamera.readthedocs.io/en/release-1.13/recipes2.html#capturing-images-whilst-recording
+        Args: 
+            filename (str): filename to save capture to, jpg.
+        """
+        logger.info("Still image requested...")
+        self._camera.capture(filename, format=fmt, use_video_port=True)
+        logger.info(f"Sill saved to: {filename}")
 
     def empty_all_buffers(self, current_path: str, start: bool):
         """Switches and empties all three buffers. Switching is performed near-simultaneously. Writing may take longer.
