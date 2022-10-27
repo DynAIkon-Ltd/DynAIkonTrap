@@ -43,21 +43,21 @@ The system log shows camera trap activity and can be very useful in troubleshoot
 Access the Shell
 ----------------
 
-One of the more powerful features of the web viewer is the ability to access a shell terminal over a web browser. This is handy as it can allow you to configure the system without opening a terminal-based ssh session. For example, you could use the shell to run `dyntrap-config` to :doc:`configure system settings <tunig>`.
+One of the more powerful features of the web viewer is the ability to access a shell terminal over a web browser. This is handy as it can allow you to configure the system without opening a terminal-based ssh session. For example, you could use the shell to run ``dyntrap-config`` to :doc:`configure system settings <tuning>`.
 
 To try this out, click the last button, labelled "Access the Shell". This opens a new page where the 
 
 .. admonition:: Browser Support
 
-    Some web browsers may not support this shell access. We reccomend you try using a `Firefox <https://www.mozilla.org/en-GB/firefox/new/>_` browser if you are having issues with shell access. 
+    Some web browsers may not support this shell access. We reccomend you try using a `Firefox <https://www.mozilla.org/en-GB/firefox/new/>`_ browser if you are having issues with shell access. 
 
 Troubleshooting
 ---------------
 
 If you're having problems connecting to the web viewer here are a couple of things to try: 
 
-    * Make sure your Raspberry Pi and the machine running the web browser are connected to the same network. If you're running a mobile hotspot, you can usually check which devices are connected to your hotspot in the settings (this can also be a quick way to find out the IP address of your Raspberry Pi!). For help setting up a new wifi network on a Raspberry Pi, see `here <https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking>_`.
+    * Make sure your Raspberry Pi and the machine running the web browser are connected to the same network. If you're running a mobile hotspot, you can usually check which devices are connected to your hotspot in the settings (this can also be a quick way to find out the IP address of your Raspberry Pi!). For help setting up a new wifi network on a Raspberry Pi, see `here <https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking>`_.
 
-    * Remember, DynAIkonTrap must be running for the web server to start. If you just booted up the Raspberry Pi, you will need to start DynAIkonTrap for things to work. There are methods to force programs to start on-boot of the Raspberry Pi (see `here <https://raspberrytips.com/autostart-a-program-on-boot/>_`) and we hope to more streamlined support for this in the future. 
+    * Remember, DynAIkonTrap must be running for the web server to start. If you just booted up the Raspberry Pi, you will need to start DynAIkonTrap for things to work. There are methods to force programs to start on-boot of the Raspberry Pi (see `here <https://raspberrytips.com/autostart-a-program-on-boot/>`_) and we hope to more streamlined support for this in the future. 
 
     
