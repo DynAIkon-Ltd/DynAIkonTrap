@@ -1,4 +1,7 @@
 #!/bin/bash 
+cd /home/pi/dynaikontrap 
+cd /home/pi/dynaikontrap 
+cd /home/pi/dynaikontrap 
 VERSION=$(cat VERSION)
 TITLE=$"DynAIkonTrap v$VERSION configuration tool"
 BACKTILE=$"DynAIkon Ltd. 2022"
@@ -517,8 +520,9 @@ do_fastcat_cloud(){
   FUN=$(whiptail --title "FASTCAT-Cloud Options" --menu "" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --backtitle "$BACKTITLE" --cancel-button Back --ok-button Select \
     "FC1 USER ID       " "Configure your user ID" \
     "FC2 API KEY       " "Configure your API key" \
-    "FC3 SERVER      ($ADVANCED)  " "Configure the server address" \
-    "FC4 POST        ($ADVANCED)  " "Configure the API POST endpoint" \
+    "FC3 MODEL ID      " "Configure the model ID to use" \
+    "FC4 SERVER      ($ADVANCED)  " "Configure the server address" \
+    "FC5 POST        ($ADVANCED)  " "Configure the API POST endpoint" \
   3>&1 1>&2 2>&3)
   RET=$?
     if [ $RET -eq 1 ]; then
@@ -544,6 +548,15 @@ do_fastcat_cloud(){
       fi 
       ;;
       FC3\ *)
+      func_get_setting "settings.output.modelId"
+      current_model_id=$setting_value
+      selected_model_id=$(whiptail --inputbox "Enter the desired FASTCAT-Cloud Model ID \n\n - You can select a model from those available online, see here for a list: https://service.fastcat-cloud.org/api/spec - TIP: Use CTRL+SHIFT+V to paste from your clipboard."\
+        20 70 -- "$current_model_id" 3>&1 1>&2 2>&3)
+      if [ $? -eq 0 ]; then
+        func_set_setting "settings.output.modelId" \'"$selected_model_id"\'
+      fi
+      ;;
+      FC4\ *)
       func_get_setting "settings.output.server" 
       current_server=$setting_value
       selected_server=$(whiptail --title $ADVANCED --inputbox "Enter the FASTCAT-Cloud Server Address \n\n - Nominally: https://backend.fastcat-cloud.org "\
@@ -552,7 +565,7 @@ do_fastcat_cloud(){
         func_set_setting "settings.output.server" \'"$selected_server"\'
       fi 
       ;;
-      FC4\ *)
+      FC5\ *)
       func_get_setting "settings.output.POST" 
       current_post=$setting_value
       selected_post=$(whiptail --title $ADVANCED --inputbox "Enter the FASTCAT-Cloud API observation post endpoint \n\n - Nominally: /api/v2/predictions/demo "\
