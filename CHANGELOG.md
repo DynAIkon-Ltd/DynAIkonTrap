@@ -1,9 +1,15 @@
 # Change Log
 ## [v1.5.1] - 2022-11-14
 
+### Added
+- Support to select the modelId used in FASTCAT-Cloud, via settings. Support to change the model id is added to `dyntrap-config` and facilitated through a modification to `settings.py`. Model id is included in API calls from both `comms.py` and `animal.py` the default model is UK mammals.
+    - In the future, a way to set the model ID without the user having to learn the ID key would be useful. 
+
+
 ### Fixed
 - Fixed legacy pipeline not emptying sequences, `get_highest_priority` checks for frames with priority < 0 after labelling. 
     - See lines 195 - 206 in `motion_queue.py`
+- Fixed issues with running the legacy pipeline for animal detection with FASTCAT-Cloud from `animal.py`. File handling problem. 
 
 ## [v1.5.0] - 2022-10-21
 
