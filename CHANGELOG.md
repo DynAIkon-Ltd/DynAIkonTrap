@@ -1,4 +1,10 @@
 # Change Log
+## [v1.5.1] - 2022-11-14
+
+### Fixed
+- Fixed legacy pipeline not emptying sequences, `get_highest_priority` checks for frames with priority < 0 after labelling. 
+    - See lines 195 - 206 in `motion_queue.py`
+
 ## [v1.5.0] - 2022-10-21
 
 ### Added
