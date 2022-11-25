@@ -462,7 +462,8 @@ class Sender(Writer):
         #form url for post
         if settings.is_fcc:
             self._url = self._server + self._path_POST + '?userId=' + \
-                    settings.userId + '&apiKey=' + settings.apiKey
+                    settings.userId + '&apiKey=' + settings.apiKey  + \
+                    '&modelId=' + settings.modelId
         else:
             self._url = self._server + self._path_POST
         super().__init__(settings, read_from)

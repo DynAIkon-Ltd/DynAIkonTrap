@@ -110,7 +110,7 @@ class AnimalFilter:
                 layer_names[i[0] - 1] for i in self.model.getUnconnectedOutLayers()
             ]
         if sender_settings is not None and settings.fastcat_cloud_detect:
-            self.url_post = sender_settings.server + sender_settings.POST
+            self.url_post = sender_settings.server + sender_settings.POST + "?modelId=" + sender_settings.modelId
             self.url_get = sender_settings.server + RESULTS_ENDPOINT
 
     def run_raw_fcc(
@@ -129,7 +129,8 @@ class AnimalFilter:
         """
         files = []
         if is_jpeg:
-            image_file = NamedTemporaryFile(suffix='.png', delete=False)
+            temp_file = NamedTemporaryFile(suffix='.png', delete=False)
+            image_file = temp_file.name
             try:
                 cv2.imwrite(image_file, image)
             except cv2.error:
@@ -164,7 +165,7 @@ class AnimalFilter:
             tries=1
             while result['message'] == 'No results found for this query.' and tries < RETRIES:
                 #wait for result to become available...
-                time.sleep(1)
+                time.sleep(5)
                 r = get(self.url_get + '?predictionRequestPublicId='+requestId)
                 r.raise_for_status()
                 result=r.json()
@@ -172,8 +173,8 @@ class AnimalFilter:
                 
             if result['message'] == 'Success.':
                 detections=json.loads(result['body']['formattedResults'][0]['classifications'][0]["Results"])
-                detections=sorted(detections, key=lambda x: x['score'], reverse=True)
-                if len(detections) > 0:
+                if detections != "[]" and len(detections) > 0:                
+                    detections=sorted(detections, key=lambda x: x['score'], reverse=True)
                     return detections[0]['score']
                 else:
                     return 0.0

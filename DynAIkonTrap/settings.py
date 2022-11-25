@@ -208,6 +208,7 @@ class SenderSettings(OutputSettings):
     POST: str = "/api/v2/predictions/demo"
     userId : str = ""
     apiKey : str = ""
+    modelId : str = "f4a2d089-9b92-453d-985d-604ce6915703"
 
 
 @dataclass

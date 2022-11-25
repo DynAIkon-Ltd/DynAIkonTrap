@@ -201,6 +201,8 @@ class Sequence:
         highest_priority_frame = max(self._frames, key=lambda frame: frame.priority)
         if highest_priority_frame.motion_status is MotionStatus.STILL:
             return None
+        if highest_priority_frame.priority < 0:
+            return None
         return highest_priority_frame
 
     def get_first_animal_index(self) -> int:
