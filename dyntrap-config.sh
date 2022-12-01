@@ -1,7 +1,4 @@
 #!/bin/bash 
-cd /home/pi/dynaikontrap 
-cd /home/pi/dynaikontrap 
-cd /home/pi/dynaikontrap 
 VERSION=$(cat VERSION)
 TITLE=$"DynAIkonTrap v$VERSION configuration tool"
 BACKTILE=$"DynAIkon Ltd. 2022"
