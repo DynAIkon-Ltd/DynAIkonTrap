@@ -82,7 +82,7 @@ The JSON file should be structured as follows (of course the values can be chang
         "version": "1.2.2"
     }
 """
-from os import path, environ
+from os import path, environ, makedirs
 from json import dump, load, JSONDecodeError
 from dataclasses import dataclass
 from types import MappingProxyType
@@ -350,6 +350,14 @@ def load_settings() -> Settings:
 
     except FileNotFoundError:
         logger.warning(
-            "The settings.json file could not be found, starting with defaults"
+            "The settings.json file could not be found, starting with defaults and saving to {}".format(
+                settings_path
+            )
+
         )
-        return Settings()
+        # Ensure that the settings root exists
+        makedirs(settings_root, exist_ok=True)
+        settings = Settings()
+        # Permanently save settings for next invokation. User has been informed
+        save_settings(settings)
+        return settings
