@@ -67,6 +67,8 @@ setup(
             'filtering/models/ssdlite_mobilenet_v2_animal_human/model.tflite',
             'filtering/models/ssdlite_mobilenet_v2_animal_only/model.tflite',
             'filtering/models/ssdlite_mobilenet_v2_animal_only/model2.tflite',
+            'server/assets/bootstrap-3.3.5/css/bootstrap-theme.min.css',
+            'server/assets/bootstrap-3.3.5/css/bootstrap.min.css',
             # When python initially builds this package, it compiles the pyx
             # file and concludes that the pyx file does not need to be bundled
             # since the compiled version has already been included.

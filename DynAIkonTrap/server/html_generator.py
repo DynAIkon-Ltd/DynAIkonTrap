@@ -17,6 +17,7 @@ from os import path, getcwd, stat, makedirs
 from glob import glob
 from urllib.parse import quote
 from datetime import datetime as dt
+from pkg_resources import resource_filename
 
 from DynAIkonTrap.logging import get_logger
 
@@ -24,7 +25,7 @@ logger = get_logger(__name__)
 
 MAIN_PAGE = 'index.html'
 FOV_PAGE = 'html/fov.html'
-CSS_DIR = 'assets/bootstrap-3.3.5/css'
+CSS_DIR = resource_filename("DynAIkonTrap", "server/assets/bootstrap-3.3.5/css")
 SHELL_PAGE = 'html/shell.html'
 
 SVG_IMAGES = {
