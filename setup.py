@@ -42,13 +42,15 @@ setup(
     python_requires=">=3.7",
     packages=find_packages(where="."),
     install_requires=[
+        'numpy==1.21.4',
         'picamera==1.13',
         'pyserial==3.4',
         'requests==2.24.0',
-        'urllib3==1.25.9',
+        'urllib3==1.25.10',
         'opencv-python-headless==4.4.0.44',
         'scipy',
         'Pillow==8.4.0',
+        'psutil==5.9.1',
         tflite_dependency,
     ],
     entry_points={
