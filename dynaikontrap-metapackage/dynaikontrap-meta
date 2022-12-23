@@ -72,5 +72,6 @@ Depends:
   libzvbi0,
   python3-venv,
   python3-pip,
+  shellinabox,
 
 Description: Dynaikon camera trapping software metapackage
