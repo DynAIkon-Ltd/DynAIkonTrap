@@ -56,7 +56,9 @@ setup(
         tflite_dependency,
     ],
     entry_points={
-        'console_scripts': ['dynaikontrap=DynAIkonTrap.__main__:main']
+        'console_scripts': ['dynaikontrap=DynAIkonTrap.__main__:main',
+                            'dynaikontrap-tuner=DynAIkonTrap.tuner:main',
+                            ]
     },
     package_data={
         "": [

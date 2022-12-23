@@ -249,11 +249,4 @@ it is a bit less user friendly!
 
 .. code:: sh
 
-   # Go into the dynaikontrap code directory
-   cd dynaikontrap
-
-   # Activates the virtual environment
-   source ./venv/bin/activate
-
-   # Start the tuner
-   python tuner.py
+   dynaikontrap-tuner
