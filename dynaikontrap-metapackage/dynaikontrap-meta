@@ -69,8 +69,8 @@ Depends:
   libxfixes3,
   libxrender1,
   libxvidcore4,
-  libzvbi0
-  python3-venv
-  python3-pip
+  libzvbi0,
+  python3-venv,
+  python3-pip,
 
 Description: Dynaikon camera trapping software metapackage
