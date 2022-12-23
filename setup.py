@@ -1,5 +1,6 @@
 from setuptools import setup
 from setuptools import find_packages
+from Cython.Build import cythonize
 
 
 def get_platform():
@@ -50,6 +51,7 @@ setup(
         'opencv-python-headless==4.4.0.44',
         'scipy',
         'Pillow==8.4.0',
+        'Cython==0.29.30',
         'psutil==5.9.1',
         tflite_dependency,
     ],
@@ -65,6 +67,13 @@ setup(
             'filtering/models/ssdlite_mobilenet_v2_animal_human/model.tflite',
             'filtering/models/ssdlite_mobilenet_v2_animal_only/model.tflite',
             'filtering/models/ssdlite_mobilenet_v2_animal_only/model2.tflite',
+            # When python initially builds this package, it compiles the pyx
+            # file and concludes that the pyx file does not need to be bundled
+            # since the compiled version has already been included.
+            # However, in our case the pyx file is re-compiled on install, so
+            # we need to manually bundle this.
+            'filtering/mvector_sum.pyx',
             ]
-    }
+    },
+    ext_modules=cythonize(["DynAIkonTrap/filtering/mvector_sum.pyx"]),
 )
