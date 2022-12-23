@@ -274,7 +274,12 @@ def get_setting(setting: str) -> str:
     return value
 
 def save_settings(settings):
-    with open("DynAIkonTrap/settings.json", "w") as f:
+    default_root = path.join(environ["HOME"], ".config")
+    # Respect XDG_CONFIG_HOME if it exists
+    settings_root = path.join(environ.get("XDG_CONFIG_HOME", default_root),  "DynAIkonTrap")
+    settings_path = path.join(settings_root, "settings.json")
+
+    with open(settings_path, "w") as f:
         dump(settings, f, default=serialise)
     
 def serialise(obj):
@@ -303,7 +308,12 @@ def load_settings() -> Settings:
         Settings: The settings for all tunable parameters in the system.
     """
     try:
-        with open("DynAIkonTrap/settings.json", "rb") as f:
+        default_root = path.join(environ["HOME"], ".config")
+        # Respect XDG_CONFIG_HOME if it exists
+        settings_root = path.join(environ.get("XDG_CONFIG_HOME", default_root),  "DynAIkonTrap")
+        settings_path = path.join(settings_root, "settings.json")
+
+        with open(settings_path, "rb") as f:
             try:
                 settings_json = load(f)
             except JSONDecodeError:
