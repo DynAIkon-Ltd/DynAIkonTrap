@@ -1,12 +1,10 @@
 #!/bin/bash 
 version_file=$(python3 -c 'from pkg_resources import resource_filename; print(resource_filename("DynAIkonTrap", "VERSION"))')
 VERSION=$(cat "$version_file")
-
 TITLE=$"DynAIkonTrap v$VERSION configuration tool"
 BACKTILE=$"DynAIkon Ltd. 2022"
 ADVANCED=$"ADVANCED"
 INTERACTIVE=True
-. ./venv/bin/activate
 
 func_set_setting(){
   setting_name=$1
