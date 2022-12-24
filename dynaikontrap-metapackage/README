@@ -1,2 +1,6 @@
 Build this package with `equivs-build` on Debian-type system.
 The template was created with `equivs-control`.
+
+It can also be built from any system using docker.
+
+# docker run -v <path to dynaikontrap-meta>:/package --rm -it debian bash -c 'apt update -y && apt install -y equivs; cd /package; equivs-build dynaikontrap-meta'
