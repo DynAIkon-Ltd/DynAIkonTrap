@@ -273,13 +273,14 @@ def get_setting(setting: str) -> str:
         pass
     return value
 
-def save_settings(settings):
+def get_settings_path():
     default_root = path.join(environ["HOME"], ".config")
     # Respect XDG_CONFIG_HOME if it exists
     settings_root = path.join(environ.get("XDG_CONFIG_HOME", default_root),  "DynAIkonTrap")
-    settings_path = path.join(settings_root, "settings.json")
+    return path.join(settings_root, "settings.json")
 
-    with open(settings_path, "w") as f:
+def save_settings(settings):
+    with open(get_settings_path(), "w") as f:
         dump(settings, f, default=serialise)
     
 def serialise(obj):
@@ -308,12 +309,7 @@ def load_settings() -> Settings:
         Settings: The settings for all tunable parameters in the system.
     """
     try:
-        default_root = path.join(environ["HOME"], ".config")
-        # Respect XDG_CONFIG_HOME if it exists
-        settings_root = path.join(environ.get("XDG_CONFIG_HOME", default_root),  "DynAIkonTrap")
-        settings_path = path.join(settings_root, "settings.json")
-
-        with open(settings_path, "rb") as f:
+        with open(get_settings_path(), "rb") as f:
             try:
                 settings_json = load(f)
             except JSONDecodeError:
@@ -361,12 +357,12 @@ def load_settings() -> Settings:
     except FileNotFoundError:
         logger.warning(
             "The settings.json file could not be found, starting with defaults and saving to {}".format(
-                settings_path
+                get_settings_path()
             )
 
         )
         # Ensure that the settings root exists
-        makedirs(settings_root, exist_ok=True)
+        makedirs(path.dirname(get_settings_path()), exist_ok=True)
         settings = Settings()
         # Permanently save settings for next invokation. User has been informed
         save_settings(settings)
