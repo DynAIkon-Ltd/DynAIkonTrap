@@ -109,7 +109,7 @@ def main():
     else:
         filename = args.filename[0]
         if filename.endswith('.mp4'):
-            from vid2frames.Vid2Frames import VideoStream
+            from Vid2Frames.Vid2Frames import VideoStream
             vs = VideoStream(filename)
             if settings.pipeline.pipeline_variant == PipelineVariant.LEGACY.value:
                 source = Camera(settings=settings.camera, read_from=vs)
