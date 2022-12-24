@@ -583,7 +583,7 @@ do_make_settings(){
 do_restore(){
   whiptail --title "Restore Defauts" --yesno "Would you like to restore the default settings? (erase changes)" 8 78 --no-button "NO" --yes-button "YES"
   if [ $? -eq 0 ]; then
-    rm "DynAIkonTrap/settings.json"
+    rm "$(python3 -c "from DynAIkonTrap.settings import get_settings_path; print(get_settings_path())")"
   fi
   do_make_settings
 }
