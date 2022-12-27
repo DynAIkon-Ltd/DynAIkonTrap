@@ -1,34 +1,26 @@
 Installing DynAikonTrap
 =======================
 
-.. tip::
+.. admonition:: Prerequisites
+  :class: warning
 
-   If you are not familiar with SSH to log into the RPi, take a look at the
-   :ref:`first-run` section first.
+  Prerequisites for this page are, that your Raspberry Pi
+
+  #. Has Raspberry Pi OS **Buster**,
+
+     Note that this is **not** the latest Raspberry Pi OS. Check
+     ``/etc/os-release`` to see what ``VERSION_CODENAME`` you have. It must be
+     ``buster``.
+  #. Has the **camera module enabled, with a camera module that is working and
+     in focus**,
+  #. Has an **expanded filesystem**, and
+  #. You are **comfortable logging in** to your Raspberry Pi **remotely** over
+     ``ssh``,
+
+  If not, please refer to the sections :doc:`preparing-the-raspberry-pi`.
 
 Install on RPi
 --------------
-
-Log in to the RPi and issue the following commands on the terminal.
-
-Expand filesystem and enable camera
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-To start you need to ensure the filesystem has been fully expanded. This ensures
-you are able to use the full size of the SD card. You can do this by running:
-
-.. code:: sh
-
-   sudo raspi-config
-
-Then use the arrow keys to highlight "6 Advanced options" and hit enter. Then go
-to "A1 Expand filesystem" and hit enter. Back in the main menu, make sure the
-camera is enabled by going to "3 Interface Options" and select and enable "P1
-Camera". Once you have selected this you can hit "Finish" by using the right
-arrow key and enter. Then reboot the RPi as requested.
-
-Installation
-^^^^^^^^^^^^
 
 Make sure your Raspberry Pi is up-to-date:
 
@@ -42,13 +34,13 @@ Make sure ``git`` is installed by running:
 
    sudo apt install -y git
 
-Then download the code with:
+Then download the code with
 
 .. code:: sh
 
    git clone https://gitlab.dynaikon.com/dynaikontrap/dynaikontrap.git
 
-Make sure you are on the latest stable version of DynAIkonTrap:
+and naviagte to the latest stable version of DynAIkonTrap with
 
 .. code:: sh
 
@@ -58,7 +50,7 @@ Finally, run the setup script with:
 
 .. code:: sh
 
-   ./dynaikontrap/setup.sh
+   bash dynaikontrap/setup.sh
 
 This may take a little time to complete, but once it is done you should be able
 to start the camera trap code by running ``dynaikontrap``.
