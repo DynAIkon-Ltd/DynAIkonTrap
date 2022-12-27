@@ -89,7 +89,7 @@ Checking progress
 
 You can check progress easily using our DynAIkonTrap web-viewer! This is a
 server hosted on the deployed device. For more information on how to use the
-web-viewer, check out our :doc:`user-docs/web-viewer`.
+web-viewer, check out our :doc:`web-viewer`.
 
 One can also use ``screen`` to monitor progress directly over ``ssh``. This is
 easily done by starting an ``ssh`` session to the RPi. You can then reattach to

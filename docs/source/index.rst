@@ -4,6 +4,7 @@
   preparing-the-raspberry-pi.rst
   installing-dynaikontrap.rst
   running-dynaikontrap.rst
+  web-viewer.rst
   tuning.rst
   deploying-dynaikontrap.rst
 
