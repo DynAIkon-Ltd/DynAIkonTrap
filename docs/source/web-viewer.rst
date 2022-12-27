@@ -27,7 +27,7 @@ connected to the same wifi network as the Raspberry Pi, and navigate to:
 
 This will display the web-viewer's home page, as below.
 
-.. image:: ../../_static/web-serve-laptop-homepage.png
+.. image:: _static/web-serve-laptop-homepage.png
    :width: 800
    :alt: Web viewer homepage
 

@@ -17,7 +17,7 @@ files contain the video stream compressed in H264 format, motion vectors, and a
 stream of uncompressed images down-scaled to fit the input buffer for neural
 network inference.
 
-.. image:: ../../_static/stage-1.jpg
+.. image:: ../_static/stage-1.jpg
    :width: 800
    :alt: Stage One Architecture
 
@@ -70,7 +70,7 @@ Trading inferences run for recall of animal events in nature. A flexible
 infernce scheme has been devised; a diagram of inference operation is shown
 below.
 
-.. image:: ../../_static/stage-2.jpg
+.. image:: ../_static/stage-2.jpg
    :width: 800
    :alt: Stage Two Architecture
 
