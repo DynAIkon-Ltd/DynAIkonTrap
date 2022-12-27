@@ -10,6 +10,7 @@
 
   pipelines/
   dev-docs/
+  about.rst
 
   changelog.rst
   Project GitLab <https://gitlab.dynaikon.com/dynaikontrap/dynaikontrap>

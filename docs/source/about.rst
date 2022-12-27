@@ -40,11 +40,11 @@ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along with
-this program.  If not, see <https://www.gnu.org/licenses/>.
+this program.  If not, visit `GNU Licenses <https://www.gnu.org/licenses/>`_.
 
 Acknowledgements
 ----------------
 
-   .. image:: _static/c4c_eu_funding.png :alt: This project has received funding
-   from the European Union's Horizon
-   2020 programme under grant agreemant No 863463
+.. image:: _static/c4c_eu_funding.png
+  :alt: This project has received funding from the European Union's Horizon 2020
+   programme under grant agreemant No 863463
