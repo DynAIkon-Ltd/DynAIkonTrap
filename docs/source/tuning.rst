@@ -23,7 +23,7 @@ settings parameters:
    :class: note
 
    This dictates the processing pipeline DynAikonTrap will use, information
-   about each pipeline may be found in :doc:`../how-it-works`, for a low-powered
+   about each pipeline may be found in :doc:`pipelines`, for a low-powered
    HD resolution video camera trap, choose the LOW_POWER option.
 
 .. admonition:: Framerate
