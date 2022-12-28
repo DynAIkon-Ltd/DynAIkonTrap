@@ -43,6 +43,8 @@ then
   exit 1
 fi
 
+echo
+
 # Get Userid and Groupid so that the files can be set to the correct owner
 USERSTRING=$(id -u):$(id -g)
 
