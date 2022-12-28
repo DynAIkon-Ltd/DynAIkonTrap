@@ -109,7 +109,7 @@ class PipelineSettings:
 
 @dataclass
 class CameraSettings:
-    """Settings for  :class:`~DynAIkonTrap.camera.Camera` and :class:`~DynAIkonTrap.camera_to_disk.CameraToDisk"""
+    """Settings for  :class:`~DynAIkonTrap.camera.Camera` and :class:`~DynAIkonTrap.camera_to_disk.CameraToDisk`"""
     framerate: int = 20
     resolution: Tuple[int, int] = (1920, 1080)
 
@@ -157,7 +157,7 @@ class AnimalFilterSettings:
 
 @dataclass
 class ProcessingSettings:
-    """Settings for :class:`~DynAIkonTrap.filtering.motion_queue.MotionQueue` and :class:`DynAIkonTrap.filtering.filtering.Filter"""
+    """Settings for :class:`~DynAIkonTrap.filtering.motion_queue.MotionQueue` and :class:`DynAIkonTrap.filtering.filtering.Filter`"""
 
     smoothing_factor: float = 0.5
     max_sequence_period_s: float = 10.0
