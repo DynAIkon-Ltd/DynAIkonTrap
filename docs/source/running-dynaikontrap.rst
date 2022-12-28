@@ -145,7 +145,8 @@ copies all files from the default video output directory onto the current
 directory on your computer.
 
 Automatic
-^^^^^^^^^
+---------
+
 A slightly more complicated solution that allows automatic saving of files to a
 separate device is as follows. If you have a second Raspberry Pi you could use
 this as a server. Let's state some assumptions:
@@ -168,7 +169,7 @@ could have a more reliable hard disk drive on this device and serve the files to
 other devices connected on the local network.
 
 Server
-^^^^^^
+------
 
 The camera trap does have a RESTful server API, but code for the server is not
 released. This is left as an exercise for the reader. Using frameworks like

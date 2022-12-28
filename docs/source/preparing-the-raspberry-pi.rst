@@ -120,6 +120,7 @@ The Raspberry Pi Foundation has an `extensive article
 remote (secure) shell access from different platforms.
 
 .. _sshclients:
+
 Here is a list of examples of SSH clients for different platforms
 
 .. csv-table::
@@ -571,3 +572,4 @@ _______________________________
 
 This depends heavily on what kind of camera module you have. The one <we are
 using> can be focussed by screwing the lens in further or loosening it.
+
