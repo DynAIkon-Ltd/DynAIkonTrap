@@ -61,10 +61,10 @@ sudo docker run -it --rm \
     pip install -r ../requirements.txt
 
     make clean
-    make html
+    O=-W make html
     while inotifywait -e modify,create -r /repository
     do
-      make html
+      O=-W make html
       chown \"$USERSTRING\" -R /repository/docs/build
     done
     "
