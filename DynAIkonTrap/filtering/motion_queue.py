@@ -20,28 +20,29 @@ The sequence is then analysed by the animal filter, loaded into the :class:`~Dyn
 
 Below is a simple outline example of how this can be used to print all animal frames:
 
-mf = MotionFilter(...)
+.. code :: python
 
-mq = MotionLabelledQueue(
-    AnimalFilter(...), 
-    print, 
-    MotionQueueSettings(), 
-    camera.framerate,
-    )
+    mf = MotionFilter(...)
 
-while True:
+    mq = MotionLabelledQueue(
+        AnimalFilter(...), 
+        print, 
+        MotionQueueSettings(), 
+        camera.framerate,
+        )
 
-    frame = camera.get() # Can raise Empty exception
+    while True:
 
-    motion_score = mf.run_raw(frame.motion)
-    motion_detected = motion_score >= motion_threshold
-    
+        frame = camera.get() # Can raise Empty exception
 
-    if motion_detected:
-        mq.put(frame, motion_score, MotionStatus.MOTION)
-    else:
-        mq.put(frame, -1.0, MotionStatus.STILL)
-```
+        motion_score = mf.run_raw(frame.motion)
+        motion_detected = motion_score >= motion_threshold
+        
+
+        if motion_detected:
+            mq.put(frame, motion_score, MotionStatus.MOTION)
+        else:
+            mq.put(frame, -1.0, MotionStatus.STILL)
 
 The modularity here means Different implementations for animal filtering and motion filtering stages can be used.
 """
