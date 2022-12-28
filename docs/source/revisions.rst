@@ -1,6 +1,7 @@
 Documentation Revisions
 =======================
 
+* `Version 1.5.1 <https://www.dynaikon.com/trap-docs/rev/v1.5.1/>`_
 * `Version 1.3.1 <https://www.dynaikon.com/trap-docs/rev/v1.3.1/>`_
 * `Version 1.2.2 <https://www.dynaikon.com/trap-docs/rev/v1.2.2/>`_
 * `Version 1.2.1 <https://www.dynaikon.com/trap-docs/rev/v1.2.1/>`_
