@@ -18,7 +18,7 @@ else:
     tflite_dependency = 'tflite_runtime @ https://github.com/google-coral/pycoral/releases/download/v2.0.0/tflite_runtime-2.5.0.post1-cp37-cp37m-linux_armv7l.whl'
 
 with open("DynAIkonTrap/VERSION", "r") as f:
-    version = f.read()
+    version = f.read().strip()
 
 with open("README.md") as f:
     readme = f.read()
