@@ -20,7 +20,7 @@ else:
 with open("DynAIkonTrap/VERSION", "r") as f:
     version = f.read().strip()
 
-with open("README.md") as f:
+with open("README.md", "r") as f:
     readme = f.read()
 
 with open("requirements.txt", "r") as f:
