@@ -23,6 +23,9 @@ with open("DynAIkonTrap/VERSION", "r") as f:
 with open("README.md") as f:
     readme = f.read()
 
+with open("requirements.txt", "r") as f:
+    requirements = f.read().split()
+
 setup(
     name='DynAIkonTrap',
     version=version,
@@ -42,19 +45,7 @@ setup(
     ],
     python_requires=">=3.7",
     packages=find_packages(where="."),
-    install_requires=[
-        'numpy==1.21.4',
-        'picamera==1.13',
-        'pyserial==3.4',
-        'requests==2.24.0',
-        'urllib3==1.25.10',
-        'opencv-python-headless==4.4.0.44',
-        'scipy',
-        'Pillow==8.4.0',
-        'Cython==0.29.30',
-        'psutil==5.9.1',
-        tflite_dependency,
-    ],
+    install_requires=[tflite_dependency] + requirements,
     entry_points={
         'console_scripts': ['dynaikontrap=DynAIkonTrap.__main__:main',
                             'dynaikontrap-tuner=DynAIkonTrap.tuner:main',
@@ -80,5 +71,6 @@ setup(
             'filtering/mvector_sum.pyx',
             ]
     },
+    data_files=[('.', ['requirements.txt'])],
     ext_modules=cythonize(["DynAIkonTrap/filtering/mvector_sum.pyx"]),
 )
