@@ -2,7 +2,7 @@ Assembly and Deployment
 
 
 Deploying
----------
+=========
 
 The versatility of this platform means it can be deployed in many different
 situations. What follows is a general description of factors to consider when
