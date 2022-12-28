@@ -48,6 +48,11 @@ extensions = [
 add_module_names = False
 autoclass_content = 'both'
 
+autodoc_mock_imports = [
+                        'tflite_runtime',
+                        'DynAIkonTrap.video_buffers',
+                        ]
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
