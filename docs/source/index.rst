@@ -12,6 +12,7 @@
   dev-docs/
   about.rst
 
+  revisions.rst
   changelog.rst
   Project GitLab <https://gitlab.dynaikon.com/dynaikontrap/dynaikontrap>
 
