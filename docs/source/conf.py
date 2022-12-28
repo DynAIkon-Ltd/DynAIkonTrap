@@ -51,6 +51,7 @@ autoclass_content = 'both'
 autodoc_mock_imports = [
                         'tflite_runtime',
                         'DynAIkonTrap.video_buffers',
+                        'DynAIkonTrap.filtering.mvector_sum',
                         ]
 
 # Add any paths that contain templates here, relative to this directory.
