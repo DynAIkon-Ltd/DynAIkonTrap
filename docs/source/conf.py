@@ -25,7 +25,7 @@ copyright = '{}, DynAIkon'.format(date.today().year)
 author = 'DynAIkon'
 
 # The full version, including alpha/beta/rc tags
-with open('../../VERSION', 'r') as f:
+with open('../../DynAIkonTrap/VERSION', 'r') as f:
     VERSION = f.readline()
 release = VERSION
 

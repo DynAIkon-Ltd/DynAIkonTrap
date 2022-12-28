@@ -21,10 +21,11 @@ from signal import signal, SIGINT
 from argparse import ArgumentParser, ArgumentTypeError
 from time import sleep
 from os.path import exists
+from pkg_resources import resource_filename
 
 
 def get_version_number() -> str:
-    with open("VERSION", "r") as f:
+    with open(resource_filename("DynAIkonTrap", "VERSION"), "r") as f:
         version = f.readline().strip()
     return version
 

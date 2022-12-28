@@ -87,6 +87,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Tuple, Any, Union
 from enum import Enum
+from pkg_resources import resource_filename
 
 from DynAIkonTrap.logging import get_logger
 
@@ -228,7 +229,7 @@ class LoggerSettings:
     path: str = "log.txt" 
 
 def _version_number() -> str:
-    with open("VERSION", "r") as f:
+    with open(resource_filename("DynAIkonTrap", "VERSION"), "r") as f:
         version = f.readline().strip()
     return version
 
@@ -245,8 +246,7 @@ class Settings:
     version: str = _version_number()
 
 def _version_number() -> str:
-    version_path = path.abspath(path.join(__file__, "../../VERSION"))
-    with open(version_path, "r") as f:
+    with open(resource_filename("DynAIkonTrap", "VERSION"), "r") as f:
         version = f.readline().strip()
     return version
     
