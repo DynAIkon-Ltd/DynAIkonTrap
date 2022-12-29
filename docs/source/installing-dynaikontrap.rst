@@ -22,47 +22,79 @@ Installing DynAikonTrap
 Install on RPi
 --------------
 
+Prerequisites
+^^^^^^^^^^^^^
+
 Make sure your Raspberry Pi is up-to-date:
 
 .. code:: sh
 
    sudo apt update && sudo apt upgrade -y
 
-Make sure ``git`` is installed by running:
+Then download and install the ``dynaikontrap-meta`` package which contains all
+the required non-python system dependencies for DynAIkonTrap.
 
 .. code:: sh
 
-   sudo apt install -y git
+  wget https://dynaikon.com/resources/dynaikontrap-meta.deb -P /tmp/
+  sudo apt install /tmp/dynaikontrap-meta.deb
 
-Then download the code with
+
+Now you are ready to install DynAIkonTrap. Choose whether you would like to
+install
+
+* **From pre-packaged source**
+  This is the easiest way to install DynAIkonTrap. This will install the latest
+  release, packaged by us.
+
+* **Manually from source**
+  This will allow you to add your own changes to DynAIkonTrap, or to switch to
+  an exact version.
+
+From pre-packaged source
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+This is easily done with one command
 
 .. code:: sh
 
-   git clone https://gitlab.dynaikon.com/dynaikontrap/dynaikontrap.git
+   pip3 install https://dynaikon.com/resources/DynAIkonTrap.tar.gz
 
-and naviagte to the latest stable version of DynAIkonTrap with
+
+Manually from source
+^^^^^^^^^^^^^^^^^^^^
+
+This option allows you to edit the source before installing. First ensure
+``git`` is installed
 
 .. code:: sh
 
-   (cd dynaikontrap && git checkout -q $(git tag --sort=taggerdate --list 'v[0-9]*' | tail -1))
+  sudo apt install git
 
-Finally, run the setup script with:
+and then
 
 .. code:: sh
 
-   bash dynaikontrap/setup.sh
+  git clone https://gitlab.dynaikon.com/dynaikontrap/dynaikontrap
 
-This may take a little time to complete, but once it is done you should be able
-to start the camera trap code by running ``dynaikontrap``.
+This will download the source tree to ``dynaikontrap``. Enter the directory and
+checkout to a commit of your choosing. Be aware that only tagged commits ``>
+1.5.1`` will successfully build to a package. List tags with
 
-Raspberry Pi settings
-^^^^^^^^^^^^^^^^^^^^^
+.. code:: sh
 
-There are a few settings that need to be configured using ``sudo raspi-config``.
-These include enabling the camera and enabling Wi-Fi as required. You may also
-wish to change your hostname to ``dynaikontrap`` for compatibility with the
-remaining instructions, although it isn't essential.
+   git tag --sort=taggerdate --list 'v[0-9]*'
 
+You may also wish to make changes to the code. Once you are ready to install
+your modified version of DynAIkonTrap, enter the root of the source tree and
+execute
+
+.. code:: sh
+
+  python setup.py sdist
+  pip3 install ./dist/DynAIkonTrap-x.y.z.tar.gz
+
+Where ``x.y.z`` will be the version of the checked-out code.
 
 Installation on Other Platforms (not Raspberry Pi)
 --------------------------------------------------
