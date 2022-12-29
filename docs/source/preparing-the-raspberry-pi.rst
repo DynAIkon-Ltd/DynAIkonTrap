@@ -356,14 +356,14 @@ different tool to flash SD cards, feel free to use that instead.
 
    .. _sshcredentials:
 
-   * **Set hostname**. This is what your Raspberry Pi will be called on your local
-     network. We have called it "dynaikontrap" in our example. Whilst it is
-     possible to put spaces in the hostname, we recommend *not* to do this.
-     Instead perhaps use a hyphen.
+   * **Set hostname**. This is what your Raspberry Pi will be called on your
+     local network. We have called it ``raspberrytrap`` in our example. Whilst
+     it is possible to put spaces in the hostname, we recommend *not* to do
+     this.  Instead perhaps use a hyphen.
    * **Enable SSH**. This will allow you to log into your Raspberry Pi over the
      network. Select "Use password authentication".
    * **Set username and password**. These will be the credentials you will use
-     to log into your Raspberry Pi. Set a reasonable username and password.
+     to log into your Raspberry Pi. We have chosen the username ``ecologist``.
      Whilst it is possible to put spaces in the username, we recommend *not* to
      do this; of course your password may have arbitrary characters.
    * **Configure wireless LAN**. This is necessary, if you are not going wired
@@ -413,7 +413,7 @@ In :ref:`our example <sshcredentials>` it would be
 
 .. code:: sh
 
-    ssh dynaikontrap@dynaikontrap
+    ssh ecologist@raspberrytrap.local
 
 Once logged in, you will want to update the Raspberry Pi. Do this with
 
@@ -555,13 +555,13 @@ computer, by executing
 
 .. code:: sh
 
-    scp <username>@<hostname>:/tmp/test.jpg test.jpg
+    scp <username>@<hostname>.local:/tmp/test.jpg test.jpg
 
 e.g.
 
 .. code:: sh
 
-    scp dynaikontrap@dynaikontrap:/tmp/test.jpg test.jpg
+    scp ecologist@raspberrytrap.local:/tmp/test.jpg test.jpg
 
 on your computer/tablet/mobile phone. Then you can open the file ``test.jpg`` on
 your local device to check whether the camera could successfully take a picture

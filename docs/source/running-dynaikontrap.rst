@@ -139,7 +139,13 @@ over SSH
 
 .. code:: sh
 
-   scp -a pi@dynaikontrap.local:~/dynaikontrap/output/ ./
+   scp -a <username>@<hostname>.local:~/dynaikontrap/output/ ./
+
+e.g.
+
+.. code:: sh
+
+   scp -a ecologist@raspberrytrap.local:~/dynaikontrap/output/ ./
 
 copies all files from the default video output directory onto the current
 directory on your computer.
@@ -159,7 +165,7 @@ On ``dynaikontrap`` you could then run:
 
 .. code:: sh
 
-   sshfs ~/videos pi@server.local:~
+   sshfs ~/videos ecologist@raspberrytrap.local:~
 
 to automatically save all files from ``dynaikontrap``'s output to the
 ``server``'s home directory. Note that ``sshfs`` may not be installed, but you
