@@ -244,8 +244,8 @@ information for settings parameters:
    terminal. If you wish to save a system log, add a file name of your choice.
 
 
-You may also configure these settings via our legacy `tuner.py` script, although
-it is a bit less user friendly!
+You may also configure these settings via our legacy ``tuner.py`` script,
+although it is a bit less user friendly!
 
 .. code:: sh
 
