@@ -18,12 +18,12 @@ available.
 For information on how to find out your Raspberry Pi's IP address, see `here
 <https://www.raspberrypi.org/documentation/remote-access/ip-address.md>`__.
 
-To access the web server, simply open a web browser on a laptop of phone
+To access the web server, simply open a web browser on a laptop or phone
 connected to the same wifi network as the Raspberry Pi, and navigate to:
 
-    .. code::
+.. code:: html
 
-        http://<rpi-ip-address>:9999/
+  http://<rpi-ip-address>:9999/
 
 This will display the web-viewer's home page, as below.
 
@@ -83,18 +83,18 @@ Troubleshooting
 If you're having problems connecting to the web viewer here are a couple of
 things to try:
 
-    * Make sure your Raspberry Pi and the machine running the web browser are
-      connected to the same network. If you're running a mobile hotspot, you can
-      usually check which devices are connected to your hotspot in the settings
-      (this can also be a quick way to find out the IP address of your Raspberry
-      Pi!). For help setting up a new wifi network on a Raspberry Pi, see `here
-      <https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking>`__.
+* Make sure your Raspberry Pi and the machine running the web browser are
+  connected to the same network. If you're running a mobile hotspot, you can
+  usually check which devices are connected to your hotspot in the settings
+  (this can also be a quick way to find out the IP address of your Raspberry
+  Pi!). For help setting up a new wifi network on a Raspberry Pi, see `here
+  <https://www.raspberrypi.com/documentation/computers/configuration.html#configuring-networking>`__.
 
-    * Remember, DynAIkonTrap must be running for the web server to start. If you
-      just booted up the Raspberry Pi, you will need to start DynAIkonTrap for
-      things to work. There are methods to force programs to start on-boot of
-      the Raspberry Pi (see `here
-      <https://raspberrytips.com/autostart-a-program-on-boot/>`__) and we hope to
-      more streamlined support for this in the future.
+* Remember, DynAIkonTrap must be running for the web server to start. If you
+  just booted up the Raspberry Pi, you will need to start DynAIkonTrap for
+  things to work. There are methods to force programs to start on-boot of the
+  Raspberry Pi (see `here
+  <https://raspberrytips.com/autostart-a-program-on-boot/>`__) and we hope to
+  more streamlined support for this in the future.
 
 
