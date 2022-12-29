@@ -39,7 +39,7 @@ Live mode
 
    .. code:: sh
 
-      dynaikontrap
+      ~/.local/bin/dynaikontrap
 
    After a few moments you should see the output appearing. If you wave your
    hand in front of the camera you should begin to see messages about detected
@@ -48,6 +48,22 @@ Live mode
 
 If you have reached this point, then well done! You have successfully set up the
 camera trap.
+
+.. admonition:: Changing your path
+  :class: tip
+
+  To save typing the long ``~/.local/bin/dynaikontrap`` everytime, you can add
+  the line
+
+  .. code:: sh
+
+    export PATH=$PATH:$HOME/.local/bin/dynaikontrap
+
+  to the file ``~/.bashrc``. Now ``dynaikontrap`` will launch with
+
+  .. code:: sh
+
+    dynaikontrap
 
 The remaining sections on this page have some useful recommendations on how to
 best use this camera trap. We recommend that you have a look at the
