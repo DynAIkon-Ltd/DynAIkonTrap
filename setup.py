@@ -60,6 +60,7 @@ setup(
                             'dynaikontrap-tuner=DynAIkonTrap.tuner:main',
                             ]
     },
+    scripts=['dynaikontrap-config'],
     package_data={
         "": [
             'VERSION',
