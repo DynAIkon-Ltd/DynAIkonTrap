@@ -340,14 +340,14 @@ different tool to flash SD cards, feel free to use that instead.
 
 #. Click "Choose OS" and select **Raspberry Pi OS (other)**
 
-   .. image:: _static/rpi-imager-2.png
+   .. image:: _static/rpi-imager-2.circled.png
       :width: 600
       :alt: Selecting "Raspberry Pi OS (other)"
 
 #. Select **Raspberry Pi OS Lite (Legacy)**. Verify that it is "a port of
    **Debian Buster**".
 
-   .. image:: _static/rpi-imager-3.png
+   .. image:: _static/rpi-imager-3.circled.png
       :width: 600
       :alt: Selecting "Raspberry Pi OS Lite (Legacy)"
 
