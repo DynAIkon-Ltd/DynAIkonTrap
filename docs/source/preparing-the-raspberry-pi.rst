@@ -106,6 +106,9 @@ Necessary Software
 
   <hr>
 
+Imaging Tool
+^^^^^^^^^^^^
+
 You will need a method of flashing Raspberry Pi OS to your SD card. We recommend
 using the `Raspberry Pi imaging tool <https://www.raspberrypi.org/software/>`_
 for this, available for Linux, MacOS and Windows.
@@ -114,6 +117,9 @@ If you do not have permanent access to a computer with an SD card slot, don't
 worry: once the SD card has been prepared, all remaining steps can be performed
 from any device that has a Secure Shell (SSH) client. You can even manage the
 camera trap from such a device in perpetuity.
+
+SSH Client
+^^^^^^^^^^
 
 The Raspberry Pi Foundation has an `extensive article
 <https://www.raspberrypi.com/documentation/computers/remote-access.html>`_ about
@@ -137,51 +143,111 @@ Other clients are available, and in no way is this list an endorsement for these
 particular programs. This particular clients happen to be open source (with the
 exception the Windows 10 pre-installed terminal).
 
-Installing Raspberry Pi OS
---------------------------
+1 Installing Raspberry Pi OS
+----------------------------
 
 .. raw:: html
 
   <hr>
 
-.. admonition:: (TLDR) Versions of Raspberry Pi OS
-  :class: tip
+First we will prepare the SD card with Raspberry Pi OS. This process is often
+colloquially called `"flashing"
+<https://en.wikipedia.org/wiki/Firmware#Flashing>`_ for historical reasons. This
+entails downloading the operating system (Raspberry Pi OS Legacy, based on
+Debian Buster version 10) and copying the files to the SD card.
 
-  The Raspberry Pi Foundation offers the following versions
-
-  * *Raspberry Pi OS* (Not compatible) Standard install, Debian 11 codename
-    Bullseye;
-  * *Raspberry Pi OS Lite* (Not compatible) Headless install, based on Debian 11
-    codename Bullseye;
-  * *Raspberry Pi OS (Legacy)* Standard install, based on Debian 10 codename
-    Buster;
-
-  and finally, the **recommended version for DynAikonTrap**
-
-  * **Raspberry Pi OS Lite (Legacy)** Headless install, based on Debian 10
-    codename **Buster**.
-
-This is done in 4 steps.
-
-#. Flash **Rasperry Pi OS Lite (Legacy)** based on Debian 10 codename Buster to
-   the SD card
-#. Configuring the Networking
-#. Enabling the camera module
-#. Expanding the filesystem
-
-Finding the correct Raspberry Pi OS version
-___________________________________________
-
-The Raspberry Pi can run many different operating systems, notably: Ubuntu,
-Manjaro, ArchLinuxArm, Apertis, RISC OS Pi. The officially supported operating
-system, however, is called `Raspberry Pi OS
-<https://www.raspberrypi.com/software/operating-systems/>`_.
+We recommend using the official `Raspberry Pi imaging tool
+<https://www.raspberrypi.org/software/>`_ for this. If you usually use a
+different tool to flash SD cards, feel free to use that instead.
 
 DynAikonTrap is written to work on **Raspberry Pi OS (Legacy)**, this is the
 Raspberry Pi OS based on **Debian version 10 codname Buster**.
 
-DynAikonTrap does **not** work on the latest **Raspberry Pi OS**, which is based
-on **Deban version 11 codename Bullseye**.
+.. admonition:: What is Raspberry Pi OS?
+  :class: hint, dropdown
+
+  The Raspberry Pi can run many different operating systems, notably: Ubuntu,
+  Manjaro, ArchLinuxArm, Apertis, RISC OS Pi. The officially supported operating
+  system, however, is called `Raspberry Pi OS
+  <https://www.raspberrypi.com/software/operating-systems/>`_.
+
+.. admonition:: Security of older Rasperry Pi OS versions
+  :class: warning
+
+  Every Debian release (and therefore Raspberry Pi OS release) is expected to
+  get **5 years** of support for security updates. So, just because you are
+  running the previous version, doesn't mean your device is less secure.
+
+To save SD card space, reduce installation time and reduce load on the Raspberry
+Pi when running, we recommend installing Raspberry Pi OS **Lite** (Legacy) this
+is a headless install of Raspberry Pi OS based on Debian 10 codename Buster.
+
+.. admonition:: What is a headless setup?
+  :class: hint, dropdown
+
+  Using a *headless* Raspberry Pi means controlling your Raspberry Pi via
+  another computer over the internet. That way, your Raspberry Pi doesn't need
+  a keyboard or monitor, hence "headless". This is how many servers operate the
+  world over.
+
+  That may sound scary, but don't worry! It's no more complicated than the full
+  installation you would do to use a mouse and keyboard on the Raspberry Pi. In
+  fact many people would argue that using your Raspberry Pi in the headless
+  way is easier. Ultimately, the idea is that you don't need to have your
+  Raspberry Pi in front of you to use it: exactly what you want when using it
+  as a camera trap.
+
+  We will use a tool called SSH (Secure SHell) to connect to your Raspberry Pi
+  from your main computer i.e. a desktop or laptop PC.
+
+  If you do not feel comfortable configuring your Raspberry Pi for headless
+  operation, you can also do a full install using a keyboard and mouse.
+
+.. admonition:: Lite install vs Standard install
+  :class: hint, dropdown
+
+  The Raspberry Pi Foundation provides two different flavours of each release
+  32/64-bit release: a **standard release** and a **lite release**. The difference
+  being how much pre-installed software comes with the initial install.
+  Importantly, the lite release is configured to be used in a headless setup.
+
+  To save SD card space, reduce installation time and reduce load on the Raspberry
+  Pi when running, **we recommend** installing **Raspberry Pi OS Lite (Legacy)**
+  this is a headless install of Raspberry Pi OS based on Debian 10 codename
+  Buster.
+
+.. admonition:: Switching between Lite and Standard intsalls
+  :class: hint, dropdown
+
+  Whilst we recommend a lite install to save SD card space, reduce installation
+  time and reduce load on the Raspberry Pi when running, one can switch between
+  standard and lite installs any time later on.
+
+  Installing a desktop environment (e.g. Gnome, KDE) and enabling the
+  corresponding display manager (e.g. ``gdm`` for Gnome, or ``sddm`` for KDE)
+  will convert any lite intall into a full install.
+
+  Conversely, any standard installation can later be converted to a lite
+  installation by removing the desktop environment, or just by simply disabling
+  the display manager service.
+
+
+DynAikonTrap does **not** work on the latest Raspberry Pi OS, which is based on
+Deban version 11 codename Bullseye.
+
+To summarise, the Raspberry Pi Foundation offers the following versions
+
+* *Raspberry Pi OS* (Not compatible) Standard install, Debian 11 codename
+  Bullseye;
+* *Raspberry Pi OS Lite* (Not compatible) Headless install, based on Debian
+  11 codename Bullseye;
+* *Raspberry Pi OS (Legacy)* Standard install, based on Debian 10 codename
+  Buster;
+
+and finally, the **recommended version for DynAikonTrap**
+
+* **Raspberry Pi OS Lite (Legacy)** Headless install, based on Debian
+  10 codename **Buster**.
 
 .. admonition:: The relationship between Debian and Raspberry Pi OS
   :class: dropdown
@@ -217,13 +283,6 @@ on **Deban version 11 codename Bullseye**.
   are ever unsure, try to figure our the Debian Version or the codename (e.g.
   "Bullseye").
 
-.. admonition:: Security of older Rasperry Pi OS versions
-  :class: warning
-
-  Every Debian release (and therefore Raspberry Pi OS release) is expected to
-  get **5 years** of support for security updates. So, just because you are
-  running the previous version, doesn't mean your device is less secure.
-
 .. admonition:: Codenames of releases
   :class: dropdown
 
@@ -247,89 +306,8 @@ on **Deban version 11 codename Bullseye**.
   adjevtive in ascending alphabetical order (e.g. *Breezy Badger*, *Groovy
   Gorilla*).
 
-Lite install vs Standard install
-________________________________
-
-The Raspberry Pi Foundation provides two different flavours of each release
-32/64-bit release: a **standard release** and a **lite release**. The difference
-being how much pre-installed software comes with the initial install.
-Importantly, the lite release is configured to be used in a headless setup.
-
-.. admonition:: What is a headless setup?
-  :class: hint, dropdown
-
-  Using a *headless* Raspberry Pi means controlling your Raspberry Pi via
-  another computer over the internet. That way, your Raspberry Pi doesn't need
-  a keyboard or monitor, hence "headless". This is how many servers operate the
-  world over.
-
-  That may sound scary, but don't worry! It's no more complicated than the full
-  installation you would do to use a mouse and keyboard on the Raspberry Pi. In
-  fact many people would argue that using your Raspberry Pi in the headless
-  way is easier. Ultimately, the idea is that you don't need to have your
-  Raspberry Pi in front of you to use it: exactly what you want when using it
-  as a camera trap.
-
-  We will use a tool called SSH (Secure SHell) to connect to your Raspberry Pi
-  from your main computer i.e. a desktop or laptop PC.
-
-  If you do not feel comfortable configuring your Raspberry Pi for headless
-  operation, you can also do a full install using a keyboard and mouse.
-
-
-To save SD card space, reduce installation time and reduce load on the Raspberry
-Pi when running, **we recommend** installing **Raspberry Pi OS Lite (Legacy)**
-this is a headless install of Raspberry Pi OS based on Debian 10 codename
-Buster.
-
-To summarise, the Raspberry Pi Foundation offers the following versions
-
-* *Raspberry Pi OS* (Not compatible) Standard install, Debian 11 codename
-  Bullseye;
-* *Raspberry Pi OS Lite* (Not compatible) Headless install, based on Debian
-  11 codename Bullseye;
-* *Raspberry Pi OS (Legacy)* Standard install, based on Debian 10 codename
-  Buster;
-
-and finally, the **recommended version for DynAikonTrap**
-
-* **Raspberry Pi OS Lite (Legacy)** Headless install, based on Debian
-  10 codename **Buster**.
-
-.. admonition:: Switching between Lite and Standard intsalls
-  :class: hint, dropdown
-
-  Whilst we recommend a lite install to save SD card space, reduce installation
-  time and reduce load on the Raspberry Pi when running, one can switch between
-  standard and lite installs any time later on.
-
-  Installing a desktop environment (e.g. Gnome, KDE) and enabling the
-  corresponding display manager (e.g. ``gdm`` for Gnome, or ``sddm`` for KDE)
-  will convert any lite intall into a full install.
-
-  Conversely, any standard installation can later be converted to a lite
-  installation by removing the desktop environment, or just by simply disabling
-  the display manager service.
-
 Flashing the SD Card
-____________________
-
-First we will prepare the SD card with Raspberry Pi OS. This process is often
-colloquially called `"flashing"
-<https://en.wikipedia.org/wiki/Firmware#Flashing>`_ for historical reasons. This
-entails downloading the operating system (Raspberry Pi OS Legacy, based on
-Debian Buster version 10) and copying the files to the SD card.
-
-We recommend using the official `Raspberry Pi imaging tool
-<https://www.raspberrypi.org/software/>`_ for this. If you usually use a
-different tool to flash SD cards, feel free to use that instead.
-
-.. admonition:: Back up data from SD Card!
-  :class: warning
-
-  Installing Raspberry Pi OS to your SD card will irrevocably delete all the
-  data on the SD card. Please ensure all important data is backed up before
-  hand.
+^^^^^^^^^^^^^^^^^^^^
 
 #. Insert the SD card into your computer
 #. Start the Raspberry Pi imaging tool. You will be met with a welcome screen.
@@ -389,8 +367,8 @@ different tool to flash SD cards, feel free to use that instead.
       Clicking "write" will irrevocably wipe all data on the SD card. Ensure
       that all important data is backed up before hand.
 
-Booting your Raspberry Pi for the first time
-____________________________________________
+Booting for the first time
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Insert your freshly flashed SD card into your Raspberry Pi and connect the power
 supply. Your Pi should now start blinking.
@@ -425,7 +403,7 @@ Once this is complete, it is probably best to reboot to ensure that all new
 software is running.
 
 Troubleshooting the SSH Connection
-__________________________________
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you are having troubles logging in, you will have to troubleshoot your
 connection. There are a lot of articles about SSH and SSH on Raspberry Pis in
@@ -450,8 +428,12 @@ because your password is incorrect.
 
 .. _expandfilesystem:
 
-Expanding the Filesystem
-________________________
+2 Expanding the Filesystem
+--------------------------
+
+.. raw:: html
+
+  <hr>
 
 .. admonition:: Documentation
 
@@ -477,10 +459,23 @@ Navigate to ``Advanced Options > Expand Filesystem``. For this to take effect,
 you will have to reboot your Raspberry Pi.
 
 
+3 Preparing Raspberry Pi Camera
+-------------------------------
+
+.. raw:: html
+
+  <hr>
+
+.. admonition:: Wi-Fi and SSH Setup
+  :class: warning
+
+  This assumes that your Raspberry Pi is configured for headless usage and the
+  camera module has been enabled.
+
 .. _enablecamera:
 
-Enabling the Camera module
-__________________________
+Enabling the camera module software
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. admonition:: Documentation
 
@@ -502,22 +497,8 @@ You will be met with a Terminal User Interface (TUI)
 Navigate to ``Interfacing Options > Camera``. For this to take effect, you will
 have to reboot your Raspberry Pi.
 
-
-Preparing Raspberry Pi Camera
------------------------------
-
-.. raw:: html
-
-  <hr>
-
-.. admonition:: Wi-Fi and SSH Setup
-  :class: warning
-
-  This assumes that your Raspberry Pi is configured for headless usage and the
-  camera module has been enabled.
-
 Installing the Camera Hardware
-______________________________
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Installing the hardware camera module depends on which Camera and Raspberry Pi
 you have. Here is an example using the Raspberry Pi Zero W and the camera
@@ -535,14 +516,8 @@ module.
 
 .. _verifycamera:
 
-Installing the Camera Software
-______________________________
-
-To be able to utilise the Camera, the :ref:`camera module must be enabled
-<enablecamera>`.
-
 Testing that the Camera works
-_____________________________
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Execute
 
@@ -568,8 +543,8 @@ your local device to check whether the camera could successfully take a picture
 and whether the picture was in focus.
 
 Setting the focus of the Camera
-_______________________________
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This depends heavily on what kind of camera module you have. The one <we are
-using> can be focussed by screwing the lens in further or loosening it.
+This depends heavily on what kind of camera module you have. The one we are
+using can be focussed by screwing the lens in further or loosening it.
 
