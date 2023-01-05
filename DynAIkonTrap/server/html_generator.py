@@ -13,10 +13,11 @@
 
 """This file contains functions for generating html pages for the DynAikonTrap web viewer. Heavily modifed from the startpoint provided over at: https://gist.githubusercontent.com/glowinthedark/625eb4caeca12c5aa52778a3b4b0adb4/raw/d245a5c53e935f03b08e528f0b79c66e58823987/generate_directory_index_caddystyle.py"""
 
-from os import path, getcwd, stat
+from os import path, getcwd, stat, makedirs
 from glob import glob
 from urllib.parse import quote
 from datetime import datetime as dt
+from pkg_resources import resource_filename
 
 from DynAIkonTrap.logging import get_logger
 
@@ -24,7 +25,7 @@ logger = get_logger(__name__)
 
 MAIN_PAGE = 'index.html'
 FOV_PAGE = 'html/fov.html'
-CSS_DIR = 'assets/bootstrap-3.3.5/css'
+CSS_DIR = resource_filename("DynAIkonTrap", "server/assets/bootstrap-3.3.5/css")
 SHELL_PAGE = 'html/shell.html'
 
 SVG_IMAGES = {
@@ -45,6 +46,8 @@ SVG_IMAGES = {
 def make_fov_page():
     """ Creates the HTML for the page to view camera's current field of view, this is saved to a file, `html/fov.html` """
     fov_path = path.join(getcwd(), FOV_PAGE)
+    # Ensure the html dir exists
+    makedirs(path.dirname(fov_path), exist_ok=True)
     try:
         with open(fov_path, 'w') as fov_file:
             fov_file.write(
@@ -66,6 +69,8 @@ def make_fov_page():
 def make_shell_page(ip_addr, port):
     """ Creates HTML for the page to view the shellinabox terminal. Makes use of an IFrame and a basic href to the port running shellinabox. May not work for some browsers."""
     shell_path = path.join(getcwd(), SHELL_PAGE)
+    # Ensure the html dir exists
+    makedirs(path.dirname(shell_path), exist_ok=True)
     try:
         with open(shell_path, 'w') as fov_file:
             fov_file.write(

@@ -26,26 +26,28 @@ def sotv_fast(const mvector_elem_struct_t [:,:] motion_frame, int threshold_smal
     
     Intended as a direct replacement for the numpy operations shown below:
     
-    magnitudes = np.sqrt(
-        np.square(motion_frame["x"].astype(np.float))
-        + np.square(motion_frame["y"].astype(np.float))
-    )
+    .. code:: py
 
-    filtered = np.where(
-        magnitudes > self.threshold_small,
-        motion_frame,
-        np.array(
-            (0, 0, 0),
-            dtype=[
-                ("x", "i1"),
-                ("y", "i1"),
-                ("sad", "u2"),
-            ],
-        ),
-    )
-    x_sum = sum(sum(filtered["x"].astype(float))).astype(float)
-    y_sum = sum(sum(filtered["y"].astype(float))).astype(float)
-    return x_sum, y_sum
+        magnitudes = np.sqrt(
+            np.square(motion_frame["x"].astype(np.float))
+            + np.square(motion_frame["y"].astype(np.float))
+        )
+
+        filtered = np.where(
+            magnitudes > self.threshold_small,
+            motion_frame,
+            np.array(
+                (0, 0, 0),
+                dtype=[
+                    ("x", "i1"),
+                    ("y", "i1"),
+                    ("sad", "u2"),
+                ],
+            ),
+        )
+        x_sum = sum(sum(filtered["x"].astype(float))).astype(float)
+        y_sum = sum(sum(filtered["y"].astype(float))).astype(float)
+        return x_sum, y_sum
 
 
     To sidestep expensive sqrt calls, the threshold is instead squared and compared with the square of magnitude, additions to x_sum and y_sum are only performed when the threshold is passed. 

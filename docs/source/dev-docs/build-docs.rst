@@ -11,34 +11,34 @@ documentation builds correctly.
 Using docker container (Recommended)
 ------------------------------------
 
-
 Using the ``docs/docker-build-documentation.sh`` script, build the documentation
-in a containerised environment. The usage is
+in a containerised environment. It will watch the given source directory and
+re-build the documentation on every file change. The usage is
 
 .. code-block:: sh
 
-  bash docs/docker-build-documentation.sh <DynAikonTrap git repository> <output path>
+  bash docs/docker-build-documentation.sh <DynAikonTrap git repository>
 
-This command will produce a ``html`` tree of the documentation under ``<output
-path>``. To read the documentation navigate your web browser (Firefox/Chrome) to
-``<output path>/index.html``.
+This command will produce a ``html`` tree of the documentation under
+``<DynAikonTrap git repository>/docs/build/html``. To read the documentation
+navigate your web browser (Firefox/Chrome) to ``<DynAikonTrap git
+repository>/docs/build/html/index.html``. Exit the container with :kbd:`Ctrl+C`.
 
 For example, when the current directory is the root of the DynAikonTrap git
 repository, one can call
 
 .. code-block:: sh
 
-  bash docs/docker-build-documentation.sh . docs/build
+  bash docs/docker-build-documentation.sh .
 
-to produce the documentation under ``DynAikonTrap/docs/build``.
+to produce the documentation under ``DynAikonTrap/docs/build/html``.
 
 If executed from within ``DynAikonTrap/docs``, one would have to alter the
 command to
 
 .. code-block:: sh
 
-  bash docker-build-documentaiton.sh .. build
-
+  bash docker-build-documentaiton.sh ..
 
 This is the recommended method, since this project is very sensitive to which
 ``python`` version and ``pip`` package versions are installed. Indeed,

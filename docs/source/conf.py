@@ -25,7 +25,7 @@ copyright = '{}, DynAIkon'.format(date.today().year)
 author = 'DynAIkon'
 
 # The full version, including alpha/beta/rc tags
-with open('../../VERSION', 'r') as f:
+with open('../../DynAIkonTrap/VERSION', 'r') as f:
     VERSION = f.readline()
 release = VERSION
 
@@ -47,6 +47,12 @@ extensions = [
 
 add_module_names = False
 autoclass_content = 'both'
+
+autodoc_mock_imports = [
+                        'tflite_runtime',
+                        'DynAIkonTrap.video_buffers',
+                        'DynAIkonTrap.filtering.mvector_sum',
+                        ]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -79,7 +85,7 @@ html_theme_options = {
         'color-brand-content': '#c02020',
     },
 }
-html_additional_pages = {'index': 'landing-page.html'}
+# html_additional_pages = {'index': 'landing-page.html'}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

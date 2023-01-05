@@ -7,6 +7,7 @@ import shutil
 import socket
 import subprocess
 from typing import Union
+from os import makedirs
 
 from DynAIkonTrap.server import html_generator
 from DynAIkonTrap.settings import LoggerSettings, OutputSettings
@@ -75,6 +76,8 @@ class ObservationServer:
 
     def createObservationsHTML(self):
         """Calls the html_generator to make the observations html."""
+        # Ensure that the observation dir exists
+        makedirs(self._observation_dir, exist_ok=True)
         html_generator.process_dir(self._observation_dir)
     
     def createShellPage(self):

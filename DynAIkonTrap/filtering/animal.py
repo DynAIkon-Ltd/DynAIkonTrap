@@ -32,6 +32,7 @@ from cv2 import imwrite
 import numpy as np
 import time
 from requests import HTTPError, RequestException, post, get, request
+from pkg_resources import resource_filename
 
 from DynAIkonTrap.settings import AnimalFilterSettings, SenderSettings
 from DynAIkonTrap.logging import get_logger
@@ -85,11 +86,12 @@ class AnimalFilter:
             self.input_size = NetworkInputSizes.SSDLITE_MOBILENET_V2
             if settings.detect_humans:
                 self.model = tflite.Interpreter(
-                    model_path="DynAIkonTrap/filtering/models/ssdlite_mobilenet_v2_animal_human/model.tflite"
+                    model_path=resource_filename("DynAIkonTrap", "filtering/models/ssdlite_mobilenet_v2_animal_human/model.tflite")
+
                 )
             elif settings.fast_animal_detect:
                 self.model = tflite.Interpreter(
-                    model_path="DynAIkonTrap/filtering/models/ssdlite_mobilenet_v2_animal_only/model.tflite"
+                    model_path=resource_filename("DynAIkonTrap", "filtering/models/ssdlite_mobilenet_v2_animal_only/model.tflite")
                 )
             self.model.resize_tensor_input(
                 0, [1, self.input_size[0], self.input_size[1], 3], strict=True
@@ -102,8 +104,8 @@ class AnimalFilter:
             # use YOLOv4-tiny 416 animal-only detector
             self.input_size = NetworkInputSizes.YOLOv4_TINY
             self.model = cv2.dnn.readNet(
-                "DynAIkonTrap/filtering/yolo_animal_detector.weights",
-                "DynAIkonTrap/filtering/yolo_animal_detector.cfg",
+                resource_filename("DynAIkonTrap", "filtering/yolo_animal_detector.weights"),
+                resource_filename("DynAIkonTrap", "filtering/yolo_animal_detector.cfg"),
             )
             layer_names = self.model.getLayerNames()
             self.output_layers = [
