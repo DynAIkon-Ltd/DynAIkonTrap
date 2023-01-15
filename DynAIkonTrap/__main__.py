@@ -43,7 +43,7 @@ def main():
         description="An AI-enabled camera trap design targeted at the Raspberry Pi platform",
     )
     argparse.add_argument(
-        "--filename", nargs=1, type=mp4_file_type, help="A `.mp4` file to pass to DynAIkonTrap for emulated camera input"
+        "--filename", type=mp4_file_type, help="A `.mp4` file to pass to DynAIkonTrap for emulated camera input"
     )
     argparse.add_argument(
         "--version", action="version", version="%(prog)s " + get_version_number()
@@ -107,7 +107,7 @@ def main():
         server = ObservationServer(settings.output, settings.logging, camera)
 
     else:
-        filename = args.filename[0]
+        filename = args.filename
         if filename.endswith('.mp4'):
             from Vid2Frames.Vid2Frames import VideoStream
             vs = VideoStream(filename)
