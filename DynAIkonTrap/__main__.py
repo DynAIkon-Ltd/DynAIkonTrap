@@ -18,10 +18,13 @@ from logging import getLogger, basicConfig
 import logging
 from multiprocessing import Event
 from signal import signal, SIGINT
-from argparse import ArgumentParser, ArgumentTypeError
+from argparse import ArgumentParser, ArgumentTypeError, RawDescriptionHelpFormatter
+from textwrap import dedent
 from time import sleep
-from os.path import exists
+from os.path import exists, abspath, basename
+from os import makedirs, remove
 from pkg_resources import resource_filename
+from subprocess import run
 
 
 def main():
@@ -40,15 +43,62 @@ def main():
 
     argparse = ArgumentParser(
         prog="DynAIkonTrap",
-        description="An AI-enabled camera trap design targeted at the Raspberry Pi platform",
-    )
-    argparse.add_argument(
-        "--filename", type=mp4_file_type, help="A `.mp4` file to pass to DynAIkonTrap for emulated camera input"
-    )
-    argparse.add_argument(
-        "--version", action="version", version="%(prog)s " + get_version_number()
-    )
+        formatter_class=RawDescriptionHelpFormatter,
+        description=dedent("""\
+        An AI-enabled camera trap design targeted at the Raspberry Pi
+        platform.
 
+        Read our documentation at https://dynaikon.com/trap-docs
+
+        The camera trap can be operated in a 'live mode' and 'emulated mode'.
+
+        LIVE MODE
+        ---------
+        Use the on-board camera to perform real-time animal detections.
+
+        EMULATED MODE
+        -------------
+        Takes a pre-recorded `.mp4` file and filters it using our AI video
+        pipeline.
+
+        Caveat for 'emulated mode': the video files need to be pre-processed to
+        a special format. DynAIkonTrap can do this, see the options
+
+            --keep
+            --skip-preprocess
+
+        for handling this preprocessing.
+        """),
+    )
+    argparse.add_argument(
+        "--version",
+        action="version",
+        version="%(prog)s " + get_version_number()
+    )
+    argparse.add_argument(
+        "--filename",
+        type=mp4_file_type,
+        help="(Emulated mode) A `.mp4` file to pass to DynAIkonTrap for "
+             "emulated camera input"
+    )
+    argparse.add_argument(
+        "--keep", "-k",
+        action="store_true",
+        help="(Emulated mode) Keep preprocessed video files after "
+             "completion, defaults to False. "
+             "(Source files are never deleted). "
+             "Useful when wants to re-run the pipeline on the same file with "
+             "different tuning parameters",
+        default=False
+    )
+    argparse.add_argument(
+        "--skip-preprocess", "-s",
+        action="store_true",
+        help="(Emulated mode) Do not preprocess video files, "
+             "defaults to False. This is useful in cases when the video "
+             "files have already been preprocessed. Implies --keep.",
+        default=False
+    )
 
     args = argparse.parse_args()
 
@@ -108,17 +158,36 @@ def main():
 
     else:
         filename = args.filename
-        if filename.endswith('.mp4'):
-            from Vid2Frames.Vid2Frames import VideoStream
-            vs = VideoStream(filename)
-            if settings.pipeline.pipeline_variant == PipelineVariant.LEGACY.value:
-                source = Camera(settings=settings.camera, read_from=vs)
-            else:
-                synth = EventSynthesisor(read_from=vs, video_path=filename)
-                source = EventRememberer(read_from=synth)
-        else:
+        if not filename.endswith('.mp4'):
             print("DynAIkonTrap may only accept video files with the `.mp4` extension at this time.")
             exit(0)
+
+        if args.skip_preprocess:
+            args.keep = True
+            processed = abspath(args.filename)
+
+        else:
+            makedirs(settings.output.path, exist_ok=True)
+            processed = abspath(f'{settings.output.path}/{basename(args.filename)}.processed.mp4')
+
+            print("Preparing video file...")
+            ffmpeg = run(['ffmpeg', '-i', args.filename, '-c:v', 'mpeg4',
+                          '-q:v', '1', '-an', processed], capture_output=True)
+
+            if ffmpeg.returncode != 0:
+                print(ffmpeg.stdout.decode("utf-8"))
+                print(ffmpeg.stderr.decode("utf-8"))
+                exit(1)
+
+            print("[Done] Preparing video file (ffmpeg)")
+
+        from Vid2Frames.Vid2Frames import VideoStream
+        vs = VideoStream(processed)
+        if settings.pipeline.pipeline_variant == PipelineVariant.LEGACY.value:
+            source = Camera(settings=settings.camera, read_from=vs)
+        else:
+            synth = EventSynthesisor(read_from=vs, video_path=processed)
+            source = EventRememberer(read_from=synth)
 
     filters = Filter(read_from=source, settings=settings.filter, sender_settings=settings.output)
 
@@ -130,6 +199,12 @@ def main():
     while True:
         sleep(0.2)
         pass
+
+    # This code will not run, it is behind a while True statement,
+    # However, it is here as a placeholder until multithreading is more
+    # robustly handled
+    if not args.keep:
+        remove(processed)
 
 if __name__ == "__main__":
     main()
