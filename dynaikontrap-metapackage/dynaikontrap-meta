@@ -73,5 +73,9 @@ Depends:
   python3-venv,
   python3-pip,
   shellinabox,
+  cmake,
+  libavformat-dev,
+  libavutil-dev,
+  g++,
 
 Description: Dynaikon camera trapping software metapackage
