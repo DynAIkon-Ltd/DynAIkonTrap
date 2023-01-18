@@ -97,7 +97,7 @@ execute
 
 .. code:: sh
 
-  python setup.py sdist
+  python3 setup.py sdist
   pip3 install ./dist/DynAIkonTrap-x.y.z.tar.gz
 
 Where ``x.y.z`` will be the version of the checked-out code.
