@@ -287,8 +287,8 @@ and finally, the **recommended version for DynAikonTrap**
   :class: dropdown
 
   Giving releases of software "codenames" is more common than one might think.
-  The Debian project `names each release after a character from the movie *Toy
-  Story* <https://wiki.debian.org/DebianReleases#Codenames>`_.
+  The Debian project `names each release after a character from the movie Toy
+  Story <https://wiki.debian.org/DebianReleases#Codenames>`_.
 
   From 2009 until 2018 `Android named each release after a new dessert
   <https://source.android.com/docs/setup/start/build-numbers>`_, in ascending
