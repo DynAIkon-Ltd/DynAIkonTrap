@@ -19,6 +19,12 @@ Installing DynAikonTrap
 
   If not, please refer to the sections :doc:`preparing-the-raspberry-pi`.
 
+.. admonition:: Prerequisites
+  :class: warning
+
+  Unfortunately, DynAIkonTrap only works on Raspberry Pi systems at the moment.
+  This is because of deep integrations with the ``picamera`` module.
+
 Install on RPi
 --------------
 
@@ -95,30 +101,3 @@ execute
   pip3 install ./dist/DynAIkonTrap-x.y.z.tar.gz
 
 Where ``x.y.z`` will be the version of the checked-out code.
-
-Installation on Other Platforms (not Raspberry Pi)
---------------------------------------------------
-
-.. important::
-
-   You cannot run the full DynAIkonTrap on a non-RPi system out of the box. You
-   can, however, use our `vid2frames
-   <https://gitlab.dynaikon.com/dynaikontrap/vid2frames>`_ library or run the
-   `evaluation script
-   <https://gitlab.dynaikon.com/dynaikontrap/dynaikontrap#evaluation>`_.
-
-If you are installing on another platform like your desktop or laptop you will
-need to run:
-
-.. code:: sh
-
-   export READTHEDOCS=True
-
-before
-
-.. code:: sh
-
-   ./setup.sh
-
-This instructs the installer to not install the full version of the PiCamera
-library as that only runs on the Raspberry Pi.
