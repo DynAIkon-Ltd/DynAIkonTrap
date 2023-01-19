@@ -281,7 +281,7 @@ def get_settings_path():
 
 def save_settings(settings):
     with open(get_settings_path(), "w") as f:
-        dump(settings, f, default=serialise)
+        dump(settings, f, default=serialise, indent=4)
     
 def serialise(obj):
     if isinstance(obj, Settings):
