@@ -7,7 +7,8 @@ import shutil
 import socket
 import subprocess
 from typing import Union
-from os import makedirs
+from os import makedirs, path, symlink, remove
+from pkg_resources import resource_filename
 
 from DynAIkonTrap.server import html_generator
 from DynAIkonTrap.settings import LoggerSettings, OutputSettings
@@ -20,14 +21,13 @@ logger = get_logger(__name__)
 WEBSITE_PORT = 9999
 SHELL_PORT = 4200
 
-
 class Handler(SimpleHTTPRequestHandler):
     """A handler class which inherits from `http.server.SimpleHTTPRequestHandler`. The method, `do_GET()` is overwritten to intercept GET requests for `camera-fov.jpg`.
     """
 
     def __init__(self, callback, *args, **kwargs):
         self.cameraCallback = callback
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, directory=html_generator.DIRECTORY, **kwargs)
 
 
     def do_GET(self):
@@ -60,11 +60,20 @@ class ObservationServer:
         self.createFOVPage()
         self.createObservationsHTML()
         self.createShellPage()
+        self.createLogLink()
         self._handler = partial(Handler, read_image_from)
         self._shellinabox_handler = ServiceHandler(shell_str=f"sudo shellinaboxd -p {self._shell_port} -t")
         self._usher = Thread(target=self.run, daemon=True)
         self._usher.start()
 
+    def createLogLink(self):
+        """Creates a symbolic link to the log file so it's accessible to the server"""
+        symlink_name = path.join(html_generator.DIRECTORY, "log.txt")
+        #delete the symlink if it exists
+        if path.islink(symlink_name):
+            remove(symlink_name)
+        #create the symlink
+        symlink(self._log_path, symlink_name)
 
     def createFOVPage(self):
         """Calls html_generator to make the FOV page."""
@@ -78,7 +87,15 @@ class ObservationServer:
         """Calls the html_generator to make the observations html."""
         # Ensure that the observation dir exists
         makedirs(self._observation_dir, exist_ok=True)
-        html_generator.process_dir(self._observation_dir)
+        #next create a symlink from the server's directory to the output dir
+        symlink_name = path.join(html_generator.DIRECTORY, "output")
+        #first, delete the symlink if it exists
+        if path.islink(symlink_name):
+            remove(symlink_name)
+        #create the symlink
+        symlink(self._observation_dir, symlink_name, target_is_directory=True)
+        #process the directory with html, use the symlink for reference directory
+        html_generator.process_dir(symlink_name)
     
     def createShellPage(self):
         """Calls the html_generator to make the shell page."""

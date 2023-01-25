@@ -209,27 +209,20 @@ instructions on the :doc:`tuning` page.
 Emulated mode
 =============
 
-DynAIkonTrap may also be run on a static input as video processing software.
-This allows pre-caught camera trap observation videos to be filtered using our
-AI video pipeline.
+DynAIkonTrap may also be run on pre-recorded video, `emulating` an in-field
+live camera trap. These pre-recorded clips will then be filtered using our AI
+video pipeline.
 
-To use this special mode, video files currently require some pre-processing
-using a program called `ffmpeg`. This is installed on your system after running
-`setup.sh`.
+As a dependency, you will need to install ``Vid2Frames`` with
 
-To pre-process a video file for parsing with DynAIkonTrap, use the command
-shown:
+.. code:: sh
 
-   .. code:: sh
+  pip3 install https://dynaikon.com/resources/Vid2Frames.tar.gz
 
-      ffmpeg -i input.mp4 -c:v mpeg4 -q:v 1 -an prepared-input.mp4
 
-The resultant file, `prepared-input.mp4`, is suitable for processing with
-DynAIkonTrap as shown:
+.. code:: sh
 
-   .. code:: sh
-
-      dynaikontrap --filename prepared-input.mp4
+  dynaikontrap --filename pre-recorded-observation.mp4
 
 This will run the camera trap on the video input, watch the output log to see if
 animals are detected! When the video is processed, exit the program with

@@ -198,7 +198,7 @@ class OutputSettings:
     device_id: Any = 0
     output_format: OutputFormat = OutputFormat.VIDEO.value
     output_mode: OutputMode = OutputMode.DISK.value
-    path: str = "output"
+    path: str = path.abspath("output")
     delete_metadata: bool = 1
 
 
@@ -227,7 +227,7 @@ class LoggerSettings:
     """Settings for logging"""
     level: str = "INFO"  # Literal['DEBUG', 'INFO', 'WARNING', 'ERROR']
     # `Literal` is not supported in Python from RPi packages, hence no proper type hint
-    path: str = "log.txt" 
+    path: str = path.abspath("log.txt")
 
 def _version_number() -> str:
     with open(resource_filename("DynAIkonTrap", "VERSION"), "r") as f:
@@ -281,7 +281,7 @@ def get_settings_path():
 
 def save_settings(settings):
     with open(get_settings_path(), "w") as f:
-        dump(settings, f, default=serialise)
+        dump(settings, f, default=serialise, indent=4)
     
 def serialise(obj):
     if isinstance(obj, Settings):
