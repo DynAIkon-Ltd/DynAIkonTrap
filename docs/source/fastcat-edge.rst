@@ -18,11 +18,6 @@ FASTCAT is DynAIkon's specification for Flexible Ai SysTem for CAmera Traps. It 
 The FASTCAT-Edge specification describes an individual camera that performs
 animal detection in real time at the edge. This can be standalone or a part of a network that pools all observations.
 
-.. image:: _static/fastcat-edge.png
-  :target: _static/fastcat-edge.pdf
-  :width: 800
-  :alt: Description of FASTCAT-Edge
-
 The corresponding FASTCAT-Cloud service on the web is described
 `here  <https://cos4cloud-eosc.eu/services/fastcat-cloud-camera-trap>`_.
 
