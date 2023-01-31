@@ -29,6 +29,9 @@ sensors like PIR sensors and acts on exactly what the camera sees.
 
 This project is part of the COS4Cloud research project funded by the EU.
 
+See our coverage on COS4Cloud channels `here <https://cos4cloud-eosc.eu/services/fastcat-edge-camera-trap/>`_ and `here <https://cos4cloud-eosc.eu/blog/camera-trap-artificial-intelligence-species-automatic-identification-fastcat-edge-cloud/>`_ .
+
+
 What is a Camera Trap?
 ______________________
 
