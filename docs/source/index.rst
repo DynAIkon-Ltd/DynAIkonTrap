@@ -19,5 +19,10 @@
 
 
 
+Welcome
+========
 
+Welcome to the DynAIkonTrap project! Use the tree to the left to browse our documentation. 
+
+Find out more :doc:`about` DynAIkonTrap. 
 
