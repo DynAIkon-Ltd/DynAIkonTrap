@@ -47,9 +47,10 @@ run:
     - python3 setup.py sdist
       # copy contents of ./dist to dynaikon.com/releases
     - cp -rv dist/* "$RELEASE_ROOT"
+    - cp -rv dist/* "$RELEASE_ROOT/DynAIkonTrap.tar.gz"
     - date +"Version $(cat DynAIkonTrap/VERSION) built at %F-%H%M%S %Z from commit $CI_COMMIT_SHORT_SHA" > "$RELEASE_ROOT/buildinfo"
       # create a downloadable release artifact
-    - cp -rv dist/* "$CI_PROJECT_DIR/DynAikonTrap.tar.gz" 
+    - cp -rv dist/* "$CI_PROJECT_DIR/DynAIkonTrap.tar.gz" 
 
     
   artifacts:
