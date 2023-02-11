@@ -4,6 +4,7 @@ image: python:3.7
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
   HERMES_ROOT: /var/www/dynaikon/dynaikon.com/dynaikontrap-docs
+  RELEASE_ROOT: /var/www/dynaikon/dynaikon.com/releases
 
 cache:
   paths:
@@ -38,6 +39,19 @@ run:
     - tar -czvf "$HERMES_ROOT/DynAikonTrap-Docs.tar.gz" -C build/html .
       # Create Downloadable Artifact
     - tar -czvf "$CI_PROJECT_DIR/DynAikonTrap-Docs.tar.gz" -C build/html .
+
+      # Update the release tarball
+      # move to root directory; out of docs/
+    - cd .. 
+      # build the tarball using python sdist
+    - python3 setup.py sdist
+      # copy contents of ./dist to dynaikon.com/releases
+    - cp -rv dist/* "$RELEASE_ROOT"
+    - date +"Version $(cat ../VERSION) built at %F-%H%M%S %Z from commit $CI_COMMIT_SHORT_SHA" > "$RELEASE_ROOT/buildinfo"
+      # create a downloadable release artifact
+    - cp -rv dist/* "CI_PROJECT_DIR/release" 
+
+    
   artifacts:
     paths:
       - "$CI_PROJECT_DIR/DynAikonTrap-Docs.tar.gz"
