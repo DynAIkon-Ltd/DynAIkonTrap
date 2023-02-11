@@ -64,7 +64,7 @@ This is easily done with one command
 
 .. code:: sh
 
-   pip3 install https://dynaikon.com/resources/DynAIkonTrap.tar.gz
+   pip3 install https://dynaikon.com/releases/DynAIkonTrap.tar.gz
 
 
 Manually from source
