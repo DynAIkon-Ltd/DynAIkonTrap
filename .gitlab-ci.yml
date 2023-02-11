@@ -49,9 +49,10 @@ run:
     - cp -rv dist/* "$RELEASE_ROOT"
     - date +"Version $(cat DynAIkonTrap/VERSION) built at %F-%H%M%S %Z from commit $CI_COMMIT_SHORT_SHA" > "$RELEASE_ROOT/buildinfo"
       # create a downloadable release artifact
-    - cp -rv dist/* "CI_PROJECT_DIR/" 
+    - cp -rv dist/* "CI_PROJECT_DIR/DynAikonTrap.tar.gz" 
 
     
   artifacts:
     paths:
       - "$CI_PROJECT_DIR/DynAikonTrap-Docs.tar.gz"
+      - "$CI_PROJECT_DIR/DynAikonTrap.tar.gz"
